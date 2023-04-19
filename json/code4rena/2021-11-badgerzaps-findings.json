@@ -1,0 +1,68 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Name": "H-01",
+                "Location": [
+                    "//solidity\nfunction setGuardian(address _guardian) external {\n    _onlyGovernance();\n    governance = _guardian;\n}\n",
+                    "//solidity\nfunction setGuardian(address _guardian) external {\n    _onlyGovernance();\n    governance = _guardian;\n}\n"
+                ],
+                "Type": "  setGuardian()  Wrong implementation",
+                "Description": "\nIbbtcVaultZap.sol L116-L119(https://github.com/Badger-Finance/badger-ibbtc-utility-zaps/blob/6f700995129182fec81b772f97abab9977b46026/contracts/IbbtcVaultZap.sol#L116-L119)\nsolidity\nfunction setGuardian(address _guardian) external {\n    _onlyGovernance();\n    governance = _guardian;\n}\n\n\nSettToRenIbbtcZap.sol L130-L133(https://github.com/Badger-Finance/badger-ibbtc-utility-zaps/blob/a5c71b72222d84b6414ca0339ed1761dc79fe56e/contracts/SettToRenIbbtcZap.sol#L130-L133)\n\nsolidity\nfunction setGuardian(address _guardian) external {\n    _onlyGovernance();\n    governance = _guardian;\n}\n\n\ngovernance = _guardian should be guardian = _guardian.\n\n\n\n",
+                "Repair": ""
+            },
+            {
+                "Name": "M-01",
+                "Location": [
+                    "//solidity\nfunction redeem(IERC20 token, uint amount, uint poolId, int128 idx, uint minOut)\n    external\n    defend\n    blockLocked\n    whenNotPaused\n    returns(uint out)\n{\n    ibbtc.safeTransferFrom(msg.sender, address(this), amount);\n\n    Pool memory pool = pools[poolId];\n    if (poolId < 3) { // setts\n        settPeak.redeem(poolId, amount);\n        pool.sett.withdrawAll();\n        pool.deposit.remove_liquidity_one_coin(pool.lpToken.balanceOf(address(this)), idx, minOut);\n    } else if (poolId == 3) { // byvwbtc\n        byvWbtcPeak.redeem(amount);\n        IbyvWbtc(address(pool.sett)).withdraw(); // withdraws all available\n    } else {\n        revert(\"INVALID_POOL_ID\");\n    }\n    out = token.balanceOf(address(this));\n    token.safeTransfer(msg.sender, out);\n}\n"
+                ],
+                "Type": " Improper implementation of slippage check",
+                "Description": "\nZap.sol L216-L238(https://github.com/Badger-Finance/ibbtc/blob/d8b95e8d145eb196ba20033267a9ba43a17be02c/contracts/Zap.sol#L216-L238)\n\nsolidity\nfunction redeem(IERC20 token, uint amount, uint poolId, int128 idx, uint minOut)\n    external\n    defend\n    blockLocked\n    whenNotPaused\n    returns(uint out)\n{\n    ibbtc.safeTransferFrom(msg.sender, address(this), amount);\n\n    Pool memory pool = pools[poolId];\n    if (poolId < 3) { // setts\n        settPeak.redeem(poolId, amount);\n        pool.sett.withdrawAll();\n        pool.deposit.remove_liquidity_one_coin(pool.lpToken.balanceOf(address(this)), idx, minOut);\n    } else if (poolId == 3) { // byvwbtc\n        byvWbtcPeak.redeem(amount);\n        IbyvWbtc(address(pool.sett)).withdraw(); // withdraws all available\n    } else {\n        revert(\"INVALID_POOL_ID\");\n    }\n    out = token.balanceOf(address(this));\n    token.safeTransfer(msg.sender, out);\n}\n\n\nIn the current implementation of. Zap.sol#redeem(), the outAmount of IbyvWbtc.withdraw() is not controlled by minOut.\n\n",
+                "Repair": "Consider implementing the minOut check in between L236 and L237.\n\nsolidity\n...\nout = token.balanceOf(address(this));\nrequire(out = _minOut, \"Slippage Check\");\ntoken.safeTransfer(msg.sender, out);\n}\n\n\nGalloDaSballo (BadgerDAO) confirmed(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/47#issuecomment-971668838):\n  Agree with the finding, not having slippage check at end means people can get rekt, we'll add as suggested\n\n\n"
+            },
+            {
+                "Name": "M-02",
+                "Location": [
+                    "//solidity\nfunction setZapConfig(\n    uint256 _idx,\n    address _sett,\n    address _token,\n    address _curvePool,\n    address _withdrawToken,\n    int128 _withdrawTokenIndex\n) external {\n    _onlyGovernance();\n\n    require(_sett != address(0));\n    require(_token != address(0));\n    require(\n        _withdrawToken == address(WBTC) || _withdrawToken == address(RENBTC)\n    );\n\n    zapConfigs[_idx].sett = ISett(_sett);\n    zapConfigs[_idx].token = IERC20Upgradeable(_token);\n    zapConfigs[_idx].curvePool = ICurveFi(_curvePool);\n    zapConfigs[_idx].withdrawToken = IERC20Upgradeable(_withdrawToken);\n    zapConfigs[_idx].withdrawTokenIndex = _withdrawTokenIndex;\n}\n"
+                ],
+                "Type": " Missing  _token.approve()  to  curvePool  in  setZapConfig ",
+                "Description": "\nSettToRenIbbtcZap.sol L162-L183(https://github.com/Badger-Finance/badger-ibbtc-utility-zaps/blob/8d265aacb905d30bd95dcd54505fb26dc1f9b0b6/contracts/SettToRenIbbtcZap.sol#L162-L183)\n\nsolidity\nfunction setZapConfig(\n    uint256 _idx,\n    address _sett,\n    address _token,\n    address _curvePool,\n    address _withdrawToken,\n    int128 _withdrawTokenIndex\n) external {\n    _onlyGovernance();\n\n    require(_sett != address(0));\n    require(_token != address(0));\n    require(\n        _withdrawToken == address(WBTC) || _withdrawToken == address(RENBTC)\n    );\n\n    zapConfigs[_idx].sett = ISett(_sett);\n    zapConfigs[_idx].token = IERC20Upgradeable(_token);\n    zapConfigs[_idx].curvePool = ICurveFi(_curvePool);\n    zapConfigs[_idx].withdrawToken = IERC20Upgradeable(_withdrawToken);\n    zapConfigs[_idx].withdrawTokenIndex = _withdrawTokenIndex;\n}\n\n\nIn the current implementation, when curvePool or token got updated, token is not approved to curvePool, which will malfunction the contract and break minting.\n\n",
+                "Repair": "Change to:\n\nsolidity\nfunction setZapConfig(\n    uint256 _idx,\n    address _sett,\n    address _token,\n    address _curvePool,\n    address _withdrawToken,\n    int128 _withdrawTokenIndex\n) external {\n    _onlyGovernance();\n\n    require(_sett != address(0));\n    require(_token != address(0));\n    require(\n        _withdrawToken == address(WBTC) || _withdrawToken == address(RENBTC)\n    );\n\n    if (zapConfigs[_idx].curvePool != _curvePool && _curvePool != address(0)) {\n        IERC20Upgradeable(_token).safeApprove(\n            _curvePool,\n            type(uint256).max\n        );\n    }\n\n    zapConfigs[_idx].sett = ISett(_sett);\n    zapConfigs[_idx].token = IERC20Upgradeable(_token);\n    zapConfigs[_idx].curvePool = ICurveFi(_curvePool);\n    zapConfigs[_idx].withdrawToken = IERC20Upgradeable(_withdrawToken);\n    zapConfigs[_idx].withdrawTokenIndex = _withdrawTokenIndex;\n}\n\n\nGalloDaSballo (BadgerDAO) confirmed(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/53#issuecomment-971645325):\n  Agree with the finding, it should be noted that adding a pool does handle for the scenario, this would break the pool in case we update it or change the token\n\n\n"
+            },
+            {
+                "Name": "M-03",
+                "Location": [],
+                "Type": " Zap contract's  redeem()  function doesn't check which token the user wants to receive",
+                "Description": "\nIn the redeem() function, the user can pass a token address. That's the token they receive in return for the ibbtc they give back. Because of missing address checks the user can provide any possible ERC20 token here without the function reverting.\n\nAlthough it's not strictly specified in the code I expect that the user should only be able to redeem wBTC or renBTC tokens since they should also only be able to deposit those.\n\nZap.sol L216-L238(https://github.com/Badger-Finance/ibbtc/blob/d8b95e8d145eb196ba20033267a9ba43a17be02c/contracts/Zap.sol#L216-L238)\n\nManual Analysis\n\n",
+                "Repair": "Verify that the passed token address is either wBTC or renbtc\n\ntabshaikh (BadgerDAO) disagreed with severity(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/2#issuecomment-968351408):\n  best practice to add wBTC or renbtc in require, disagree on the severity\n\nGalloDaSballo (BadgerDAO) commented(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/2#issuecomment-971661354):\n  Agree with the finding since only user can rekt themselves I believe this to be a medium severity finding we'll mitigate by adding a slippage check at the end of the function\n\n\n"
+            },
+            {
+                "Name": "M-04",
+                "Location": [
+                    "//solidity\nfunction deposit(uint256[4] calldata _amounts, uint256 _minOut)\n    public\n    whenNotPaused\n{\n    // Not block locked by setts\n    require(\n        RENCRV_VAULT.blockLock(address(this)) < block.number,\n        \"blockLocked\"\n    );\n    require(\n        IBBTC_VAULT.blockLock(address(this)) < block.number,\n        \"blockLocked\"\n    );\n\n    uint256[4] memory depositAmounts;\n\n    for (uint256 i = 0; i < 4; i++) {\n        if (_amounts[i]  0) {\n            ASSETS[i].safeTransferFrom(\n                msg.sender,\n                address(this),\n                _amounts[i]\n            );\n            if (i == 0 || i == 3) {\n                // ibbtc and sbtc\n                depositAmounts[i] += _amounts[i];\n            }\n        }\n    }\n\n    if (_amounts[1]  0 || _amounts[2]  0) {\n        // Use renbtc and wbtc to mint ibbtc\n        // NOTE: Can change to external zap if implemented\n        depositAmounts[0] += _renZapToIbbtc([_amounts[1], _amounts[2]]);\n    }\n    // ...\n}\n"
+                ],
+                "Type": " Excessive  require  makes the transaction fail unexpectedly",
+                "Description": "\nThe check for RENCRV_VAULT.blockLock is only needed when if (_amounts[1]  0 || _amounts[2]  0).\n\nHowever, in the current implementation, the check is done at the very first, making transactions unrelated to RENCRV_VAULT fail unexpectedly if there is a prior transaction involved with RENCRV_VAULT in the same block.\n\n\nIbbtcVaultZap.sol L149-L199(https://github.com/Badger-Finance/badger-ibbtc-utility-zaps/blob/8d265aacb905d30bd95dcd54505fb26dc1f9b0b6/contracts/IbbtcVaultZap.sol#L149-L199)\nsolidity\nfunction deposit(uint256[4] calldata _amounts, uint256 _minOut)\n    public\n    whenNotPaused\n{\n    // Not block locked by setts\n    require(\n        RENCRV_VAULT.blockLock(address(this)) < block.number,\n        \"blockLocked\"\n    );\n    require(\n        IBBTC_VAULT.blockLock(address(this)) < block.number,\n        \"blockLocked\"\n    );\n\n    uint256[4] memory depositAmounts;\n\n    for (uint256 i = 0; i < 4; i++) {\n        if (_amounts[i]  0) {\n            ASSETS[i].safeTransferFrom(\n                msg.sender,\n                address(this),\n                _amounts[i]\n            );\n            if (i == 0 || i == 3) {\n                // ibbtc and sbtc\n                depositAmounts[i] += _amounts[i];\n            }\n        }\n    }\n\n    if (_amounts[1]  0 || _amounts[2]  0) {\n        // Use renbtc and wbtc to mint ibbtc\n        // NOTE: Can change to external zap if implemented\n        depositAmounts[0] += _renZapToIbbtc([_amounts[1], _amounts[2]]);\n    }\n    // ...\n}\n\n\nshuklaayush (BadgerDAO) confirmed(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/50)\n\nGalloDaSballo (BadgerDAO) commented(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/50#issuecomment-971671020):\n  Agree with the finding, we would have to check for those locks only under specific condition, not doing so opens up to unnecessary reverts\n\nGalloDaSballo (BadgerDAO) patched(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/50#issuecomment-971671172):\n  We have mitigated by following the advice of the warden\n\n\n",
+                "Repair": ""
+            },
+            {
+                "Name": "M-05",
+                "Location": [],
+                "Type": " No slippage control on  deposit  of  IbbtcVaultZap.sol ",
+                "Description": "\n\nThere is no slippage control on deposit of IbbtcVaultZap.sol, which expose user to sandwich attack.\n\nIbbtcVaultZap.sol L174(https://github.com/Badger-Finance/badger-ibbtc-utility-zaps/blob/6f700995129182fec81b772f97abab9977b46026/contracts/IbbtcVaultZap.sol#L174)\nAny deposit can be sandwiched, especially when the pool is not balanced.\n\n",
+                "Repair": "Add a minOut in line with the mint function of other contacts, and pass it as a parameter on L174\n\n\n"
+            },
+            {
+                "Name": "M-06",
+                "Location": [],
+                "Type": "  calcMint  always return poolId=0 and idx=0",
+                "Description": "\ncalcMint in Zap.sol always return poolId=0 and idx=0, while the docstring specified it should return the most optimal route instead. This will lead to suboptimal zap.\n\n-[Zap.sol L156(https://github.com/Badger-Finance/ibbtc/blob/d8b95e8d145eb196ba20033267a9ba43a17be02c/contracts/Zap.sol#L156)\n\nGalloDaSballo (BadgerDAO) commented(https://github.com/code-423n4/2021-11-badgerzaps-findings/issues/72#issuecomment-971678895):\n  Given the context that the warden has, the finding is valid, we're missing two functions for calcMint\n\n As for us, we have shifted to only using pool 0 as such the code works fine for us\n\n\n",
+                "Repair": ""
+            }
+        ]
+    }
+]
