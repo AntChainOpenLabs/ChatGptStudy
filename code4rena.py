@@ -11,7 +11,6 @@ from pdf import *
 
 test_path = "..\\SolBugReports\\code4rena\\2021-08-gravitybridge"
 code4rena_path = "..\\SolBugReports\\code4rena"
-code4rena_path = "D:\\学习资料\\学校课程\\研究生\\项目\\陈厅\\蚂蚁\\SolBugReports\code4rena"
 
 download_pdf_path = "pdf\\code4rena"
 json_path = "json\\code4rena"
