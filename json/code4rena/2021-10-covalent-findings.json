@@ -26,11 +26,11 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "depositRewardTokens",
+                    "setAllocatedTokensPerEpoch()",
+                    "endEpoch",
                     "takeOutRewardTokens()",
                     "allocatedTokensPerEpoch",
-                    "endEpoch",
-                    "setAllocatedTokensPerEpoch()"
+                    "depositRewardTokens"
                 ],
                 "Type": " reward tokens could get lost due to rounding down",
                 "Description": "\nThe function depositRewardTokens divides the \"amount\" of tokens by allocatedTokensPerEpoch to calculate the endEpoch.\nWhen \"amount\" isn't a multiple of allocatedTokensPerEpoch the result of the division will be rounded down,\neffectively losing a number of tokens for the rewards.\n\nFor example if allocatedTokensPerEpoch is set to 3e18 and \"amount\" is 100e18 then endEpoch will be increased with 33e18 and the last 1e18 tokens are lost.\n\nA similar problem occurs here:\n in setAllocatedTokensPerEpoch(), with the recalculation of endEpoch\n in takeOutRewardTokens(), with the retrieval of tokens\n in _stake(), when initializing endEpoch (e.g. when endEpoch==0)\n\nDelegatedStaking.sol L90-L98(https://github.com/code-423n4/2021-10-covalent/blob/ded3aeb2476da553e8bb1fe43358b73334434737/contracts/DelegatedStaking.sol#L90-L98)\nDelegatedStaking.sol L368-L383(https://github.com/code-423n4/2021-10-covalent/blob/ded3aeb2476da553e8bb1fe43358b73334434737/contracts/DelegatedStaking.sol#L368-L383)\n\n",

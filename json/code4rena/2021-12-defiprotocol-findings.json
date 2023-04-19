@@ -9,10 +9,10 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "handleFees",
-                    "startSupply == 0",
                     "totalSupply",
-                    "lastFee"
+                    "handleFees",
+                    "lastFee",
+                    "startSupply == 0"
                 ],
                 "Type": " Wrong fee calculation after  totalSupply  was 0",
                 "Description": "\nhandleFees does not update lastFee if startSupply == 0.\nThis means that wrongly, extra fee tokens would be minted once the basket is resupplied and handleFees is called again.\n\n\nLoss of user funds.\nThe extra minting of fee tokens comes on the expense of the regular basket token owners, which upon withdrawal would get less underlying than their true share, due to the dilution of their tokens' value.\n\n\nScenario:\n\n*   All basket token holders are burning their tokens. The last burn would set totalSupply to 0.\n*   After 1 day, somebody mints basket tokens.\n\nhandleFees would be called upon mint, and would just return since totalSupply == 0. Note: It does not update lastFee.\n\n    } else if (startSupply == 0) {\n                return;\n\nBasket.sol#L136:#L137(https://github.com/code-423n4/2021-12-defiprotocol/blob/main/contracts/contracts/Basket.sol#L136:#L137)\n\n*   The next block, somebody else mints a token. Now handleFees will be called and will calculate the fees according to the current supply and the time diff between now and lastFee:\n\n<!----\n\n    uint256 timeDiff = (block.timestamp lastFee);\n\nBasket.sol#L139(https://github.com/code-423n4/2021-12-defiprotocol/blob/main/contracts/contracts/Basket.sol#L139)<br\nBut as we saw, lastFee wasn't updated in the previous step. lastFee is still the time of 1 day before when the last person burned his tokens and the basket supply was 0.\nSo now the basket will mint fees as if a whole day has passed since the last calculation, but actually it only needs to calculate the fees for the last block, since only then we had tokens in the basket.\n\n",
@@ -21,17 +21,17 @@
             {
                 "Name": "M-03",
                 "Location": [
-                    "startSupply",
                     "handleFees()",
-                    "pushUnderlying()",
-                    "ibRatio",
-                    "uint",
-                    "newIbRatio",
                     "pullUnderlying()",
-                    "auctionBurn",
+                    "ibRatio",
+                    "handleFees",
                     "sol#auctionBurn",
+                    "newIbRatio",
+                    "startSupply",
+                    "pushUnderlying()",
+                    "auctionBurn",
                     "totalSupply",
-                    "handleFees"
+                    "uint"
                 ],
                 "Type": "  Basket.sol#auctionBurn  calculates  ibRatio  wrong",
                 "Description": "\nThe function is implemented as follows:\n\n    function auctionBurn(uint256 amount) onlyAuction nonReentrant external override {\n            uint256 startSupply = totalSupply();\n            handleFees(startSupply);\n            _burn(msg.sender, amount);\n\n            uint256 newIbRatio = ibRatio * startSupply / (startSupply amount);\n            ibRatio = newIbRatio;\n\n            emit NewIBRatio(newIbRatio);\n            emit Burned(msg.sender, amount);\n        }\n\nWhen handleFees is called, totalSupply and ibRatio changes accordingly, but for newIbRatio calculation tokens minted in handleFees is not included. Therefore, ibRatio is calculated higher than it should be. This is dangerous, since last withdrawing user(s) lose their funds with this operation. In case this miscalculation happens more than once, newIbRatio will increase the miscalculation even faster and can result in serious amount of funds missing. At each time auctionBurn is called, at least 1 day (auction duration) of fees result in this miscalculation. Furthermore, all critical logic of this contract is based on ibRatio, this behaviour can create serious miscalculations.\n\n\nRather than\n\nuint256 newIbRatio = ibRatio * startSupply / (startSupply amount);\n\nA practical solution to this problem is calculating newIbRatio as follows:\n\n    uint256 supply = totalSupply();\n    uint256 newIbRatio = ibRatio * (supply + amount) / supply;\n\nfrank-beard (Kuiper) confirmed(https://github.com/code-423n4/2021-12-defiprotocol-findings/issues/144)\n\n0xleastwood (judge) decreased severity to Medium and commented(https://github.com/code-423n4/2021-12-defiprotocol-findings/issues/144#issuecomment-1079628195):\n  The warden has identified an issue whereby newIbRatio uses an incorrect startSupply variable which is under-represented. As new tokens may be minted in handleFees(), this will lead to an incorrect ibRatio which is used in all other areas of the protocol. A lower ibRatio causes pushUnderlying() and pullUnderlying() to be improperly accounted for. As a result, burning basket tokens will redeem a smaller amount of underlying tokens and minting basket tokens will require a smaller amount of underlying tokens.\n \n This causes the protocol to leak value from all basket token holders but it does not allow assets to be stolen. As such, I think this is better put as a medium severity issue.\n\n\n\n*\n\n\n",
@@ -41,10 +41,10 @@
                 "Name": "M-04",
                 "Location": [
                     "auction",
-                    "factory",
-                    "initialize()",
+                    "approveUnderlying(address(auction))",
                     "approve()",
-                    "approveUnderlying(address(auction))"
+                    "initialize()",
+                    "factory"
                 ],
                 "Type": " Reentrancy vulnerability in  Basket  contract's  initialize()  method.",
                 "Description": "\nA malicious \"publisher\" can create a basket proposal that mixes real ERC20 tokens with a malicious ERC20 token containing a reentrancy callback in it's approve() method. When the initialize() method is called on the newly cloned Basket contract, a method called approveUnderlying(address(auction)) is called, which would trigger the reentrancy, call initialize() again, passing in altered critical values such as auction and factory, and then removes its self from proposal.tokens and proposal.weights so it doesn't appear in the token list to basket users.\n\nBasket.sol#L44-L61(https://github.com/code-423n4/2021-12-defiprotocol/blob/main/contracts/contracts/Basket.sol#L44-L61)\n\n\nAuction and Factory can be set to custom implementations that do malicious things. Since all baskets and auctions are clones with their own addresses, this fact would be difficult for users to detect. Auction controls ibRatio, which a malicious version could send back a manipulated value to Basket, allowing the malicious \"publisher\" to burn basket tokens till all users underlying tokens are drained.\n\n\nManual review and Hardhat.\n\n",
@@ -61,8 +61,8 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "minLicenseFee",
-                    "LicenseFee"
+                    "LicenseFee",
+                    "minLicenseFee"
                 ],
                 "Type": " Missing cap on  LicenseFee ",
                 "Description": "\nThere is no cap on LicenseFee. While change of LicenseFee is under 1 day timelock, introducing a\nmaxLicenseFee can improve credibility by removing the \"rug\" vector. There is a minLicenseFee in the contracts, while imo make little sense to have minLicenseFee but not maxLicenseFee.\n\nAn incorrectly set LicenseFee can potentially lead to over/underflow in Basket.sol#L140-141(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Basket.sol#L140-141) which is used in most of the function.\n\n\nBasket.sol#L177(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Basket.sol#L177)<br\nFactory.sol#L77(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Factory.sol#L77)<br\nBasket.sol#L49(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Basket.sol#L49)\n\n",
@@ -79,9 +79,9 @@
             {
                 "Name": "M-02",
                 "Location": [
-                    "minIbRatio",
                     "bondBurn",
-                    "IbRatio"
+                    "IbRatio",
+                    "minIbRatio"
                 ],
                 "Type": " Publisher can lock all user funds in the  Basket  in order to force a user to have their bond burned",
                 "Description": "\nAll user funds in a basket being held hostage by the publisher\n\n\nThe Basket publisher can propose an auction in order to set new tokens and weights with a 1 day timelock.\n\nBasket.sol#L216-L244(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Basket.sol#L216-L244)<br\n\nAs part of this call they can set the minIbRatio variable which determines what the maximum slippage on the auction is allowed to be. If it's set to the current IbRatio then the Basket accepts no slippage.\n\nThe publisher can choose to set minIbRatio = type(uint256).max which will prevent any auction bids from being successful, locking the basket in the auction state.\n\nIt's not possible to enter or exit the basket while an auction is going on, so any users who hold any funds in the basket are forced to take the only option to kill the auction available to them.\n\nBasket.sol#L91-L119(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Basket.sol#L91-L119)<br\n\nIf a user makes a bond and then waits a day to then call Auction.bondBurn, it will reset the auction and allow users to withdraw but it requires 0.25% of the supply of the basket token to be burned.\n\nAuction.sol#L121-L134(https://github.com/code-423n4/2021-12-defiprotocol/blob/205d3766044171e325df6a8bf2e79b37856eece1/contracts/contracts/Auction.sol#L121-L134)<br\n\nOne of the basket's users is then forced to give up some of their assets to secure the release of the remaining assets in the basket (for a 24hr period until the publisher starts a new auction).\n\nThis attack can be launched at any time with only 24 hours warning. This is a very short amount of time which near guarantees that if other users hold funds in the basket that not all of them will successfully withdraw in that time and so will have funds locked.\n\n",
@@ -90,15 +90,15 @@
             {
                 "Name": "M-05",
                 "Location": [
-                    "bondForRebalance",
-                    "newRatio",
-                    "auctionBonder",
-                    "auctionDecrement",
-                    "startAuction",
                     "auctionMultiplier",
-                    "minIbRatio",
                     "= minIbRatio",
-                    "settleAuction"
+                    "startAuction",
+                    "settleAuction",
+                    "auctionBonder",
+                    "minIbRatio",
+                    "auctionDecrement",
+                    "bondForRebalance",
+                    "newRatio"
                 ],
                 "Type": " Change in  auctionMultiplier/auctionDecrement  change profitability of auctions and factory can steal all tokens from a basket abusing it",
                 "Description": "\nWhen factory changes auctionMultiplier or auctionDecrement profitability of bonded auctions change. There is no protection against this behaviour. Furthermore, factory owners can decide to get all tokens from baskets where they are bonded for the auction.\n\n\n1Factory owners call bondForRebalance for an auction.\n\n2Factory owners sets auctionMultiplier as 0 and auctionDecrement as maximum value\n\n3settleAuction is called. newRatio = 0, since a = b = 0. All tokens can be withdrawn with this call, since tokensNeeded = 0.\n\n\nFurthermore, even the factory owners does not try to scam users. In case auctionMultiplier or auctionDecrement is changed, all current auctionBonder from Auctions can only call settleAuction with different constraints. Because of different constraints, users/bonder will lose/gain funds.\n\n\nSave auctionDecrement and auctionMultiplier to global variables in Auction.sol, when startAuction is called.\n\nfrank-beard (Kuiper) confirmed and commented(https://github.com/code-423n4/2021-12-defiprotocol-findings/issues/145#issuecomment-1049059976):\n  Adding in protection from the global governance is definitely important.\n\n0xleastwood (judge) decreased severity to Medium and commented(https://github.com/code-423n4/2021-12-defiprotocol-findings/issues/145#issuecomment-1079812584):\n  The warden has identified an issue whereby the factory owner can rug-pull baskets through the re-balancing mechanism. Because newRatio = 0, the basket improperly checks the tokens needed in the contract. However, this assumes that the factory owner is malicious which satisfies medium severity due to assets not being at direct risk.\n \n The sponsor has decided to add additional protections (potentially via timelock) to mitigate this issue.\n\n  This rug-pull is made even more difficult by the fact that newRatio must be = minIbRatio. Because minIbRatio is behind timelock, I think this rug vector is unlikely or at least can only be used to steal a fixed amount of funds.\n\n\n\n*\n\n\n",

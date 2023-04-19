@@ -199,7 +199,7 @@ def read_md(file_path,code_paths):
                                 temp = c.split(".")
                                 contract = temp[0] + ".sol"
                                 if contract in code_paths.keys(): #如果是合约的代码
-                                    contracts1.add(contract)
+                                    contracts2.add(contract)
                                     Location.add(temp[1].strip())
                                 continue
                         # 检测是否短代码包含在文件中

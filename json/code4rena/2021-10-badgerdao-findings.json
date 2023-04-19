@@ -10,9 +10,9 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "ibBTC",
-                    "wibBTC",
                     "pricePerShare",
+                    "wibBTC",
+                    "ibBTC",
                     "sync()"
                 ],
                 "Type": " The design of  wibBTC  is not fully compatible with the current Curve StableSwap pool",
@@ -32,10 +32,10 @@
                 "Name": "H-02",
                 "Location": [
                     "approve",
-                    "transferFrom",
                     "shares",
-                    "transfer(From)",
-                    "pricePerShare"
+                    "transferFrom",
+                    "pricePerShare",
+                    "transfer(From)"
                 ],
                 "Type": " Approved spender can spend too many tokens",
                 "Description": "The approve function has not been overridden and therefore uses the internal *shares*, whereas transfer(From) uses the rebalanced amount.\n\nThe approved spender may spend more tokens than desired. In fact, the approved amount that can be transferred keeps growing with pricePerShare.\n\nMany contracts also use the same amount for the approve call as for the amount they want to have transferred in a subsequent transferFrom call, and in this case, they approve an amount that is too large (as the approved shares amount yields a higher rebalanced amount).\n\n",
@@ -65,12 +65,12 @@
             {
                 "Name": "H-03",
                 "Location": [
+                    "burn()",
                     "SetPricePerShare",
                     "balanceToShares",
-                    "burn()",
-                    "mint()",
                     "pricePerShare",
-                    "updatePricePerShare"
+                    "updatePricePerShare",
+                    "mint()"
                 ],
                 "Type": "  WrappedIbbtcEth  contract will use stalled price for mint/burn if  updatePricePerShare  wasn't run properly",
                 "Description": "\n\nMalicious user can monitor SetPricePerShare event and, if it was run long enough time ago and market moved, but, since there were no SetPricePerShare fired, the contract's pricePerShare is outdated, so a user can mint() with pricePerShare that is current for contract, but outdated for market, then wait for price update and burn() with updated pricePerShare, yielding risk-free profit at expense of contract holdings.\n\n\nWrappedIbbtcEth updates pricePerShare variable by externally run updatePricePerShare function. The variable is then used in mint/burn/transfer functions without any additional checks, even if outdated/stalled. This can happen if the external function wasn't run for any reason.\nThe variable is used via balanceToShares function: WrappedIbbtcEth.sol L155(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtcEth.sol#L155)\n\n\nThis is feasible as updatePricePerShare to be run by off-chain script being a part of the system, and malfunction of this script leads to contract exposure by stalling the price. The malfunction can happen both by internal reasons (bugs) and by external ones (any system-level dependencies, network outrages).\nupdatePricePerShare function: WrappedIbbtcEth.sol L72(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtcEth.sol#L72)\n\n",
@@ -79,9 +79,9 @@
             {
                 "Name": "H-04",
                 "Location": [
+                    "updatePricePerShare",
                     "balanceToShares",
-                    "pricePerShare",
-                    "updatePricePerShare"
+                    "pricePerShare"
                 ],
                 "Type": "  WrappedIbbtc  and  WrappedIbbtcEth  contracts do not filter out price feed outliers",
                 "Description": "\nIf price feed is manipulated in any way or there is any malfunction based volatility on the market, both contracts will pass it on a user.\nIn the same time it's possible to construct mitigation mechanics for such cases, so user economics would be affected by sustainable price movements only.\nAs price outrages provide a substantial attack surface for the project it's worth adding some complexity to the implementation.\n\nIn WrappedIbbtcEth pricePerShare variable is updated by externally run updatePricePerShare function ([WrappedIbbtcEth.sol L72(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtcEth.sol#L72)), and then used in mint/burn/transfer functions without additional checks via balanceToShares function: WrappedIbbtcEth.sol L155(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtcEth.sol#L155)\n\nIn WrappedIbbtc price is requested via pricePerShare function([WrappedIbbtc.sol L123(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtc.sol#L123)), and used in the same way without additional checks via balanceToShares function(https://github.com/code-423n4/2021-10-badgerdao/blob/main/contracts/WrappedIbbtc.sol#L147).\n\n",
@@ -90,11 +90,11 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "updatePricePerShare()",
                     "transferFrom",
+                    "updatePricePerShare()",
                     "pricePerShare()",
-                    "balanceToShares()",
-                    "pricePerShare"
+                    "pricePerShare",
+                    "balanceToShares()"
                 ],
                 "Type": " Unable to transfer  WrappedIbbtc  if Oracle go down",
                 "Description": "\nIn WrappedIbbtc, user will not be able to transfer if oracle.pricePerShare() (L124) revert. This is because balanceToShares() is called in both transfer and transferFrom, which included a call to pricePerShare().\n\nIf this is the expected behavior, note that WrappedIbbtcEth is behaving the opposite as it uses the cached value in a local variable pricePerShare, which is only updated upon call to updatePricePerShare().\n\n",

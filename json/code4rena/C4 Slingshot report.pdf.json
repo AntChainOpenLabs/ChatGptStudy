@@ -9,12 +9,12 @@
             {
                 "Name": "C4 Slingshot report.pdf_H-01",
                 "Location": [
-                    "rescueTokens()",
-                    "executeTrades(DAI, WETH, 1000, [], 0, alice)",
-                    "executeTrades()",
-                    "executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)",
                     "fromToken",
-                    "finalAmountMin"
+                    "executeTrades()",
+                    "executeTrades(DAI, WETH, 1000, [], 0, alice)",
+                    "executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)",
+                    "finalAmountMin",
+                    "rescueTokens()"
                 ],
                 "Type": " Incorrectly encoded arguments to executeTrades() can allow tokens to be stolen",
                 "Description": " This finding combines a couple weaknesses into one attack. The first weakness is a lack of validation on arguments to executeTrades, the second is that a pre-existing fromToken balance can be used in a trade:  1. Alice wants to convert 1000 DAI to WETH. She calls executeTrades(DAI, WETH, 1000, [], 0, alice).  2. Since trades is an empty array, and finalAmountMin is 0, the result is that 100 DAI are transferred to the Slingshot contract.  3. Eve (a miner or other 'front runner') may observe this, and immediately call executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve).  4. With a correctly formatted array of TradeData, Eve will receive the proceeds of converting Alice's 1000 DAI to WETH.  This issue is essentially identical to the one described in Ethereum is a Dark Forest, where locked tokens are available to anyone, and thus recovery is susceptible to front running. It also provides an unauthorized alternative to rescueTokens(), however it is still a useful function to have, as it provides a method to recover the tokens without allowing a front runner to simulate and replay it.  ",
@@ -32,11 +32,11 @@
             {
                 "Name": "C4 Slingshot report.pdf_M-02",
                 "Location": [
-                    "rescueToken",
-                    "swap()",
                     "fromexecuteTrades",
+                    "rescueToken",
                     "fromToken",
-                    "finalAmountMin"
+                    "finalAmountMin",
+                    "swap()"
                 ],
                 "Type": " Front Running/Sandwich Attacks",
                 "Description": "If tokens are accidently sent to Slingshot, arbitrary trades can be executed and those funds canbe stolen by anyone. This vulnerability impacts the rescueToken functionality and any fundstrapped in Slingshot\u2019s contract. Tokens and/or Eth have a higher likelihood of becoming trappedin Slingshot if finalAmountMin is not utilized properly. Recommend validating parameters inthe calldata passed to modules and ensuring the fromToken and amount parameter fromexecuteTrades is equivalent to the token being swapped and amount passed to swap().Additionally, approval values can be limited to value being traded and cleared after trades areexecuted.",
@@ -71,8 +71,8 @@
                 "Name": "C4 Slingshot report.pdf_M-05",
                 "Location": [
                     "postUpgrade()",
-                    "initializeAdmin()",
-                    "allonlyAdmin"
+                    "allonlyAdmin",
+                    "initializeAdmin()"
                 ],
                 "Type": " Admin role lockout",
                 "Description": "The initializeAdmin() function in Adminable.sol sets/updates admin role address inone-step. If an incorrect address (zero address or other) is mistakenly used then futureadministrative access or even recovering from this mistake is prevented because allonlyAdmin modifier functions (including postUpgrade() with onlyAdminIfInitialized,which ends up calling initializeAdmin()) require msg.sender to be the incorrectly usedadmin address (for which private keys may not be available to sign transactions). In such acase, contracts would have to be redeployed. Suggest using a two-step process where the newadmin address first claims ownership in one transaction and a second transaction from the newadmin address takes ownership.",

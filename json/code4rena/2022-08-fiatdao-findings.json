@@ -8,9 +8,9 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "token",
+                    "transfer",
                     "transferFrom",
-                    "transfer"
+                    "token"
                 ],
                 "Type": " Unsafe usage of ERC20 transfer and transferFrom ",
                 "Description": "\n<https://github.com/code-423n4/2022-08-fiatdao/blob/fece3bdb79ccacb501099c24b60312cd0b2e4bb2/contracts/VotingEscrow.sol#L425-L428<br\n<https://github.com/code-423n4/2022-08-fiatdao/blob/fece3bdb79ccacb501099c24b60312cd0b2e4bb2/contracts/VotingEscrow.sol#L485-L488<br\n<https://github.com/code-423n4/2022-08-fiatdao/blob/fece3bdb79ccacb501099c24b60312cd0b2e4bb2/contracts/VotingEscrow.sol#L546<br\n<https://github.com/code-423n4/2022-08-fiatdao/blob/fece3bdb79ccacb501099c24b60312cd0b2e4bb2/contracts/VotingEscrow.sol#L657<br\n<https://github.com/code-423n4/2022-08-fiatdao/blob/fece3bdb79ccacb501099c24b60312cd0b2e4bb2/contracts/VotingEscrow.sol#L676<br\n\nSome ERC20 tokens functions don't return a boolean, for example USDT, BNB, OMG. So the VotingEscrow contract simply won't work with tokens like that as the token.\n\n\nThe USDT's transfer and transferFrom functions doesn't return a bool, so the call to these functions will revert although the user has enough balance and the VotingEscrow contract won't work, assuming that token is USDT.\n\n\nManual auditing VS Code, some hardhat tests and me :)\n\n",

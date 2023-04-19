@@ -11,8 +11,8 @@
                     "lpSupply",
                     "allowEmergencyWithdraw()",
                     "emergencyWithdraw",
-                    "wavaxReserve = 0",
-                    "createPair()"
+                    "createPair()",
+                    "wavaxReserve = 0"
                 ],
                 "Type": " Users can lose value in emergency state",
                 "Description": "\nImagine the following sequence of events:\n\n*   LaunchEvent.createPair() is called which sets wavaxReserve = 0, adds liquidity to the pair and receives lpSupply LP tokens.\n*   LaunchEvent.allowEmergencyWithdraw() is called which enters emergency / paused mode and disallows normal withdrawals.\n*   Users can only call LaunchEvent.emergencyWithdraw which reverts as the WAVAX reserve was already used to provide liquidity and cannot be paid out. Users don't receive their LP tokens either. The users lost their entire deposit in this case.\n\n",
@@ -30,11 +30,11 @@
             {
                 "Name": "M-02",
                 "Location": [
-                    "pair",
-                    "totalSupply",
                     "withdrawIncentives()",
+                    "withdrawLiquidity()",
+                    "pair",
                     "createPair()",
-                    "withdrawLiquidity()"
+                    "totalSupply"
                 ],
                 "Type": " Owner of LaunchEvent token has the ability to DOS attack the event",
                 "Description": "\nThe owner of the token for which the LaunchEvent was created, has the ability to DOS attack the event. They can prevent the LaunchEvent from creating a JoePair which in turn limits the access to the following two functions: withdrawLiquidity() & withdrawIncentives(). Thus, stopping anybody from withdrawing their LP tokens.\n\nThe owner of the RocketJoe platform has the ability to enable the emergency withdrawal allowing the depositors to take back their AVAX. But, they lose their burned rJOE tokens and the gas fees.\n\nThe dev team might use this attack vector if they think the price of their token is too low. In that case, they can DOS attack the LaunchEvent. If the RocketJoe owner enables the emergency withdrawal, the dev team is able to take back their initial deposit. Thus, they don't lose anything but their reputation.\n\n\nWhen createPair() is called, the function checks whether a pair already exists. If it does, the transaction is reverted: <https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L382-L389\n\nAnybody is able to create a new JoePair using the existing TraderJoe contracts. If someone owns both AVAX and the LaunchEvent token, they are able to create a new pair and deposit a small amount of liquidity. Thus, the totalSupply will be  0. Meaning, at that point, the call to createPair() fails. Per design, the LaunchEvent will be used to issue a token to the public market. So only the dev team and its trusted parties have access to the necessary tokens to create a pair and provide liquidity.\n\n<https://github.com/traderjoe-xyz/joe-core/blob/main/contracts/traderjoe/JoeFactory.sol#L30\n\n<https://github.com/traderjoe-xyz/joe-core/blob/main/contracts/traderjoe/JoePair.sol#L133\n\nSince createPair() can't be executed the pair state variable is never initialized: <https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L422\n\nThus, the following two functions are not reachable any more: <https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L439\n\n<https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L469\n\nIf the emergency withdrawal is enabled, the token issuer can take back their deposit: <https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L510-L516\n\n",
@@ -53,11 +53,11 @@
                 "Name": "M-08",
                 "Location": [
                     "allowEmergencyWithdraw()",
-                    "stopped",
                     "WAVAX",
+                    "true",
+                    "stopped",
                     "isStopped(false)",
-                    "token",
-                    "true"
+                    "token"
                 ],
                 "Type": " LP Tokens May Be Locked in Contract Due to  allowEmergencyWithdraw()  in Stage 3",
                 "Description": "\nThe function allowEmergencyWithdraw()(https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L520) may be called by the rocketJoeFactory.owner() at any time. If it is called while the protocol is in Stage 3 and a pair has been created then the LP tokens will be locked and both issues and depositors will be unable to withdraw.\n\n\nIf allowEmergencyWithdraw()  is called stopped is set to true. As a result functions withdrawIncentives()(https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L468) and withdrawLiquidity()(https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L438) will revert due to the isStopped(false) modifier reverting.\n\nAdditionally, emergencyWithdraw()(https://github.com/code-423n4/2022-01-trader-joe/blob/main/contracts/LaunchEvent.sol#L494) will revert since all the WAVAX and token balances have been transferred to the liquidity pool.\n\nThus, depositors and issuers will have no methods of removing their LP tokens or incentives.\n\n",
@@ -84,8 +84,8 @@
             {
                 "Name": "M-13",
                 "Location": [
-                    "ERC",
-                    "false"
+                    "false",
+                    "ERC"
                 ],
                 "Type": " ERC20 return values not checked",
                 "Description": "\nThe ERC20.transfer() and ERC20.transferFrom() functions return a boolean value indicating success. This parameter needs to be checked for success.\nSome tokens do not revert if the transfer failed but return false instead.\nTokens that don't actually perform the transfer and return false are still counted as a correct transfer.\n\n",
