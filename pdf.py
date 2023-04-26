@@ -12,14 +12,15 @@ def extract_text_image(from_file,to_file, lang='deu', image_type='jpeg', resolut
     print("---------------------------------")
     pdf_file = wi(filename=from_file, resolution=resolution)
     image = pdf_file.convert(image_type)
-    tf = open(to_file,"w")
+    tf = open(to_file,"w",encoding="utf-8")
     for img in image.sequence:
         img_page = wi(image=img)
         image = Image.open(io.BytesIO(img_page.make_blob(image_type)))
         text = pytesseract.image_to_string(image, lang=lang)
         for part in text.split("\n"):
-            print("{}".format(part))
+            # print("{}".format(part))
             tf.write("{}".format(part))
+            tf.write("\n")
     tf.close()
 
 def parse_text(from_file,to_file):
@@ -33,13 +34,13 @@ def parse_text(from_file,to_file):
     print("---------------------------------")
 
 def pdf2txt(from_file,to_file):
-    parse_text(from_file,to_file)
-    # extract_text_image(from_file, to_file)
+    # parse_text(from_file,to_file)
+    extract_text_image(from_file, to_file)
 
 
 
 
 if __name__ == '__main__':
-    from_file = "pdf/dForceLending-Audit-Report-Consensys-Mar-2021.pdf"
+    from_file = "D:\\学习资料\\学校课程\\研究生\\项目\\陈厅\\蚂蚁\\SolBugReports\\Beosin\\1BOX_202109071819.pdf"
     to_file = "txt/test3.txt"
     pdf2txt(from_file,to_file)
