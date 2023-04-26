@@ -3,9 +3,9 @@ import json
 # 创建一个空列表来存储所有字典
 vulnerabilities = []
 # 标准漏洞格式数据文件
-readfilename = 'SAA.json'
+readfilename = 'standardVulnerability.json'
 # prompt&completion文件
-wirtefilename = "SAA_prompt_completion.jsonl"
+wirtefilename = "prompt_completion.jsonl"
 
 #结束优化
 prompt_end = "\n\n###\n\n"
@@ -49,10 +49,24 @@ def generate_prompt_completion(filename):
         for vul in vulnerabilities:
             if counter_example(f,vul):
                 continue
-            prompt_completion_1(f, vul)
-            prompt_completion_2(f, vul)
-            prompt_completion_3(f, vul)
-            prompt_completion_4(f, vul)
+            # prompt_completion_1(f, vul)
+            # prompt_completion_2(f, vul)
+            # prompt_completion_3(f, vul)
+            # prompt_completion_4(f, vul)
+            # prompt_completion_5(f, vul)
+            prompt_completion_6(f, vul)
+            prompt_completion_7(f, vul)
+            prompt_completion_8(f, vul)
+
+def prompt_optimization(prompt, completion):
+    prompt_completion = {}
+    prompt_completion['prompt'] = prompt + prompt_end
+    prompt_completion['completion'] = completion_start + completion + completion_end
+    return prompt_completion
+
+def write_file(prompt_completion,f):
+    json.dump(prompt_completion,f)
+    f.write("\n")
 
 def counter_example(f,vul):
     flag = False
@@ -69,11 +83,11 @@ def counter_example(f,vul):
 
 
 def prompt_completion_1(f, vul):
-    prompt_completion = {}
-    prompt_completion['prompt'] = "Does this  smart contract  have any vulnerabilities?  " + vul['Code'] + prompt_end
-    prompt_completion['completion'] = completion_start + "here are some potential vulnerabilities in the given smart contract:  " + str(vul['VulnerabilityDesc']) + completion_end
-    json.dump(prompt_completion,f)
-    f.write("\n")
+    prompt = "Does this  smart contract  have any vulnerabilities?  " + vul['Code']
+    completion = "here are some potential vulnerabilities in the given smart contract:  " + str(vul['VulnerabilityDesc'])
+
+    prompt_completion = prompt_optimization(prompt, completion)
+    write_file(prompt_completion,f)
 
 def prompt_completion_2(f, vul):
 
@@ -81,11 +95,11 @@ def prompt_completion_2(f, vul):
         if Desc['Type'] == "":
             continue
 
-        prompt_completion = {}
-        prompt_completion['prompt'] = "Does this  smart contract  have any vulnerabilities? What is its vulnerability type?  " + vul['Code'] + prompt_end
-        prompt_completion['completion'] = completion_start + "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "The vulnerability type is:  " + Desc['Type'] + completion_end
-        json.dump(prompt_completion,f)
-        f.write("\n")
+        prompt = "Does this  smart contract  have any vulnerabilities? What is its vulnerability type?  " + vul['Code']
+        completion = "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "The vulnerability type is:  " + Desc['Type']
+
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
 
 def prompt_completion_3(f, vul):
 
@@ -93,11 +107,11 @@ def prompt_completion_3(f, vul):
         if Desc['Repair'] == "":
             continue
 
-        prompt_completion = {}
-        prompt_completion['prompt'] = "Does this  smart contract  have any vulnerabilities? How to fix it?  " + vul['Code'] + prompt_end
-        prompt_completion['completion'] =completion_start+ "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "To repair this Vulnerability:  " + Desc['Repair'] + completion_end
-        json.dump(prompt_completion,f)
-        f.write("\n")
+        prompt = "Does this  smart contract  have any vulnerabilities? How to fix it?  " + vul['Code']
+        completion = "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "To repair this Vulnerability:  " + Desc['Repair']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
 
 def prompt_completion_4(f, vul):
 
@@ -105,11 +119,63 @@ def prompt_completion_4(f, vul):
         if Desc['Location'] == "":
             continue
 
-        prompt_completion = {}
-        prompt_completion['prompt'] = "Does this  smart contract  have any vulnerabilities? Where is the vulnerability?  " + vul['Code'] + prompt_end
-        prompt_completion['completion'] = completion_start + "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "The vulnerability locates at:  " + Desc['Location'] + completion_end
-        json.dump(prompt_completion,f)
-        f.write("\n")
+        prompt = "Does this  smart contract  have any vulnerabilities? Where is the vulnerability?  " + vul['Code']
+        completion = "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description'] + "The vulnerability locates at:  " + Desc['Location']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
+
+def prompt_completion_5(f, vul):
+
+    for Desc in vul['VulnerabilityDesc']:
+        if Desc['Type'] == "":
+            continue
+
+        prompt = "Does this  smart contract  have any vulnerabilities of " + Desc['Type'] +  "? "+ vul['Code']
+        completion = "here are some potential vulnerabilities in the given smart contract:  " + Desc['Description']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
+
+
+def prompt_completion_6(f, vul):
+
+    for Desc in vul['VulnerabilityDesc']:
+        if Desc['Type'] == "":
+            continue
+        if Desc['Location'] == "":
+            continue
+        prompt = "Does this  smart contract  have any vulnerabilities of " + Desc['Type'] +  "? "+ vul['Code']
+        completion = "Yes , the vulnerabilities happens at " + Desc['Location']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
+
+def prompt_completion_7(f, vul):
+
+    for Desc in vul['VulnerabilityDesc']:
+        if Desc['Type'] == "":
+            continue
+        if Desc['Location'] == "":
+            continue
+        prompt = "Does this  smart contract  have any vulnerabilities at " + Desc['Location'] +  "? "+ vul['Code']
+        completion = "Yes , the contract have " + Desc['Type']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
+
+def prompt_completion_8(f, vul):
+
+    for Desc in vul['VulnerabilityDesc']:
+        if Desc['Type'] == "":
+            continue
+        if Desc['Location'] == "":
+            continue
+        prompt = "Does this  smart contract  have any vulnerabilities ? "+ vul['Code']
+        completion = "Yes , the contract have " + Desc['Type'] + " at " + Desc['Location']
+        
+        prompt_completion = prompt_optimization(prompt, completion)
+        write_file(prompt_completion,f)
 
 
 
