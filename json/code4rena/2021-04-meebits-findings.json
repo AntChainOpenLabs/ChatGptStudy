@@ -27,12 +27,12 @@
             {
                 "Name": "H-02",
                 "Location": [
+                    "verify",
+                    "true",
                     "ecrecover",
-                    "acceptTrade",
                     "idToOwner",
                     "tradeValid",
-                    "true",
-                    "verify"
+                    "acceptTrade"
                 ],
                 "Type": " Arbitrary Transfer of Unowned NFTs",
                 "Description": "\nDue to how the market functions are structured, it is possible to arbitrarily transfer any NFT that is not owned by any address.\n\nThe function in question is the tradeValid function invoked by acceptTrade before the trade is performed. It, in turn, validates the signature of a trade via verify, which does not account for the behavior of ecrecover.\n\nWhen ecrecover is invoked with an invalid signature, the zero-address is returned by it, meaning that verify will yield true for the zero-address as long as the signature provided is invalid.\n\nThis can be exploited to transfer any NFT whose idToOwner is zero, including NFTs that have not been minted yet.\n\n",
@@ -70,8 +70,8 @@
             {
                 "Name": "M-00",
                 "Location": [
-                    "withdraw",
-                    "transfer"
+                    "transfer",
+                    "withdraw"
                 ],
                 "Type": " Legacy Function Usage",
                 "Description": "\nThe withdraw function utilizes the transfer invocation, which has a fixed gas stipend and can fail, especially beyond the Berlin fork, which increased the gas costs(https://eips.ethereum.org/EIPS/eip-2929) for first-time invocations of a transfer.\n\nThe EIP should be sufficient.\n\n",

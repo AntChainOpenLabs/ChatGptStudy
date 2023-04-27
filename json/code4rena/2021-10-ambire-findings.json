@@ -8,11 +8,11 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "sol#L",
-                    "privileges[",
-                    "addrs[i]",
                     "execute()",
-                    "recoverAddrImpl"
+                    "sol#L",
+                    "recoverAddrImpl",
+                    "privileges[",
+                    "addrs[i]"
                 ],
                 "Type": " Prevent execution with invalid signatures",
                 "Description": "\nSuppose one of the supplied addrs[i] to the constructor of Identity.sol happens to be 0 ( by accident).\n\nIn that case: privileges[0] = 1\n\nNow suppose you call execute() with an invalid signature, then recoverAddrImpl will return a value of 0 and thus signer=0.\nIf you then check \"privileges[signer] !=0\"  this will be true and anyone can perform any transaction.\n\nThis is clearly an unwanted situation.\n\n  Identity.sol#L23 L30(https://github.com/code-423n4/2021-10-ambire/blob/bc01af4df3f70d1629c4e22a72c19e6a814db70d/contracts/Identity.sol#L23-L30)\n  Identity.sol#L97 L98(https://github.com/code-423n4/2021-10-ambire/blob/bc01af4df3f70d1629c4e22a72c19e6a814db70d/contracts/Identity.sol#L97-L98)\n\n",
@@ -48,9 +48,9 @@
                 "Name": "H-03",
                 "Location": [
                     "send",
-                    "QuickAccount",
                     "identity",
-                    "hash"
+                    "hash",
+                    "QuickAccount"
                 ],
                 "Type": " Signature replay attacks for different identities (nonce on wrong party)",
                 "Description": "\nA single QuickAccount can serve as the \"privilege\" for multiple identities, see the comment in QuickAccManager.sol:\n\n NOTE: a single accHash can control multiple identities, as long as those identities set it's hash in privileges[address(this)]. this is by design\n\nIf there exist two different identities that *both share the same QuickAccount* (identity1.privileges(address(this)) == identity2.privileges(address(this)) == accHash) the following attack is possible in QuickAccManager.send:\n\nUpon observing a valid send on the first identity, the same transactions can be replayed on the second identity by an attacker calling send with the same arguments and just changing the identity to the second identity.\n\nThis is because the identity is not part of the hash. Including the nonce of the identity in the hash is not enough.\n\nTwo fresh identities will both take on nonces on zero and lead to the same hash.\n\nTransactions on one identity can be replayed on another one if it uses the same QuickAccount.\nFor example, a transaction paying a contractor can be replayed by the contract on the second identity earning the payment twice.\n\n",

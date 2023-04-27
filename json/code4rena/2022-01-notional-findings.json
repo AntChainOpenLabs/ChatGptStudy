@@ -44,8 +44,8 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "EIP",
-                    "latestAnswer"
+                    "latestAnswer",
+                    "EIP"
                 ],
                 "Type": " Usage of deprecated ChainLink API in  EIP1271Wallet ",
                 "Description": "\nThe Chainlink API (latestAnswer) used in the EIP1271Wallet contract is deprecated:\n\n This API is deprecated. Please see API Reference for the latest Price Feed API. Chainlink Docs(https://web.archive.org/web/20210304160150/https://docs.chain.link/docs/deprecated-aggregatorinterface-api-reference)\n\nThis function does not error if no answer has been reached but returns 0. Besides, the latestAnswer is reported with 18 decimals for crypto quotes but 8 decimals for FX quotes (See Chainlink FAQ for more details). A best practice is to get the decimals from the oracles instead of hard-coding them in the contract.\n\n",

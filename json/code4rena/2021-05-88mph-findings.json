@@ -18,11 +18,11 @@
             {
                 "Name": "M-02",
                 "Location": [
-                    "rolloverDeposit",
-                    "payInterestToFunders",
-                    "mph",
                     "distributeFundingRewards",
-                    "withdraw"
+                    "rolloverDeposit",
+                    "withdraw",
+                    "mph",
+                    "payInterestToFunders"
                 ],
                 "Type": " Unchecking the ownership of  mph  in function  distributeFundingRewards  could cause several critical functions to revert",
                 "Description": "\nIn contract MPHMinter, the function distributeFundingRewards does not check whether the contract itself is the owner of mph. If the contract is not the owner of mph, mph.ownerMint could revert, causing functions such as withdraw, rolloverDeposit, payInterestToFunders in the contract DInterest to revert as well.\n\n",

@@ -18,8 +18,8 @@
                 "Name": "H-02",
                 "Location": [
                     "_accrueAccountInterest",
-                    "cumulativeInterestRate",
-                    "liquidateAccount"
+                    "liquidateAccount",
+                    "cumulativeInterestRate"
                 ],
                 "Type": "  LendingPair.liquidateAccount  does not accrue and update  cumulativeInterestRate ",
                 "Description": "\nThe LendingPair.liquidateAccount function does not accrue and update the cumulativeInterestRate first, it only calls _accrueAccountInterest which does not update and instead uses the old cumulativeInterestRate.\n\nThe liquidatee (borrower)'s state will not be up-to-date.\nI could skip some interest payments by liquidating myself instead of repaying if I'm under-water.\nAs the market interest index is not accrued, the borrower does not need to pay any interest accrued from the time of the last accrual until now.\n\n",
@@ -28,9 +28,9 @@
             {
                 "Name": "H-03",
                 "Location": [
-                    "liquidateAccount",
+                    "_safeTransfer(IERC",
                     "supplyOutput",
-                    "_safeTransfer(IERC"
+                    "liquidateAccount"
                 ],
                 "Type": "  LendingPair.liquidateAccount  fails if tokens are lent out",
                 "Description": "\nThe LendingPair.liquidateAccount function tries to pay out underlying supply tokens to the liquidator using _safeTransfer(IERC20(supplyToken), msg.sender, supplyOutput) but there's no reason why there should be enough supplyOutput amount in the contract, the contract only ensures minReserve.\n\nAs a result, no liquidations can be performed if all tokens are lent out.\nExample: User A supplies 1k$ WETH, User B supplies 1.5k$ DAI and borrows the ~1k$ WETH (only leaves minReserve). The ETH price drops but user B cannot be liquidated as there's not enough WETH in the pool anymore to pay out the liquidator.\n\n",

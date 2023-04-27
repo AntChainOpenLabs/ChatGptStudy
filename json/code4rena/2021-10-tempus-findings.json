@@ -17,10 +17,10 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "lpTokensAmount",
+                    "exitTempusAMM",
                     "_exitTempusAMM",
-                    "assert(tempusAMM.balanceOf(address(this)) ==",
-                    "exitTempusAMM"
+                    "lpTokensAmount",
+                    "assert(tempusAMM.balanceOf(address(this)) =="
                 ],
                 "Type": "  exitTempusAMM  can be made to fail",
                 "Description": "\nThere's a griefing attack where an attacker can make any user transaction for TempusController.exitTempusAMM fail.\nIn _exitTempusAMM, the user exits their LP position and claims back yield and principal shares.\nThe LP amounts to redeem are determined by the function parameter lpTokensAmount.\nA final assert(tempusAMM.balanceOf(address(this)) == 0) statement checks that the LP token amount of the contract is zero after the exit.\nThis is only true if no other LP shares were already in the contract.\n\nHowever, an attacker can frontrun this call and send the smallest unit of LP shares to the contract which then makes the original deposit-and-fix transaction fail.\n\n\nAll exitTempusAMM calls can be made to fail and this function becomes unusable.\n\n",
@@ -29,10 +29,10 @@
             {
                 "Name": "M-02",
                 "Location": [
-                    "_depositAndFix",
-                    "assert(yieldShares.balanceOf(address(this)) ==",
                     "depositAndFix",
-                    "swapAmount"
+                    "swapAmount",
+                    "assert(yieldShares.balanceOf(address(this)) ==",
+                    "_depositAndFix"
                 ],
                 "Type": "  depositAndFix  can be made to fail",
                 "Description": "\nThere's a griefing attack where an attacker can make any user transaction for TempusController.depositAndFix fail.\nIn _depositAndFix, swapAmount many yield shares are swapped to principal where swapAmount is derived from the function arguments.\nA final assert(yieldShares.balanceOf(address(this)) == 0) statement checks that the yield shares of the contract are zero after the swap.\nThis is only true if no other yield shares were already in the contract.\n\nHowever, an attacker can frontrun this call and send the smallest unit of yield shares to the contract which then makes the original deposit-and-fix transaction fail.\n\n\nAll depositAndFix calls can be made to fail and this function becomes unusable.\n\n",

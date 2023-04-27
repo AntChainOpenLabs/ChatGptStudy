@@ -8,8 +8,8 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "_delegate()",
                     "delegates",
+                    "_delegate()",
                     "_transferTokens()"
                 ],
                 "Type": " ERC721Checkpointable: delegateBySig allows the user to vote to address 0, which causes the user to permanently lose his vote and cannot transfer his NFT.",

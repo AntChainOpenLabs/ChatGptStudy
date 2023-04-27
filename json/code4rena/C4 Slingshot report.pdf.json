@@ -9,12 +9,12 @@
             {
                 "Name": "C4 Slingshot report.pdf_H-01",
                 "Location": [
-                    "fromToken",
-                    "executeTrades()",
                     "executeTrades(DAI, WETH, 1000, [], 0, alice)",
-                    "executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)",
+                    "executeTrades()",
+                    "fromToken",
+                    "rescueTokens()",
                     "finalAmountMin",
-                    "rescueTokens()"
+                    "executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)"
                 ],
                 "Type": " Incorrectly encoded arguments to executeTrades() can allow tokens to be stolen",
                 "Description": " This finding combines a couple weaknesses into one attack. The first weakness is a lack of validation on arguments to executeTrades, the second is that a pre-existing fromToken balance can be used in a trade:  1. Alice wants to convert 1000 DAI to WETH. She calls executeTrades(DAI, WETH, 1000, [], 0, alice).  2. Since trades is an empty array, and finalAmountMin is 0, the result is that 100 DAI are transferred to the Slingshot contract.  3. Eve (a miner or other 'front runner') may observe this, and immediately call executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve).  4. With a correctly formatted array of TradeData, Eve will receive the proceeds of converting Alice's 1000 DAI to WETH.  This issue is essentially identical to the one described in Ethereum is a Dark Forest, where locked tokens are available to anyone, and thus recovery is susceptible to front running. It also provides an unauthorized alternative to rescueTokens(), however it is still a useful function to have, as it provides a method to recover the tokens without allowing a front runner to simulate and replay it.  ",
@@ -32,11 +32,11 @@
             {
                 "Name": "C4 Slingshot report.pdf_M-02",
                 "Location": [
-                    "fromexecuteTrades",
-                    "rescueToken",
                     "fromToken",
                     "finalAmountMin",
-                    "swap()"
+                    "rescueToken",
+                    "swap()",
+                    "fromexecuteTrades"
                 ],
                 "Type": " Front Running/Sandwich Attacks",
                 "Description": "If tokens are accidently sent to Slingshot, arbitrary trades can be executed and those funds canbe stolen by anyone. This vulnerability impacts the rescueToken functionality and any fundstrapped in Slingshot\u2019s contract. Tokens and/or Eth have a higher likelihood of becoming trappedin Slingshot if finalAmountMin is not utilized properly. Recommend validating parameters inthe calldata passed to modules and ensuring the fromToken and amount parameter fromexecuteTrades is equivalent to the token being swapped and amount passed to swap().Additionally, approval values can be limited to value being traded and cleared after trades areexecuted.",
@@ -70,8 +70,8 @@
             {
                 "Name": "C4 Slingshot report.pdf_M-05",
                 "Location": [
-                    "postUpgrade()",
                     "allonlyAdmin",
+                    "postUpgrade()",
                     "initializeAdmin()"
                 ],
                 "Type": " Admin role lockout",

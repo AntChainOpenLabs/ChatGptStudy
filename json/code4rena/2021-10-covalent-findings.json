@@ -26,11 +26,11 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "setAllocatedTokensPerEpoch()",
+                    "depositRewardTokens",
                     "endEpoch",
+                    "setAllocatedTokensPerEpoch()",
                     "takeOutRewardTokens()",
-                    "allocatedTokensPerEpoch",
-                    "depositRewardTokens"
+                    "allocatedTokensPerEpoch"
                 ],
                 "Type": " reward tokens could get lost due to rounding down",
                 "Description": "\nThe function depositRewardTokens divides the \"amount\" of tokens by allocatedTokensPerEpoch to calculate the endEpoch.\nWhen \"amount\" isn't a multiple of allocatedTokensPerEpoch the result of the division will be rounded down,\neffectively losing a number of tokens for the rewards.\n\nFor example if allocatedTokensPerEpoch is set to 3e18 and \"amount\" is 100e18 then endEpoch will be increased with 33e18 and the last 1e18 tokens are lost.\n\nA similar problem occurs here:\n in setAllocatedTokensPerEpoch(), with the recalculation of endEpoch\n in takeOutRewardTokens(), with the retrieval of tokens\n in _stake(), when initializing endEpoch (e.g. when endEpoch==0)\n\nDelegatedStaking.sol L90-L98(https://github.com/code-423n4/2021-10-covalent/blob/ded3aeb2476da553e8bb1fe43358b73334434737/contracts/DelegatedStaking.sol#L90-L98)\nDelegatedStaking.sol L368-L383(https://github.com/code-423n4/2021-10-covalent/blob/ded3aeb2476da553e8bb1fe43358b73334434737/contracts/DelegatedStaking.sol#L368-L383)\n\n",
@@ -39,8 +39,8 @@
             {
                 "Name": "M-02",
                 "Location": [
-                    "updateGlobalExchangeRate",
-                    "totalGlobalShares"
+                    "totalGlobalShares",
+                    "updateGlobalExchangeRate"
                 ],
                 "Type": " Incorrect  updateGlobalExchangeRate  implementation",
                 "Description": "\nUpdateGlobalExchangeRate has incorrect implementation when totalGlobalShares is zero.\n\nIf any user didn't start stake, totalGlobalShares is 0, and every stake it will increase.\nbut there is possibility that totalGlobalShares can be 0 amount later by unstake or disable validator.\n\nThis is my test case to proof this issue: C4_issues.js L76(https://github.com/xYrYuYx/C4-2021-10-covalent/blob/main/test/c4-tests/C4_issues.js#L76)\n\nIn my test case, I disabled validator to make totalGlobalShares to zero.\nAnd in this case, some reward amount will be forever locked in the contract.\nAfter disable validator, I mined 10 blocks, and 4 more blocks mined due to other function calls,\nSo total 14 CQT is forever locked in the contract.\n\nHardhat test\n\n",

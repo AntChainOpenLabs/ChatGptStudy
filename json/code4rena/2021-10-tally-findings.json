@@ -36,10 +36,10 @@
             {
                 "Name": "M-03",
                 "Location": [
-                    "swapByQuote()",
                     "zrxBuyTokenAddress",
-                    "boughtERC",
-                    "fillZrxQuote"
+                    "swapByQuote()",
+                    "fillZrxQuote",
+                    "boughtERC"
                 ],
                 "Type": " Users can avoid paying fees for ETH swaps",
                 "Description": "\nUsers can call Swap.swapByQuote() to execute an ETH swap (where they receive ETH) without paying swap fee for the gained ETH. They can trick the system by setting zrxBuyTokenAddress to an address of a malicious contract and making it think they have executed an ERC20 swap when they have actually executed an ETH swap. In this case, the system will give them the ETH they got from the swap (boughtETHAmount) without charging any swap fees for it, because the systems consideres this ETH as \"refunded ETH\" that wasn't part of the \"ERC20\" swap.\n\nUsers can execute ETH swap without paying swap fees for the ETH the got from the swap.\n\nThe steps of the attack are:\n\n1.  Deploy a malicious contract (denoted by M), that will be used for zrxBuyTokenAddress.\n2.  Call Swap.swapByQuote() with zrxBuyTokenAddress=M and minimumAmountReceived=0. The rest of the arguments should specify our ETH swap, nothing special here.\n3.  Define M to return 0 and 1 at the first and second times when fillZrxQuote calls zrxBuyTokenAddress.balanceOf(address(this)), respectively.\n4.  As a result, boughtERC20Amount now equals 1 and the function will \"return any refunded ETH\" to the caller, without charging any swap fees on it. This ETH is actually the output of that ETH swap.\n\nManual code review.\n\n",
@@ -57,8 +57,8 @@
             {
                 "Name": "M-01",
                 "Location": [
-                    "feeRecipient",
-                    "transfer()"
+                    "transfer()",
+                    "feeRecipient"
                 ],
                 "Type": " Swap.sol implements potentially dangerous transfer ",
                 "Description": "\nThe use of transfer()  in  Swap.sol   may have unintended outcomes on the eth being sent to the receiver. Eth may be irretrievable or undelivered if the msg.sender   or feeRecipient   is a smart contract. Funds can potentially be lost if;\n\n1.  The smart contract fails to implement the payable fallback function\n2.  The fallback function uses more than 2300 gas units\n\nThe latter situation may occur in the instance of gas cost changes. The impact would mean that any contracts receiving funds would potentially be unable to retrieve funds from the swap.\n\nThis issue directly impacts the following lines of code:\nL257(https://github.com/code-423n4/2021-10-tally/blob/c585c214edb58486e0564cb53d87e4831959c08b/contracts/swap/Swap.sol#L257)\nL173(https://github.com/code-423n4/2021-10-tally/blob/c585c214edb58486e0564cb53d87e4831959c08b/contracts/swap/Swap.sol#L173)\nL158(https://github.com/code-423n4/2021-10-tally/blob/c585c214edb58486e0564cb53d87e4831959c08b/contracts/swap/Swap.sol#L158)\n\nExamples of similar issues ranked as medium can be found here(https://github.com/code-423n4/2021-08-notional-findings/issues/15) and here, just search for 'M04'(https://blog.openzeppelin.com/opyn-gamma-protocol-audit/). A detailed explanation of why relying on payable().transfer() may result in unexpected loss of eth can be found here(https://consensys.net/diligence/blog/2019/09/stop-using-soliditys-transfer-now/)\n\nManual review\n\n",

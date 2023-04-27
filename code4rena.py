@@ -5,42 +5,245 @@ import re
 from bs4 import BeautifulSoup
 import json
 import requests
+import time
 
 from pdf import *
+from Embedding_Vul_Text_for_serarch import *
+from Question_answering_using_embeddings import *
 
 
-test_path = "..\\SolBugReports\\code4rena\\2021-08-gravitybridge"
+# test_path = "..\\SolBugReports\\code4rena\\2021-08-gravitybridge"
+test_path = "..\\SolBugReports\\code4rena\\2021-04-basedloans"
+
 code4rena_path = "..\\SolBugReports\\code4rena"
 
 download_pdf_path = "pdf\\code4rena"
-json_path = "json\\code4rena"
+json_path = "json\\code4rena2"
 txt_path = "txt\\code4rena"
 high_count = 0
 mid_count = 0
 
-def report(dir_path):
 
+def report(dir_path):
     code_paths = read_code_path(dir_path)
-    if not os.path.exists(dir_path + "-findings"): #如果不存在报告目录
+
+    if not os.path.exists(dir_path + "-findings"):  # 如果不存在报告目录
         return
-    pdf_path,file_path = read_md_path(dir_path + "-findings")
+    pdf_path, file_path = read_md_path(dir_path + "-findings")
     if pdf_path == "":
         if file_path != "":
-            read_md(file_path,code_paths)     #直接为md模式
+            # read_md(file_path,code_paths)     #直接为md模式
+            get_md_section(file_path, code_paths)
         else:
             return
     else:
-        read_pdf(pdf_path,code_paths)      #下载pdf模式
+        # read_pdf(pdf_path,code_paths)      #下载pdf模式
         pass
     # result = parse_md_to_json(md_paths, code_paths)
     # 写入JSON文件
     # with open('output.json', 'w') as f:
     #     json.dump(result, f,indent=4)
 
+
+# 根据md提取分段信息
+def get_md_section(file_path, code_paths):
+    start_time = time.time()  # 记录程序开始运行时间
+    # code4rena_sections_file =  open("code4rena_sections.txt", "w+", encoding="utf-8")
+
+    final_json = []
+    json_name = json_path + "\\" + file_path.split("\\")[-3] + ".json"
+    # if os.path.exists(json_name):
+    #     return
+
+    VulnerabilityDesc = {}
+    # SAVE_PATH = json_path + "\\" + "file_path.split("\\")[-3] "+ ".csv"
+    SAVE_PATH = json_path + "\\" + "test" + ".csv"
+
+
+    global high_count, mid_count
+
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+        # 匹配一级标题
+        high_mid = []
+        high = []
+        mid = []
+        try:
+            # 取high
+            if "# High Risk Findings" in content:
+                bugs = re.split('# High Risk Findings', content)[1]
+                if "# Medium Risk Findings" in content:
+                    bugs = re.split('# Medium Risk Findings', bugs)
+                    high = re.split('## \[', bugs[0])[1:]
+
+                    if "# Low Risk Findings" in content:
+                        mid += re.split('## \[', re.split("# Low Risk Findings", bugs[1])[0])[1:]
+
+                elif "# Low Risk Findings" in content:
+                    bugs = re.split('# Low Risk Findings', bugs)
+                    high = re.split('## \[', bugs[0])[1:]
+
+                elif "# Non-Critical Findings" in content:
+                    bugs = re.split('# Non-Critical Findings', bugs)
+                    high = re.split('## \[', bugs[0])[1:]
+                elif "# Disclosures" in content:
+                    bugs = re.split('# Disclosures', bugs)
+                    high = re.split('## \[', bugs[0])[1:]
+
+            elif "# Medium Risk Findings" in content:
+                # 取mid
+                bugs = re.split('# Medium Risk Findings', content)[1]
+                if "# Low Risk Findings" in content:
+                    bugs = re.split('# Low Risk Findings', bugs)
+                    mid = re.split('## \[', bugs[0])[1:]
+                elif "# Non-Critical Findings" in content:
+                    bugs = re.split('# Non-Critical Findings', bugs)
+                    mid = re.split('## \[', bugs[0])[1:]
+                elif "# Disclosures" in content:
+                    bugs = re.split('# Disclosures', bugs)
+                    mid = re.split('## \[', bugs[0])[1:]
+        except:
+            print(file_path)
+            return
+        # 发送到gpt中解析
+        high_mid = high + mid
+        high_count += len(high)
+        mid_count += len(mid)
+
+        # md_sections = []
+        for bug in high_mid:
+            lines = bug.split("\n")
+            head = lines[0].split("]")
+            head1 = "["+head[0][1:]+"]"
+            head2 = head[1].replace("`", " ").replace("**", "")
+
+            # ---------------------------------------------------------------------
+            if head1.startswith("H"):
+                title = ["High Severity", head1, head2]
+            else:
+                title = ["Medium Severity", head1, head2]
+            # title = [head2]
+            index = 1
+            if lines[1].startswith("_Submitted by"):
+                index = 2
+            body = ""
+            for line in lines[index:]:
+                if line.startswith("#"):
+                    continue
+                body += clear_md_line(line)
+
+            # 创建分词csv文件
+            split_sections([(title,body)], SAVE_PATH)
+
+            section = get_section_json(SAVE_PATH)
+            # ---------------------------------------------------------------------
+            #
+            item_json = json.loads(section)
+            bug_json = {
+                "Name": head1 + head2,
+                "Location": "",
+                "Type": "",
+                "Description": "",
+                "Repair": ""
+            }
+            bug_json["Type"] = item_json["Vulnerability Type"]
+            bug_json["Location"] = item_json["Vulnerability Location"].replace("`","")
+            bug_json["Repair"] = item_json["Repair Method"].replace("`","")
+            bug_json["Description"] = item_json["Vulnerability Information"].replace("`","")
+
+            # final_json.append(bug_json)
+
+            # ---------------------------------------------------------------------
+            # 处理code
+            functions = set()  # 通过驼峰命名匹配的函数
+            contracts = set()  # 出现合约名字
+            contracts2 = set() # 通过函数名匹配出现的合约
+
+            for word in bug_json["Location"].split(" "):
+                if word in code_paths.keys():
+                    contracts.add(word)
+                elif word+".sol" in code_paths.keys():
+                    contracts.add(word+".sol")
+                elif  "." in word: #例如MarginRouter.crossSwapExactTokensForTokens的形式
+                    if " " not in word:
+                        temp = word.split(".")
+                        contract = temp[0] + ".sol"
+                        if contract in code_paths.keys(): #如果是合约的代码
+                            contracts.add(contract)
+                        continue
+                elif word.endswith(")"):
+                    functions.add(word.split("(")[0])
+                elif is_camel_case(word):
+                    if word[-1].isalpha():
+                        functions.add(word)
+                    continue
+
+            for func in list(functions):
+                for code_name, code_path in code_paths.items():
+                    try:
+                        with open(code_path, "r", encoding="utf-8") as cd:
+                            code_content = cd.read()
+                            if func in code_content:
+                                contracts2.add(code_name)
+                                break
+                    except:
+                        # print(code_path)
+                        continue
+
+            contracts  = list(set(list(contracts) + list(contracts2)))
+            contracts_name = "/".join(list(contracts))
+            if VulnerabilityDesc.__contains__(contracts_name):
+                VulnerabilityDesc[contracts_name].append(bug_json)
+            else:
+                VulnerabilityDesc[contracts_name] = [bug_json]
+
+
+    # # 将section以json格式存储到文件
+    # json_file = open(json_name, "w+", encoding="utf-8")
+    # json.dump(final_json, json_file, indent=4)
+    # json_file.close()
+
+    # 处理json数据
+    json_file = open(json_name, "w")
+    for sol_names, bug_jsons in VulnerabilityDesc.items():
+        j = {
+            "Code": "",
+            "CodeNames": [],
+            "VulnerabilityDesc": []
+        }
+        sol_names = list(sol_names.split("/"))
+        codes = ""
+        # 拼接code
+        for sol_name in sol_names:
+            if sol_name not in code_paths.keys():
+                continue
+            sol_path = code_paths[sol_name]
+            with open(sol_path, "r", encoding="utf-8") as sol:
+                codes += sol.read() + "\n\n"
+        j["Code"] = codes
+        j["CodeNames"] = sol_names
+        j["VulnerabilityDesc"] = bug_jsons
+
+        # json.dump(j,json_file,indent=4)
+        # json_file.write("\n")
+        final_json.append(j)
+    json.dump(final_json, json_file, indent=4)
+
+    json_file.close()
+
+    end_time = time.time()  # 记录程序结束运行时间
+    print('cost %f second' % (end_time - start_time))
+
+
+
+
+# 根据md提取漏洞信息
 def read_md(file_path,code_paths):
     VulnerabilityDesc = {}
 
     json_name = json_path + "\\" + file_path.split("\\")[-3] + ".json"
+
 
     global high_count,mid_count
 
@@ -461,14 +664,16 @@ def is_camel_case(word):
     non_alpha_regex = re.compile(r'[^a-zA-Z]')
     # 检查单词是否包含下划线
     if '_' in word:
+        return True
+    if not any([c for c in word if c.isupper()]) or not any([c for c in word if c.islower()]):
         return False
-    if not any([c for c in word if c.isupper()]):
-        return False
-    if word[0].isupper():
-        return False
+    # if word[0].isupper():
+        # return False
     # 按大写字母拆分单词
-    words = non_alpha_regex.sub(' ', word).split()
+    words = re.findall('[A-Z][^A-Z]*', word)
     # 检查单词是否都是首字母大写
+    if len(words) <2 :
+        return False
     return all(w[0].isupper() for w in words[1:])
 
 
@@ -702,5 +907,14 @@ if __name__ == "__main__":
     print("total report: " + str(count))
     print("high: " + str(high_count))
     print("mid: " + str(mid_count))
+
     # report(test_path)
+
+    # pdf_sections = []
+    # with open("code4rena_sections.txt", "r", encoding="utf=8") as f:
+    #     data = json.load(f)
+    #     for item in data:
+    #         pdf_sections.append((item["title"],item["body"]))
+    #     print()
+    # print()
 

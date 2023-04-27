@@ -1,0 +1,31 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Name": "[M-01] Loans of tokens with >18 decimals can result in incorrect collateral calculation",
+                "Location": "collateralRequiredForDrawdown function in LoanLib.sol",
+                "Type": "Incorrect Calculation",
+                "Description": "Loans of tokens with >18 decimals can result in incorrect collateral calculation, causing an underflow to the power of 10 which will cause the division to yield 0 and thus cause the Loan to calculate 0 as collateral required for the loan.",
+                "Repair": "Applying the same paradigm as _toWad or requiring that the token have <= 18 decimals"
+            },
+            {
+                "Name": "[M-02] Potential huge arbitrage opportunities / MPL price decrease",
+                "Location": "Protocol default handling",
+                "Type": "Arbitrage",
+                "Description": "Potential huge arbitrage opportunities / MPL price decrease",
+                "Repair": "Hard to completely mitigate. Pool delegates should be especially careful when giving out high-value loans and demand high collateral lockup."
+            },
+            {
+                "Name": "[M-03] Bypass or reduction on the lockup period of Pool FDTs.",
+                "Location": "Pool.sol",
+                "Type": "Bypass or reduction of lockup period",
+                "Description": "The lockup restriction of withdrawal (Pool.sol#396) can be bypassed or reduced if new liquidity providers cooperate with existing ones.",
+                "Repair": "Forcing users to wait for the lockup period when transferring FDT to others or let the depositDate variable record the timestamp of the last operation instead of a weighted timestamp."
+            }
+        ]
+    }
+]

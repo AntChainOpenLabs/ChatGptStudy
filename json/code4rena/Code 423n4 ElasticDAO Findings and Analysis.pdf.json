@@ -46,8 +46,8 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_H-02",
                 "Location": [
-                    "models/Ecosystem",
-                    "daoModelAddress"
+                    "daoModelAddress",
+                    "models/Ecosystem"
                 ],
                 "Type": " Infinite minting of tokens by exploiting eternal storage pattern on Ecosystem.sol",
                 "Description": " A similar exploit is possible because of the models/Ecosystem.sol eternal storage contract. Attackers can change the expected address to their own address while bypassing the authorization check for this function. This allows the attacker to change the DAO ecosystem data.   Gaining full access to the DAO ecosystem data is also possible by changing the daoModelAddress field to an attacker-controlled proxy contract. This attack vector allows attackers to mint infinite tokens for themselves and potentially break all DAOs created by the ElasticDAO system.   ElasticDAO: Confirmed and resolved in PR #43   ",
@@ -67,8 +67,8 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_H-04",
                 "Location": [
-                    "services/Configurator",
-                    "buildToken"
+                    "buildToken",
+                    "services/Configurator"
                 ],
                 "Type": " Configurator contract allows infinite minting of tokens",
                 "Description": " Even if a configurator address is hard-coded in the Ecosystem.sol contract, attackers can call the buildToken function on the services/Configurator.sol contract and change nearly all of the parameters to be attacker-controlled. The attacker bypasses the authorization check and gains write access to fields of the DAO ecosystem.   ElasticDAO: Confirmed and resolved in PR #43   ",
@@ -105,10 +105,10 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_H-06",
                 "Location": [
+                    "transferFrom",
                     "Approval(from, msg.sender, _allowances[_from][msg.sender])",
-                    "emitApproval",
                     "Approval(msg.sender, _to, _allowances[_from][msg.sender])",
-                    "transferFrom"
+                    "emitApproval"
                 ],
                 "Type": " Incorrect event parameters in transferFrom function",
                 "Description": " The emitApproval event should occur when the msg.sender is not equal to _from. The event should be emit Approval(from, msg.sender, _allowances[_from][msg.sender]); instead of emit Approval(msg.sender, _to, _allowances[_from][msg.sender]). This error may negatively impact off-chain tools that are monitoring critical transfer events of the governance token.   ElasticDAO: Confirmed and resolved in PR #77   ",
@@ -117,9 +117,9 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_M-02",
                 "Location": [
-                    "numberOfTokenHolders",
                     "timeupdateNumberOfTokenHolders",
-                    "updateNumberOfTokenHolders"
+                    "updateNumberOfTokenHolders",
+                    "numberOfTokenHolders"
                 ],
                 "Type": " Anyone can update the number of token holders",
                 "Description": "The updateNumberOfTokenHolders function in the ElasticGovernanceToken.sol doesnot verify the caller. Anyone could call this function and set the value to 0 . While this does notput funds at risk, an attacker could set the value of numberOfTokenHolders to MAX_UINT ,resulting in an overflow and a reverted transaction the next timeupdateNumberOfTokenHolders is called to to increment this number.ElasticDAO: Confirmed and resolved in PR #53",
@@ -128,10 +128,10 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_M-06",
                 "Location": [
-                    "approve()",
                     "theincreaseAllowance",
-                    "theapprove()",
-                    "decreaseAllowance"
+                    "decreaseAllowance",
+                    "approve()",
+                    "theapprove()"
                 ],
                 "Type": " Double-spend allowance",
                 "Description": "A malicious attacker can execute a double-spend attack on an allowance by front-running theexecution of an approve() function that alters the state of a balance. Since theincreaseAllowance and decreaseAllowance functions provide the same functionality, theapprove() function is an unnecessary attack vector that can present significant risk.ElasticDAO: This issue is present in most ERC20 tokens and very few choose to take therecommended mitigation step. We've chosen to go with expected behaviour instead ofremoving a function that is part of the spec.\u201d",
@@ -168,9 +168,9 @@
             {
                 "Name": "Code 423n4 ElasticDAO Findings and Analysis.pdf_M-01",
                 "Location": [
-                    "collectFees",
                     "callcollectFees",
-                    "feeAddress"
+                    "feeAddress",
+                    "collectFees"
                 ],
                 "Type": " No check to prevent fee burning",
                 "Description": "The collectFees function sends fees to a feeAddress in storage, however, there is currentlyno check to validate whether or not feeAddress has been initialized. An attacker can callcollectFees to send the fees to the zero address, making recovery impossible. This attackcould be used against new DAOs to burn their main revenue besides the token market.ElasticDAO: Confirmed and resolved in PR #42",

@@ -9,10 +9,10 @@
             {
                 "Name": "H-01",
                 "Location": [
-                    "executeSwaps()",
-                    "receivingAssetId",
+                    "SwapData",
                     "swapTokensGeneric()",
-                    "SwapData"
+                    "executeSwaps()",
+                    "receivingAssetId"
                 ],
                 "Type": " Reliance on  lifiData.receivingAssetId  can cause loss of funds",
                 "Description": "\nGenericSwapFacet.sol#L23-L30(https://github.com/code-423n4/2022-03-lifinance/blob/699c2305fcfb6fe8862b75b26d1d8a2f46a551e6/src/Facets/GenericSwapFacet.sol#L23-L30)<br\n\nIn the swapTokensGeneric() function, an arbitrary number of swaps can be performed from and to various tokens. However, the final balance that is sent to the user relies on _lifiData.receivingAssetId which has no use in the swapping functionality. LifiData is claimed to be used purely for analytical reasons per the comments to this function. If this value is input incorrectly, the swapped tokens will simply sit in the contract and be lost to the user.\n\n\nImagine a call to swapTokensGeneric() with the following parameters (excluding unnecessary parameters for this example):\n\n*   LifiData.receivingAssetId = '0xUSDC_ADDRESS'\n\nSingle SwapData array:\n\n*   LibSwap.SwapData.sendingAssetId = '0xWETH_ADDRESS'\n*   LibSwap.SwapData.receivingAssetId = '0xDAI_ADDRESS'\n\nSince the receivingAssetId from SwapData does not match the receivingAssetId from LifiData, the final funds will not be sent to the user after the swap is complete, based on the following lines of code:\n\n    uint256 receivingAssetIdBalance = LibAsset.getOwnBalance(_lifiData.receivingAssetId);\n\n     _executeSwaps(_lifiData, _swapData);\n\n     uint256 postSwapBalance = LibAsset.getOwnBalance(_lifiData.receivingAssetId) receivingAssetIdBalance;\n\n     LibAsset.transferAsset(_lifiData.receivingAssetId, payable(msg.sender), postSwapBalance);\n\nLines 1, 3, and 4 reference LifiData.receivingAssetId and handle the transfer of funds following the swaps. Line 2 performs the swap, referencing SwapData.receivingAssetId as can be seen in the executeSwaps() function definition:\n\n    function _executeSwaps(LiFiData memory _lifiData, LibSwap.SwapData[] calldata _swapData) internal {\n            // Swap\n            for (uint8 i; i < _swapData.length; i++) {\n                require(\n                    ls.dexWhitelist[_swapData[i].approveTo] == true && ls.dexWhitelist[_swapData[i].callTo] == true,\n                    \"Contract call not allowed!\"\n                );\n\n                LibSwap.swap(_lifiData.transactionId, _swapData[i]);\n            }\n        }\n\n",

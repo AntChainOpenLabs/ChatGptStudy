@@ -9,31 +9,11 @@ import pandas as pd  # for storing text and embeddings data
 import tiktoken  # for counting tokens
 from scipy import spatial  # for calculating vector similarities for search
 
-
 # models
 EMBEDDING_MODEL = "text-embedding-ada-002"
 GPT_MODEL = "gpt-3.5-turbo"
-
 openai.api_key = "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"
 
-
-embeddings_path = "./data/pdf_test.csv"
-
-df = pd.read_csv(embeddings_path)
-
-
-# In[5]:
-
-
-# convert embeddings from CSV str type back to list type
-df['embedding'] = df['embedding'].apply(ast.literal_eval)
-
-
-# In[6]:
-
-
-# the dataframe has two columns: "text" and "embedding"
-df
 
 
 # ## 2. Search
@@ -70,12 +50,6 @@ def strings_ranked_by_relatedness(
     strings, relatednesses = zip(*strings_and_relatednesses)
     return strings[:top_n], relatednesses[:top_n]
 
-
-# In[8]:
-
-
-# examples
-openai.api_key = "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"
 
 # ## 3. Ask
 # 
@@ -123,7 +97,7 @@ def query_message(
 
 def ask(
     query: str,
-    df: pd.DataFrame = df,
+    df: pd.DataFrame,
     model: str = GPT_MODEL,
     token_budget: int = 4096 - 500,
     print_message: bool = False,
@@ -145,4 +119,33 @@ def ask(
     return response_message
 
 
-print(ask('Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows: {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": "" }'))
+def get_section_json(embeddings_path):
+    df = pd.read_csv(embeddings_path)
+
+    df['embedding'] = df['embedding'].apply(ast.literal_eval)
+
+    answer = ask(
+        'Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows: {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": "" }',
+        df)
+    # print(answer)
+    return answer
+
+
+if __name__ == "__main__":
+
+
+    # embeddings_path = "./data/pdf_test.csv"
+    embeddings_path =  r"json/code4rena2/2021-08-gravitybridge-findings.csv"
+    df = pd.read_csv(embeddings_path)
+
+    # In[5]:
+
+    # convert embeddings from CSV str type back to list type
+    df['embedding'] = df['embedding'].apply(ast.literal_eval)
+
+    # In[6]:
+
+    # the dataframe has two columns: "text" and "embedding"
+
+    print(ask(
+        'Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows: {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": "" }',df))
