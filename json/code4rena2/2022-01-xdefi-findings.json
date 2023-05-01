@@ -8,14 +8,14 @@
             {
                 "Location": "_safeMint function and updateDistribution function",
                 "Type": "Reentrancy",
-                "Description": "There is a reentrancy vulnerability in the _safeMint function that can allow an attacker to steal all rewards. The vulnerability can be exploited by calling the lock function to get the NFT before exploiting the reentrance vulnerability. The unlock function can then be called to steal a lot of rewards, and the assets deposited by the user using the reentrance vulnerability can also be redeemed by calling the unlock function.",
-                "Repair": "Move the _safeMint function call to the end of its respective operation to prevent the effect of the re-entrancy. Call updateDistribution function before each locking and unlocking function via a modifier. Tests should be added to ensure that this is no longer exploitable."
+                "Description": "There is a reentrancy vulnerability in the _safeMint function that can allow an attacker to steal all rewards. The vulnerability can be exploited by re-entering the updateDistribution function in the _safeMint function. Since the value of totalDepositedXDEFI is not updated at this time, the _pointsPerUnit variable will become abnormally large. If the attacker calls the lock function to get the NFT before exploiting the reentrance vulnerability, then the unlock function can be called to steal a lot of rewards, and the assets deposited by the user using the reentrance vulnerability can also be redeemed by calling the unlock function.",
+                "Repair": "Move the _safeMint function call to the end of its respective operation to prevent the effect of the re-entrancy. Call updateDistribution function before each locking and unlocking function. Add tests to ensure that the vulnerability is no longer exploitable."
             },
             {
                 "Location": "updateDistribution() function",
                 "Type": "Arithmetic overflow/underflow",
                 "Description": "A malicious early user can lock with only 1 wei of XDEFI and make _pointsPerUnit very large, causing future users not to be able to lock and/or unlock anymore due to overflow in arithmetic related to _pointsMultiplier. As a result, the contract can malfunction and even freeze users' funds in edge cases.",
-                "Repair": "Reduce _pointsMultiplier to uint256(296) or enforce a minimum units locked to prevent dust from creating a very high _pointsPerUnit. Also, implement an emergency mode that disables reward math in case of an edge case."
+                "Repair": "Reduce _pointsMultiplier to uint256(296) or enforce a minimum units locked to prevent dust from creating a very high _pointsPerUnit. Also, implement an emergency mode setter that allows users to withdraw only their deposits without any of the funds distribution math from being expected."
             },
             {
                 "Location": "_generateNewTokenId() function",

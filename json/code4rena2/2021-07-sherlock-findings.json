@@ -56,7 +56,7 @@
             {
                 "Location": "_doSherX function",
                 "Type": "_doSherX optimistically assumes premiums will be paid",
-                "Description": "The amounts = LibSherX.calcUnderlying(totalSherX) array is an optimistic view assuming all outstanding, accrued premiums would indeed be paid until now.",
+                "Description": "The amounts array is an optimistic view assuming all outstanding, accrued premiums would indeed be paid until now.",
                 "Repair": "Attempt to pay off the accrued premiums for all tokens, not just the ones that would otherwise revert the tx"
             }
         ]
@@ -71,7 +71,7 @@
                 "Location": "SherX.sol line 309",
                 "Type": "Yield distribution after large payout seems unfair",
                 "Description": "When a large payout occurs, it will lower unallocatedSherX. The first couple of users will be able to get their full Yield, until the moment unallocatedSherX is depleted. The next users don't get any yield at all.",
-                "Repair": "Give the yields partly if unallocatedSherX is insufficient to provide for all the yields"
+                "Repair": "If unallocatedSherX is insufficient to provide for all the yields, only give the yields partly (so that each user gets their fair share)"
             }
         ]
     }

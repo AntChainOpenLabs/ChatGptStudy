@@ -7,15 +7,15 @@
         "VulnerabilityDesc": [
             {
                 "Location": "PoolCommiter.commit() function",
-                "Type": "Inconsistent state",
-                "Description": "Deposits don't work with fee-on transfer tokens",
-                "Repair": "Measure the asset change right before and after the asset-transferring routines"
+                "Type": "Inconsistency with fee-on-transfer tokens",
+                "Description": "The PoolCommiter.commit() function will store the entire amount in the commitment but with fee-on-transfer tokens, fewer tokens will be transferred which leads to inconsistencies with the pool.longBalance() and in uncommit. One possible mitigation is to measure the asset change right before and after the asset-transferring routines.",
+                "Repair": "Avoid using fee-on-transfer or rebasing tokens"
             },
             {
                 "Location": "PoolCommitter._uncommit function",
                 "Type": "Sending tokens to the wrong user",
-                "Description": "uncommit sends tokens to the wrong user",
-                "Repair": "Instead of msg.sender, use _commit.owner"
+                "Description": "The _uncommit function sends tokens to the wrong user because it calls the ILeveragedPool(leveragedPool).quoteTokenTransfer/mintTokens function with msg.sender, which is the pool, not the commit owner.",
+                "Repair": "Instead of using msg.sender, use _commit.owner"
             },
             {
                 "Location": "PoolKeeper.keeperReward computation",

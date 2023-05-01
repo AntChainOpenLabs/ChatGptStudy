@@ -6,34 +6,34 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "function _sendBadgerToTree(uint256 amount) internal {",
-                "Type": "Double Transfer",
-                "Description": "If the contract receives rewards from the hidden hand marketplace in BADGER then the contract tries to transfer the same amount of tokens twice to two different accounts, once with _sendBadgerToTree() in MyStrategy and again with _processExtraToken() in the BasicStrategy contract.",
-                "Repair": "Remove the second transfer in the function _sendBadgerToTree()"
-            },
-            {
-                "Location": "function _harvest()",
-                "Type": "No Slippage Protection",
+                "Location": "MyStrategy.sol#L249 and MyStrategy.sol#L275",
+                "Type": "slippage protection vulnerability",
                 "Description": "Single swaps of _harvest contains no slippage or deadline, which makes it vulnerable to sandwich attacks, MEV exploits and may lead to significant loss of yield.",
-                "Repair": "Add slippage protection or use an aggregator like Cowswap"
+                "Repair": "Pass a minimum amount of AURA that the swap is supposed to get in harvest or use an aggregator like Cowswap"
             },
             {
-                "Location": "function sweepRewardToken(address token) public nonReentrant {",
+                "Location": "MyStrategy.sol#L428-L430",
+                "Type": "reentrancy vulnerability",
+                "Description": "If the contract receives rewards from the hidden hand marketplace in BADGER then the contract tries to transfer the same amount of tokens twice to two different accounts, once with _sendBadgerToTree() in MyStrategy and again with _processExtraToken() in the BasicStrategy contract.",
+                "Repair": "Remove the second transfer of BADGER tokens in _sendBadgerToTree() function"
+            },
+            {
+                "Location": "MyStrategy.sol#L184-L187",
+                "Type": "denial of service vulnerability",
+                "Description": "By locking a small amount of want tokens via AuraLocker.lock with the strategy address, a malicious individual can cause DoS and prevent withdrawing and migrating funds to the vault.",
+                "Repair": "Call LOCKER.processExpiredLocks(false); in MyStrategy._withdrawAll directly and remove the check which enforces unlocking all want tokens on L184-L187"
+            },
+            {
+                "Location": "sweepRewardToken() function",
                 "Type": "Loss of Funds",
-                "Description": "If the value of bribesProcessor was 0x0 (the default is 0x0 and governance()  can set to 0x0) then attacker can call sweepRewardToken() make contract to send his total balance in attacker specified token to 0x0 address.",
-                "Repair": "Add a check that bribesProcessor is not equal to 0x0 before transferring funds"
+                "Description": "Attacker can call sweepRewardToken() when bribesProcessor==0 and reward funds will be lost because there is no check in sweepRewardToken() and _handleRewardTransfer() and _sendTokenToBribesProcessor()",
+                "Repair": "Add a check to ensure that bribesProcessor is not set to 0x0 before transferring reward tokens"
             },
             {
-                "Location": "MyStrategy._withdrawAll function",
-                "Type": "DoS attack",
-                "Description": "Withdrawing all funds at once to vault can be DoS attacked by frontrunning and locking dust.",
-                "Repair": "Call LOCKER.processExpiredLocks(false) in MyStrategy._withdrawAll directly and remove the check which enforces unlocking all want tokens on L184-L187"
-            },
-            {
-                "Location": "MyStrategy._harvest() function and claimBribesFromHiddenHand() call",
-                "Type": "Token stuck in contract",
-                "Description": "auraBAL can be stuck into the Strategy contract.",
-                "Repair": "Instead of calculating the balance before and after the claim, for both harvest and claimBribesFromHiddenHand(), the whole balance could be taken, directly after the claim"
+                "Location": "_harvest() and claimBribesFromHiddenHand() functions",
+                "Type": "Token Stuck",
+                "Description": "auraBAL can be stuck into the Strategy contract and not counted as earned during the next _harvest() or claimBribesFromHiddenHand() call",
+                "Repair": "Refactor from a delta of balance to absolute balances"
             }
         ]
     }

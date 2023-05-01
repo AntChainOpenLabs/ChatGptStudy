@@ -7,145 +7,127 @@
         "VulnerabilityDesc": [
             {
                 "Location": "TridentNFT.permit function",
-                "Type": "Ignoring zero address check",
+                "Type": "Medium Severity",
                 "Description": "If a user accidentally set the zero address as the operator, tokens can be stolen by anyone as a wrong signature yield recoveredAddress == 0.",
                 "Repair": "Change the require logic to recoveredAddress != address(0) && (recoveredAddress == owner) || isApprovedForAll[owner][recoveredAddress])"
             },
             {
                 "Location": "ConcentratedLiquidityPoolManager.sol#L90-L94",
-                "Type": "Possible attacks on staking contract",
-                "Description": "This is a possible line of attack on the staking contract, in particular the claimReward() function.",
+                "Type": "High Severity",
+                "Description": "Possible attacks on Seconds * Liquidity calculation.",
                 "Repair": "Lock the positions during a set time while they are staked."
             },
             {
-                "Location": "ConcentratedLiquidityPoolManager",
-                "Type": "Incentives can be stolen",
-                "Description": "The reclaimIncentive function does not reduce the incentive.rewardsUnclaimed field and thus one can reclaim tokens several times.",
+                "Location": "ConcentratedLiquidityPoolManager.reclaimIncentive function",
+                "Type": "High Severity",
+                "Description": "ConcentratedLiquidityPoolManager's incentives can be stolen.",
                 "Repair": "In reclaimIncentive, reduce incentive.rewardsUnclaimed by the withdrawn amount."
             },
             {
-                "Location": "ConcentratedLiquidityPoolManager.addIncentive function",
-                "Type": "Adding incentive that already has a non-zero secondsClaimed",
-                "Description": "The addIncentive function can add an incentive that already has a non-zero incentive.secondsClaimed.",
+                "Location": "Incentive.addIncentive function",
+                "Type": "Medium Severity",
+                "Description": "Incentive should check that it hasn't started yet.",
                 "Repair": "Add a check: require(incentive.secondsClaimed == 0, '!secondsClaimed')"
             },
             {
-                "Location": "Not applicable",
-                "Type": "Incentives for different pools should differ by a large factor",
-                "Description": "The staking protocol would value the liquidity per second of each LP situation equally.",
-                "Repair": "Make sure the developers are at least aware of something like this when choosing incentive amounts for different pools. Carefully choose incentive amounts for each pool."
-            },
-            {
                 "Location": "ConcentratedLiquidityPoolManager.subscribe, getReward, and claimReward functions",
-                "Type": "Wrong usage of positionId",
-                "Description": "In the subscribe function of ConcentratedLiquidityPoolManager, the incentive to subscribed is determined using positionId instead of incentiveId.",
+                "Type": "Medium Severity",
+                "Description": "Wrong usage of positionId in ConcentratedLiquidityPoolManager.",
                 "Repair": "Change positionId to incentiveId in the referenced lines of code."
             },
             {
-                "Location": "ConcentratedLiquidityPoolManager.sol claimReward() and reclaimIncentive()",
+                "Location": "Incentives for different pools",
                 "Type": "Medium Severity",
-                "Description": "When a user calls claimReward(), the contract may not have enough balance to pay (it supposed to have it), cause the transaction to fail. The same issue applies to reclaimIncentive() as well.",
-                "Repair": "Disallow adding token0 or token1 as incentives or keep a record of total remaining incentive amounts for the incentive tokens and avoid consuming these revered balances when collect()"
+                "Description": "Incentives for different pools should differ by a large factor.",
+                "Repair": "Make sure the developers are at least aware of something like this when choosing incentive amounts for different pools. Carefully choose incentive amounts for each pool."
             },
             {
-                "Location": "ConcentratedLiquidityPosition.sol burn()",
-                "Type": "High Severity",
-                "Description": "An attacker could exploit this bug to mint a large amount of liquidity but only pay a little of token0 or token1 to the pool and effectively steal other's funds when burning his liquidity.",
-                "Repair": "Make ConcentratedLiquidityPosition.sol burn() always use address(this) as recipient and transfer proper amounts to the user"
-            },
-            {
-                "Location": "_getAmountsForLiquidity function of ConcentratedLiquidityPool",
-                "Type": "High Severity",
-                "Description": "An attacker could exploit this bug to mint a large amount of liquidity but only pay a little of token0 or token1 to the pool and effectively steal other's funds when burning his liquidity.",
-                "Repair": "Check whether the result of DyDxMath.getDy or DyDxMath.getDx exceeds type(uint128).max or not. If so, then revert the transaction. Or consider using the SafeCast library from OpenZeppelin instead."
-            },
-            {
-                "Location": "ConcentratedLiquidityPool.mint function",
-                "Type": "integer overflow",
-                "Description": "The mint function of ConcentratedLiquidityPool allows integer overflows when checking the balance is larger or equal to the received amount of token plus the reserve.",
-                "Repair": "Consider removing the unchecked statement to check for integer overflow or casting both amount1Actual and reserve1 to type uint256 before adding them and comparing to the _balance(token)."
+                "Location": "ConcentratedLiquidityPoolManager.sol, ConcentratedLiquidityPosition.sol, ConcentratedLiquidityPool.sol",
+                "Type": "smart contract vulnerability",
+                "Description": "Multiple vulnerabilities in the smart contract code of the Concentrated Liquidity Pool of SushiSwap, including integer overflow, incorrect usage of typecasting, and wrong implementation, which could allow attackers to steal yield or funds from the pool.",
+                "Repair": "Check whether the result of DyDxMath.getDy or DyDxMath.getDx exceeds type(uint128).max or not. If so, then revert the transaction. Or consider using the SafeCast library from OpenZeppelin instead. Consider removing the unchecked statement to check for integer overflow or casting both amount1Actual and reserve1 to type uint256 before adding them and comparing to the _balance(token). Consider making ConcentratedLiquidityPosition.sol#burn() always use address(this) as recipient and transfer proper amounts to the user. Make adding token0 or token1 as incentives disallowed, or keep a record of total remaining incentive amounts for the incentive tokens and avoid consuming these revered balances when collect()."
             },
             {
                 "Location": "ConcentratedLiquidityPool.burn function",
                 "Type": "unsafe cast",
-                "Description": "The ConcentratedLiquidityPool.burn function performs an unsafe cast of a uint128 type to a *signed* integer.",
-                "Repair": "A SafeCast library must be used everywhere a typecast is done."
+                "Description": "The burn function performs an unsafe cast of a uint128 type to a *signed* integer.",
+                "Repair": "Use SafeCast library everywhere a typecast is done"
             },
             {
                 "Location": "ConcentratedLiquidityPoolManager.claimReward function",
-                "Type": "missing initialization",
-                "Description": "The ConcentratedLiquidityPoolManager.claimReward requires stake.initialized but it is never set.",
-                "Repair": "Check whether the rewards exceeds the incentive.rewardsUnclaimed. If so, then send only incentive.rewardsUnclaimed amount of rewards to the user."
+                "Type": "uninitialized variable",
+                "Description": "The claimReward function requires stake.initialized but it is never set.",
+                "Repair": "Set stake.initialized before calling claimReward function"
             },
             {
                 "Location": "ConcentratedLiquidityPool.burn function",
-                "Type": "missing update",
-                "Description": "The ConcentratedLiquidityPool.burn function sends out amount0/amount1 tokens but only updates the reserves by decreasing it by the fees of these amounts.",
-                "Repair": "The reserve should be decreased by what is transferred out. In burn's case this is amount0 / amount1."
+                "Type": "incorrect variable update",
+                "Description": "The burn function sends out amount0/amount1 tokens but only updates the reserves by decreasing it by the fees of these amounts.",
+                "Repair": "Decrease the reserve by what is transferred out"
             },
             {
-                "Location": "ConcentratedLiquidityPoolManager.claimReward function",
+                "Location": "ConcentratedLiquidityPoolManager.claimReward and getReward functions",
                 "Type": "integer underflow",
                 "Description": "There could be an integer underflow error when the reward of an incentive is claimed, forcing users to wait for a sufficient period or reduce their liquidity to claim the rewards.",
-                "Repair": "Check whether the rewards exceeds the incentive.rewardsUnclaimed. If so, then send only incentive.rewardsUnclaimed amount of rewards to the user."
+                "Repair": "Check whether the rewards exceeds the incentive.rewardsUnclaimed"
+            },
+            {
+                "Location": "ConcentratedLiquidityPool.mint/burn functions",
+                "Type": "incorrect variable update",
+                "Description": "The mint/burn functions add/remove liquidity when (priceLower < currentPrice && currentPrice < priceUpper). Shouldn't it also be changed if priceLower == currentPrice?",
+                "Repair": "Change the inequalities to if (priceLower <= currentPrice && currentPrice < priceUpper)"
+            },
+            {
+                "Location": "ConcentratedLiquidityPool.secondsPerLiquidity variable",
+                "Type": "incorrect variable update",
+                "Description": "secondsPerLiquidity should be modified whenever pool liquidity changes.",
+                "Repair": "Update secondsPerLiquidity prior to the change in liquidity"
+            },
+            {
+                "Location": "ConcentratedLiquidityPool.rangeFeeGrowth and rangeSecondsInside functions",
+                "Type": "unsafe math",
+                "Description": "The fee growth mechanism, and by extension, secondsPerLiquidity mechanism of Uniswap V3 has the ability to underflow. It is therefore a necessity for the math to (ironically) be unsafe / unchecked.",
+                "Repair": "Use unchecked math"
             },
             {
                 "Location": "RangeFeeGrowth function in ConcentratedLiquidityPool.sol",
                 "Type": "range fee growth underflow",
-                "Description": "The function RangeFeeGrowth would revert the transaction in some cases.",
-                "Repair": "It's either modify the tick's algo or RangeFeeGrowth. The quick-fix I come up with is to deal with the fee in RangeFeeGrowth. However, I recommend the team to go through tick's logic again."
+                "Description": "The function RangeFeeGrowth would revert the transaction in some cases when a pool crosses a tick, and feeGrowthBelow + feeGrowthAbove is not necessarily smaller than _feeGrowthGlobal.",
+                "Repair": "Modify the tick's algorithm or RangeFeeGrowth function"
             },
             {
-                "Location": "Ticks.cross()",
-                "Type": "Incorrect fee accounting",
-                "Description": "The logic in Ticks.cross() is reversed, causing wrong fee accounting.",
+                "Location": "ConcentratedLiquidityPool.sol and Ticks.sol",
+                "Type": "incorrect feeGrowthGlobal accounting when crossing ticks",
+                "Description": "Swap fees are taken from the output, but the logic in Ticks.cross() is reversed, causing wrong fee accounting.",
                 "Repair": "Switch the 0 and 1 in Ticks.cross()"
             },
             {
-                "Location": "ConcentratedLiquidityPosition.sol#collect()",
-                "Type": "Double yield collection",
-                "Description": "Users may get double the amount of yield when they call collect() before burn().",
-                "Repair": "Call position.pool.collect() before position.pool.burn() in ConcentratedLiquidityPosition.sol#burn() or change ConcentratedLiquidityPosition.sol#collect() into a public method and call it after position.pool.burn() in ConcentratedLiquidityPosition.sol#burn()"
+                "Location": "ConcentratedLiquidityPosition.sol",
+                "Type": "double yield when calling collect() before burn()",
+                "Description": "When a user calls ConcentratedLiquidityPosition.sol#collect() to collect their yield, they may get double the amount of yield when they call burn() to remove liquidity, which dilutes the yield belonging to other users.",
+                "Repair": "Make ConcentratedLiquidityPosition.sol#burn() call position.pool.collect() before position.pool.burn(), or change ConcentratedLiquidityPosition.sol#collect() into a public method and call it after position.pool.burn()"
             },
             {
-                "Location": "ConcentratedLiquidityPool.mint/burn functions",
-                "Type": "Incorrect liquidity addition/removal",
-                "Description": "The mint/burn functions do not work correctly when currentPrice is right at the lower price range.",
-                "Repair": "Change the inequalities to if (priceLower <= currentPrice && currentPrice < priceUpper)"
+                "Location": "ConcentratedLiquidityPool.sol",
+                "Type": "wrong implementation",
+                "Description": "The reserves are not updated correctly when LP tokens are burned, causing essential features of the contract to malfunction.",
+                "Repair": "Change reserve0 and reserve1 in ConcentratedLiquidityPool.burn() to subtract amount0 and amount1 instead of amount0fees and amount1fees"
             },
             {
-                "Location": "rangeFeeGrowth() and rangeSecondsInside() functions",
-                "Type": "Unchecked math",
-                "Description": "The fee growth mechanism has the ability to underflow.",
-                "Repair": "Make rangeFeeGrowth() and rangeSecondsInside() unchecked. Also, make the subtraction of feeGrowthInside values unchecked in _updatePosition() and ConcentratedLiquidityPosition#collect()."
+                "Location": "ConcentratedLiquidityPool.sol",
+                "Type": "initialPrice should be checked to be within allowable range",
+                "Description": "No check is performed for the initial price, which can prevent the usability of all other functions.",
+                "Repair": "Check that initialPrice is within the acceptable range"
             },
             {
-                "Location": "ConcentratedLiquidityPool.mint/burn functions",
-                "Type": "Incorrect secondsPerLiquidity calculation",
-                "Description": "secondsPerLiquidity should be modified whenever pool liquidity changes.",
-                "Repair": "Calculate and use the latest secondsPerLiquidity value in Ticks.insert(). Apply the secondsPerLiquidity increment logic prior to liquidity addition in mint() and removal in burn()."
+                "Location": "High Severity section",
+                "Type": "Understanding vulnerability",
+                "Description": "Explanation of the fee growth mechanism and why using nearestTick as the reference point for fee growth calculations instead of the pool tick might not be a wise choice.",
+                "Repair": "N/A"
             },
             {
-                "Location": "ConcentratedLiquidityPool.burn() function",
-                "Type": "Wrong implementation",
-                "Description": "The reserves should be updated once LP tokens are burned to match the actual total bento shares hold by the pool. However, the current implementation only updated reserves with the fees subtracted.",
-                "Repair": "Change the code from 'reserve0 -= uint128(amount0fees); reserve1 -= uint128(amount1fees);' to 'reserve0 -= uint128(amount0); reserve1 -= uint128(amount1);'"
-            },
-            {
-                "Location": "ConcentratedLiquidityPool contract, initialPrice variable",
-                "Type": "Lack of input validation",
-                "Description": "No check is performed for the initial price. This means that it can be set to be below the MIN_SQRT_RATIO or above MAX_SQRT_RATIO, which will prevent the usability of all other functions (minting, swapping, burning).",
-                "Repair": "Add a check to ensure that the initial price is within the acceptable range, ie. MIN_SQRT_RATIO <= initialPrice <= MAX_SQRT_RATIO"
-            },
-            {
-                "Location": "ConcentratedLiquidityPool contract, fee growth mechanism",
-                "Type": "Fee growth mechanism issue",
-                "Description": "The fee growth mechanism is not explained well in the Uniswap V3's whitepaper. Using nearestTick as the reference point for fee growth calculations instead of the pool tick might not be a wise choice. There are two high severity issues: wrong initialization value of feeGrowthOutside in the case either the lower or upper tick becomes the nearestTick upon insertion of a new tick, and case 1 and 2 becomes ambiguous. Having a pool tick counter that closely matches the current pool price is rather critical for fee growth and seconds per liquidity initializations / calculations.",
-                "Repair": "Replace the nearestTick with poolTick where relevant"
-            },
-            {
-                "Location": "ConcentratedLiquidityPoolHelper contract, getTickState() function",
-                "Type": "Out of gas",
+                "Location": "Medium Severity section",
+                "Type": "Gas Limit vulnerability",
                 "Description": "getTickState() attempts to fetch the state of all inserted ticks (including MIN_TICK and MAX_TICK) of a pool. Depending on the tick spacing, this function may run out of gas.",
                 "Repair": "Have a starting index parameter to start the iteration from. Also, tickCount can be made use of more meaningfully to limit the number of iterations performed."
             }

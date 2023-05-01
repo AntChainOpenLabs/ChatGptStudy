@@ -22,8 +22,8 @@
             {
                 "Location": "contracts/HolographOperator.sol#crossChainMessage",
                 "Type": "Biased distribution",
-                "Description": "An attacker can manipulate each pod and gain an advantage over the remainder Operators by exploiting the unintended bias created in the selection process of Operators for a job.",
-                "Repair": "Use two random numbers for pod and Operator selection. Ideally, an independent source for randomness should be used, but using the most significant bits (e.g. random  128) should guarantee an unbiased distribution. Additionally, consider adding additional controls (e.g. waiting times before joining each pod) to increase the difficulty of manipulating the protocol. Removing the swapping mechanism for another mechanism could also increase the difficulty of manipulating a particular pod."
+                "Description": "An attacker can manipulate each pod and gain an advantage over the remainder Operators.",
+                "Repair": "Use two random numbers for pod and Operator selection. Ideally, an independent source for randomness should be used, but following the assumption that the one used in L499 is safe enough, using the most significant bits (e.g. random  128) should guarantee an unbiased distribution."
             },
             {
                 "Location": "ERC721/ERC20 implementations using isOwner/onlyOwner modifiers",
@@ -32,10 +32,10 @@
                 "Repair": "Refactor the code to represent msg.sender information in a bug-free way"
             },
             {
-                "Location": "initializer function of holographable contract",
-                "Type": "Reentrancy",
-                "Description": "The initializer function of the holographable contract is vulnerable to reentrancy, allowing the _holographSlot to be set to an untrusted contract address. This can lead to unauthorized transfers of newly created holographed ERC20 tokens.",
-                "Repair": "Check whether the contract is in an 'initializing' phase to prevent reentrancy during initialization. Additionally, consider removing the logic that allows bridge and operators to bypass the allowance requirements if they are not intended to transfer tokens directly."
+                "Location": "_getBaseBondAmount",
+                "Type": "Incorrect slashing calculation",
+                "Description": "Documentation states that only a portion should be slashed and the number of slashes should be noted down.",
+                "Repair": "Implement the correct percentage of slashing and include a mapping to note down the number of slashes that an operator has"
             },
             {
                 "Location": "PA1D#bidSharesForToken",
@@ -55,19 +55,25 @@
                 "Location": "HolographOperator.sol#L491-L511",
                 "Type": "Bad source of randomness",
                 "Description": "Using block.number and block.timestamp as a source of randomness is commonly advised against, as the outcome can be manipulated by calling contracts.",
-                "Repair": "Consider using a decentralized oracle for the generation of random numbers, such as Chainlinks VRF"
+                "Repair": "Consider using a decentralized oracle for the generation of random numbers, such as Chainlinks VRF."
             },
             {
-                "Location": "HolographOperator.sol#L301-L439",
-                "Type": "Lost ETH",
-                "Description": "When calling the executeJob function, even though the job is not successfully executed, the sent ETH is locked in the HolographOperator contract since there is no other way to transfer such sent ETH out from this contract. In this situation, the operator that calls the executeJob function will lose the sent ETH.",
-                "Repair": "Transfer the msg.value amount of ETH back to the operator in the catch block of the try ... {...} catch {...} code mentioned above"
-            },
-            {
-                "Location": "HolographOperator.sol#L329 and HolographOperator.sol#L419-L429",
-                "Type": "Lost NFT",
-                "Description": "If nonRevertingBridgeCall fails, NFT won't be minted and the catch block is entered. _failedJobs[hash] is set to true and event is emitted. Notice that _operatorJobs[hash] has been deleted, so this job is not replayable. This means NFT is lost forever since we can't retry executeJob.",
+                "Location": "HolographOperator.sol#L329",
+                "Type": "Failed job can't be recovered",
+                "Description": "Failed job can't be recovered. NFT may be lost.",
                 "Repair": "Move delete _operatorJobs[hash]; to the end of function executeJob covered in if (!_failedJobs[hash])"
+            },
+            {
+                "Location": "HolographOperator.sol#L419-L429",
+                "Type": "Loss of sent ETH",
+                "Description": "It is possible that operator loses sent ETH after calling HolographOperator contract's executeJob function.",
+                "Repair": "Transfer the msg.value amount of ETH back to the operator in the catch block of the try ... {...} catch {...} code"
+            },
+            {
+                "Location": "HolographOperator.sol#L875",
+                "Type": "Chaotic operator behavior",
+                "Description": "Any user can force chaotic 'open season' operator behavior.",
+                "Repair": "Pay special attention to the scheduling algorithm to make sure different pods are given execution time according to the desired heuristics"
             },
             {
                 "Location": "HolographOperator.sol#L354",
@@ -76,52 +82,40 @@
                 "Repair": "Modify operator node software to queue transactions immediately with gasPrice in bridgeInRequestPayload if a gas price spike happened or allow gas fee loss tradeoff to prevent being slashed"
             },
             {
-                "Location": "HolographOperator.sol#L875",
-                "Type": "Chaotic operator behavior",
-                "Description": "Any user can force chaotic 'open season' operator behavior.",
-                "Repair": "Pay special attention to the scheduling algorithm, to make sure different pods are given execution time according to the desired heuristics"
-            },
-            {
                 "Location": "HolographOperator.sol#L354",
-                "Type": "MEV attack",
-                "Description": "Operator can bribe miner and steal honest operator's bond amount if gas price went high.",
+                "Type": "MEV",
+                "Description": "Operator can bribe miner and steal honest operator's bond amount if gas price went high",
                 "Repair": "Do not use current tx.gasprice amount to infer gas price in a previous block. Probably best to use gas price oracle."
             },
             {
-                "Location": "HolographOperator.sol#L374-L382",
-                "Type": "Wrong slashing calculation",
-                "Description": "Wrong slashing calculation may create unfair punishment for operators that accidentally forgot to execute their job.",
-                "Repair": "Implement the correct percentage of slashing and include a mapping to note down the number of slashes that an operator has."
-            },
-            {
-                "Location": "HolographOperator.sol#L374-L382, HolographOperator.sol#L849-L857",
-                "Type": "Bond tokens (HLG) can get permanently stuck in operator",
+                "Location": "HolographOperator.executeJob",
+                "Type": "Bond tokens getting stuck",
                 "Description": "Bond tokens (HLG) equal to the slash amount will get permanently stuck in the HolographOperator each time a job gets executed by someone who is not an (fallback-)operator.",
-                "Repair": "Remove the requirement that _bondedAmounts need to be 0 prior to bonding and becoming an operator so that non-operators can get access to the slashing reward by unbonding after. Alternatively (possibly preferable), just add a method to withdraw any _bondedAmounts of non-operators."
+                "Repair": "Remove the requirement that _bondedAmounts need to be 0 prior to bonding and becoming an operator"
             },
             {
-                "Location": "HolographOperator.sol#L255",
-                "Type": "Access Control",
-                "Description": "The bridging request wouldn't complete and the token owner would lose access to the token till the gas price goes back down again.",
-                "Repair": "Add a force-fail after EXPIRY_NUM blocks passed, without executing the TX."
+                "Location": "HolographOperator.executeJob",
+                "Type": "Freezing of beaming job",
+                "Description": "If the selected operator doesn't complete the job and gas price has spiked, the bridging request wouldn't complete and the token owner would lose access to the token till the gas price goes back down again.",
+                "Repair": "Add a force-fail after EXPIRY_NUM blocks passed, without executing the TX"
             },
             {
                 "Location": "HolographOperator.sol#L415",
-                "Type": "Locking operator out of the pod",
-                "Description": "An attacker can lock operator out of the pod by setting gas limit that's higher than the block gas limit of dest chain.",
+                "Type": "Lockout vulnerability",
+                "Description": "An attacker can lock operator out of the pod by setting gas limit that's higher than the block gas limit of dest chain",
                 "Repair": "Limit the maximum gas allowed in an operator job"
             },
             {
                 "Location": "HolographOperator.sol#L316",
                 "Type": "Inaccurate gas limit check",
-                "Description": "Gas limit check is inaccurate, leading to an operator being able to fail a job intentionally.",
-                "Repair": "Craft supplied gas to the contract, so that during the CALL opcode, gas left would be smaller than requested gas limit"
+                "Description": "An attacker can use the gap between the gas limit check and the actual amount of gas left during the call to fail the job while still having the executeJob() function complete. The owner of the bridged token would lose access to the token since the job failed.",
+                "Repair": "Modify the required amount of gas left to gasLimit + any amount of gas spent before reaching the call(), then multiply it by 32/30 to mitigate the 1/64 rule (+ some margin of safety maybe)."
             },
             {
-                "Location": "HolographOperator.sol#L899-L932",
-                "Type": "Implementation inconsistency",
-                "Description": "The implementation code does not align with the business requirement of charging a 0.1% fee when an operator unbounds HLG tokens. This weakens the incentive for operators to stay bonded and can lead to instability in the network.",
-                "Repair": "Charge the 0.1% unstaking fee to align with the business requirement in the documentation"
+                "Location": "HolographOperator.sol#L899, HolographOperator.sol#L920, HolographOperator.sol#L924, HolographOperator.sol#L928, HolographOperator.sol#L932",
+                "Type": "Implementation code does not align with business requirement",
+                "Description": "Users are not charged with withdrawn fee when user unbound token in HolographOperator.sol",
+                "Repair": "Charge the 0.1% unstaking fee to make the code align with the business requirement in the doc."
             }
         ]
     },
@@ -134,8 +128,8 @@
             {
                 "Location": "HolographERC721.sol#L962",
                 "Type": "Leak of value",
-                "Description": "If Holographer is called with no calldata and some msg.value, the call will reach the receive() function, which does not forward the call down to the implementation. This can be a serious value leak issue.",
-                "Repair": "Update receive function to pass value down like the fallback function"
+                "Description": "Leak of value when interacting with an NFT using the receive() or fallback() callback.",
+                "Repair": "Update receive() function to pass value down like the fallback function"
             },
             {
                 "Location": "HolographERC721.sol#L500, HolographERC721.sol#L577",
@@ -144,22 +138,22 @@
                 "Repair": "Remove sourceBurn and sourceTransfer functions of HolographERC721 and require user approval to transfer or burn their tokens"
             },
             {
-                "Location": "HolographERC721.sol#L366",
-                "Type": "Non-compliance with EIP-721",
-                "Description": "HolographERC721.safeTransferFrom not compliant with EIP-721.",
-                "Repair": "Remove the ERC-165 check in the require statement."
+                "Location": "HolographERC721.safeTransferFrom",
+                "Type": "ERC-721 compliance",
+                "Description": "The safeTransferFrom function does not always call onERC721Received, leading to failed transfers when they should not fail.",
+                "Repair": "Remove the ERC-165 check in the require statement"
             },
             {
                 "Location": "HolographERC721.sol#L392",
-                "Type": "Missing parameter in event",
-                "Description": "beforeApprovalAll() / afterApprovalAll() can only pass 'to' and 'approved', missing 'owner', if contract listening to this event, but does not know who approve it, so can not react to this event. Basically, this event cannot be used.",
+                "Type": "missing parameter in event",
+                "Description": "ApprovalAll event is missing parameters.",
                 "Repair": "Add parameter: owner"
             },
             {
                 "Location": "HolographERC721.sol#L467",
-                "Type": "Incorrect implementation of ERC721",
-                "Description": "If the target address is a contract, the enforcer requires the target's onERC721Received() to succeed. However, the call deviates from the standard: the enforcer passes instead the address(this) value, in other words the Holographer address. The impact is that any bookkeeping done in target contract, and allow / disallow decision of the transaction, is based on false information.ERC721 transferFrom's 'to' contract may fail to accept transfers, or record credit of transfers incorrectly.",
-                "Repair": "Pass the msg.sender parameter, as the ERC721 standard requires"
+                "Type": "incorrect implementation of ERC721",
+                "Description": "Incorrect implementation of ERC721 may have bad consequences for receiver.",
+                "Repair": "Pass the msg.sender parameter, as the ERC721 standard requires."
             },
             {
                 "Location": "HolographERC721.approve",
@@ -177,9 +171,9 @@
         "VulnerabilityDesc": [
             {
                 "Location": "LayerZeroModule.sol#L431-L445",
-                "Type": "Miscalculated gas",
-                "Description": "LayerZeroModule miscalculates gas, risking loss of assets",
-                "Repair": "Add destination chain-specific _baseGas and _gasPerByte to mitigate EVM differences in opcode costs"
+                "Type": "miscalculates gas",
+                "Description": "LayerZeroModule miscalculates gas, risking loss of assets.",
+                "Repair": "Use the target gas costs. Re-engineer lzReceive to be fault-proof, i.e. save some gas to emit result event. Add destination chain-specific _baseGas and _gasPerByte to mitigate EVM differences in opcode costs."
             }
         ]
     },
@@ -190,16 +184,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "PA1D._payoutToken() and PA1D._payoutTokens()",
-                "Type": "Token payout failure",
-                "Description": "Some tokens do not return a bool (e.g. USDT, BNB, OMG) on ERC20 methods. But since the require-statement expects a bool, for such a token a void return will also cause a revert, despite an otherwise successful transfer. That is, the token payout will always revert for such tokens.",
-                "Repair": "Use OpenZeppelin's SafeERC20"
+                "Location": "PA1D.sol#L317, PA1D.sol#L340",
+                "Type": "missing return value check",
+                "Description": "_payoutToken[s is blocked and tokens are stuck in contract.",
+                "Repair": "Use OpenZeppelin's SafeERC20, which handles the return value check as well as non-standard-compliant tokens."
             },
             {
-                "Location": "_payoutEth() function in PA1D.sol at line 391 and 395",
-                "Type": "Incorrect balance calculation",
-                "Description": "The balance used in the transfer calls is not the contract ETH balance, but the balance minus a gasCost, which leaves dust ETH in the contract and subsequent calls to getEthPayout() may revert due to this check. This dust is effectively lost if there is no other ETH withdrawal function in the contract.",
-                "Repair": "Transfers should be done based on address(this).balance instead of balance minus gasCost"
+                "Location": "PA1D.sol#L391, PA1D.sol#L395",
+                "Type": "Dust left in contract",
+                "Description": "_payoutEth() calculates balance with an offset, always leaving dust ETH in the contract",
+                "Repair": "Transfers should be done based on address(this).balance. The gasCost is redundant as the gas amount is specified by the caller of getEthPayout(), the contract does not have to provide gas."
             }
         ]
     },
@@ -212,8 +206,8 @@
         "VulnerabilityDesc": [
             {
                 "Location": "HolographOperator.sol#L202-L340, HolographOperator.sol#L593-L596, LayerZeroModule.sol#L277-L294",
-                "Type": "Gas Price Manipulation",
-                "Description": "If user sets a low gasPrice the operator would have to choose between being locked out of the pod or executing the job anyway. Operator would be losing money by having to pay gas fee that's higher than the compensation. This could also be used by attackers to make operators pay for the attackers' expensive gas tasks.",
+                "Type": "Low gasPrice vulnerability",
+                "Description": "If user sets a low gasPrice the operator would have to choose between being locked out of the pod or executing the job anyway",
                 "Repair": "Allow operator to opt out of executing the job if the gasPrice is higher than the current gas price"
             }
         ]

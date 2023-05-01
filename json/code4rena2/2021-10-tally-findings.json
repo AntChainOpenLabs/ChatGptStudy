@@ -18,22 +18,22 @@
                 "Repair": "Subtract the input amount from the originalBalance"
             },
             {
-                "Location": "Swap.swapByQuote() function in Swap.sol",
+                "Location": "swapByQuote() function in Swap.sol",
                 "Type": "Avoiding fees",
                 "Description": "Users can execute ETH swap without paying swap fees for the ETH they got from the swap.",
-                "Repair": "Charge swap fees for the 'refunded ETH' on ERC20 swaps (when boughtERC20Amount > 0), or require boughtETHAmount == 0"
+                "Repair": "Charge swap fees for the 'refunded ETH' on ERC20 swaps or require boughtETHAmount == 0"
             },
             {
                 "Location": "fillZrxQuote() function in Swap.sol at L153-L181",
-                "Type": "Unused token",
-                "Description": "Unused ERC20 tokens are not refunded, and may be left in the contract unintentionally.",
-                "Repair": "Return unused ERC20 tokens"
+                "Type": "Unused ERC20 tokens",
+                "Description": "Unused ERC20 tokens may be left in the contract unintentionally.",
+                "Repair": "Refund unused ERC20 tokens"
             },
             {
-                "Location": "Swap.sol contract, lines 158, 173, and 257",
+                "Location": "transfer() function in Swap.sol at L158, L173, L257",
                 "Type": "Potentially dangerous transfer",
-                "Description": "The use of transfer() in Swap.sol may have unintended outcomes on the eth being sent to the receiver. Eth may be irretrievable or undelivered if the msg.sender or feeRecipient is a smart contract. Funds can potentially be lost if;1. The smart contract fails to implement the payable fallback function2. The fallback function uses more than 2300 gas units",
-                "Repair": "Using a re-entrancy guard and relying on msg.sender.call.value(amount) or using the OpenZeppelin Address.sendValue library"
+                "Description": "The use of transfer() in Swap.sol may have unintended outcomes on the eth being sent to the receiver.",
+                "Repair": "Use a re-entrancy guard or OpenZeppelin Address.sendValue library"
             }
         ]
     }

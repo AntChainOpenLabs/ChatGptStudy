@@ -9,37 +9,43 @@
                 "Location": "Solmate convertToShares function",
                 "Type": "Arbitrary Share Price Inflation",
                 "Description": "The vulnerability allows any user to deposit 1 share and set totalSupply = 1 during the first cycle, which can inflate the base share price as high as 1:1e18 early on, forcing all subsequent deposits to use this share price as a base. This can give early depositors a greater share portion of the vault during the first cycle, while deposit tokens are also affected by rounding precision that always returns a lesser amount of share for the user.",
-                "Repair": "Force deposit early token during vault construction as a last resort"
+                "Repair": "Force deposit early token during vault construction as last resort"
             },
             {
-                "Location": "ERC20Gauges.sol#L214, ERC20Gauges.sol#L257, ERC20Gauges.sol#L248, ERC20Gauges.sol#L465-L469",
-                "Type": "Double-counting vulnerability",
+                "Location": "ERC20Gauges.sol",
+                "Type": "Double-counting of weights",
                 "Description": "In ERC20Gauges, contribution to total weight is double-counted when incrementGauge is called before addGauge for a given gauge.",
-                "Repair": "Use condition _gauges.contains(gauge) && !_deprecatedGauges.contains(gauge) to check if a gauge can be incremented instead of just  !_deprecatedGauges.contains(gauge) . There's a function isGauge in the contract that does exactly this."
+                "Repair": "Use condition _gauges.contains(gauge) && !_deprecatedGauges.contains(gauge) to check if a gauge can be incremented instead of just !_deprecatedGauges.contains(gauge)"
             },
             {
-                "Location": "FlywheelCore.sol#L164-L171",
-                "Type": "Access control vulnerability",
+                "Location": "FlywheelCore.sol",
+                "Type": "Loss of access to reward funds",
                 "Description": "FlywheelCore's setFlywheelRewards can remove access to reward funds from current users.",
-                "Repair": "Consider adding the require for address(newFlywheelRewards.flywheel) == address(flywheelRewards.flywheel) in setFlywheelRewards so that users always retain funds access."
+                "Repair": "Add the require for address(newFlywheelRewards.flywheel) == address(flywheelRewards.flywheel) in setFlywheelRewards so that users always retain funds access."
+            },
+            {
+                "Location": "xERC4626.sol",
+                "Type": "Underflow in beforeWithdraw()",
+                "Description": "Some users may not be able to withdraw until rewardsCycleEnd due to underflow in beforeWithdraw() in xERC4626.sol.",
+                "Repair": "Override maxWithdraw to return storedTotalAssets_."
             },
             {
                 "Location": "FlywheelCore.setBooster()",
-                "Type": "Privilege Escalation",
+                "Type": "Smart Contract Logic",
                 "Description": "A malicious authorized user can steal all unclaimed rewards and break the reward accounting by setting a booster that returns zero for all calls to boostedBalanceOf() where the user address is not under the attacker's control, and returning arbitrary values for those under his/her control, an attacker can choose specific amounts of rewardToken to assign to himself/herself.",
                 "Repair": "Make flywheelRewards immutable, or only allow it to change if there are no current users."
             },
             {
                 "Location": "ERC20Gauges._incrementGaugeWeight()",
-                "Type": "Logic Bug",
+                "Type": "Smart Contract Logic",
                 "Description": "The _incrementGaugeWeight function does not check the gauge parameter enough, so the user may lose rewards if the user accidentally uses the wrong gauge parameter.",
-                "Repair": "Check that the gauge parameter is in _gauges before executing the function."
+                "Repair": "Add a check that the gauge parameter is in _gauges."
             },
             {
-                "Location": "_decrementWeightUntilFree function in ERC20Gauges.sol",
-                "Type": "Incorrect accounting of free weight",
-                "Description": "The non-deprecated criteria is unnecessary and leads to incorrect accounting of free weight.",
-                "Repair": "Remove unnecessary criteria for non-deprecated gauges and treat all gauges equally"
+                "Location": "ERC20Gauges._decrementWeightUntilFree()",
+                "Type": "Smart Contract Logic",
+                "Description": "Incorrect accounting of free weight in _decrementWeightUntilFree due to unnecessary non-deprecated criteria, which can lead to incorrect accounting of free weight.",
+                "Repair": "Remove the unnecessary non-deprecated criteria."
             }
         ]
     }

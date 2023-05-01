@@ -7,46 +7,47 @@
         "VulnerabilityDesc": [
             {
                 "Location": "Exchange.sol contract",
-                "Type": "Centralization risk",
-                "Description": "Hacked owner or malicious owner can immediately steal all assets on the platform due to the significant centralization risk trusting Exchange.sol contract to behave well, because it is an immediately upgradeable ERC1967Proxy.",
-                "Repair": "Implement a timelock to give users enough time to withdraw their approvals before some malicious action becomes possible"
+                "Type": "centralization risk",
+                "Description": "Hacked owner or malicious owner can immediately steal all assets on the platform due to significant centralization risk trusting Exchange.sol contract to behave well, because it is an immediately upgradeable ERC1967Proxy.",
+                "Repair": "Implement a timelock in Exchange contract proxy to give users enough time to withdraw their approvals before some malicious action becomes possible"
             },
             {
                 "Location": "Exchange.sol contract",
-                "Type": "Direct theft of buyer\u2019s ETH funds",
+                "Type": "direct theft of buyer\u2019s ETH funds",
                 "Description": "Seller or Fee recipient can steal ETH funds from the buyer when he is making a single or bulk execution. (Direct theft of funds).",
-                "Repair": "Fix reentrancy issue by calling _execute before sending funds to fee recipient, add a check to prevent empty parameter in bulkExecute, and modify _returnDust to only send back the unused ETH to the buyer"
+                "Repair": "Implement proper accounting of remainingETH and track buyers ETH in order to refund unused ETH. Check whether the account balance has been modified accordingly when releasing a standard event"
             },
             {
-                "Location": "bulkExecute function and execute function in Exchange.sol contract",
-                "Type": "Reentrancy Attack",
-                "Description": "The vulnerability allows the fee recipient to drain the balance of the Exchange contract by reentering the contract through bulkExecute function and steal the buyer's ETH funds. The repair method involves adding a reentrancyGuard, modifying _refundDust function, and adding a revert statement in bulkExecute function.",
-                "Repair": "1. Put a reentrancyGuard on execute and bulkExecute functions. 2. _refundDust return only _remainingETH. 3. Revert in bulkExecute if parameter array is empty."
+                "Location": "bulkExecute and execute functions in Exchange.sol",
+                "Type": "Direct theft of buyer\u2019s ETH funds",
+                "Description": "The fee recipient can reenter the Exchange contract and drain the balance of the contract through bulkExecution. After the fee recipient drains the rest of the 4 ETH funds of the Exchange contract (the buyer's funds), they need to transfer a portion back (0.9 ETH) to the Exchange contract in order for the _executeFundsTransfer to not revert and be able to send funds (0.9 ETH) to the seller. This can be done using the selfdestruct opcode. bulkExecute delegatecalls execute and continues even after revert, the function bulkExecute will complete its execution without any errors and all the buyer's ETH funds will be lost and nothing will be refunded.",
+                "Repair": "Add a guard in setupExecution that would require isInternal = false, preventing reentrant calls"
             },
             {
-                "Location": "Exchange contract",
-                "Type": "Non-executable orders",
-                "Description": "All orders which use expirationTime == 0 to support oracle cancellation are not executable",
-                "Repair": "Implement the checks the same way as they were in the previous version of Exchange"
-            },
-            {
-                "Location": "Exchange contract, function _returnDust",
+                "Location": "Exchange.sol#L212-L227",
                 "Type": "Unchecked Yul call return value",
-                "Description": "The Yul call return value on function _returnDust is not checked, which could lead to the sender lose funds",
-                "Repair": "Mitigation to check call status and revert if unsuccessful was implemented"
+                "Description": "The Yul call return value on function _returnDust is not checked, which could lead to the sender losing funds.",
+                "Repair": "Check the return value of the Yul call and revert if unsuccessful"
+            },
+            {
+                "Location": "Exchange.sol#L378",
+                "Type": "Invalid order execution due to refactoring",
+                "Description": "All orders which use expirationTime == 0 to support oracle cancellation are not executable due to a refactoring error in the _validateOrderParameters function.",
+                "Repair": "Implement the checks the same way as they were in the previous version of Exchange"
             }
         ]
     },
     {
-        "Code": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.17;\n\nimport \"@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\";\n\nimport \"./interfaces/IPool.sol\";\n\n/**\n * @title Pool\n * @dev ETH pool; funds can only be transferred by Exchange or Swap\n */\ncontract Pool is IPool, OwnableUpgradeable, UUPSUpgradeable {\n    // required by the OZ UUPS module\n    function _authorizeUpgrade(address) internal override onlyOwner {}\n\n    address private constant EXCHANGE = 0x707531c9999AaeF9232C8FEfBA31FBa4cB78d84a;\n    // TODO: set proper address before deployment\n    address private constant SWAP = 0x707531c9999AaeF9232C8FEfBA31FBa4cB78d84a;\n\n    mapping(address => uint256) private _balances;\n\n    event Transfer(address indexed from, address indexed to, uint256 amount);\n\n    /**\n     * @dev receive deposit function\n     */\n    receive() external payable {\n        deposit();\n    }\n\n    /**\n     * @dev deposit ETH into pool\n     */\n    function deposit() public payable {\n        _balances[msg.sender] += msg.value;\n        emit Transfer(msg.sender, address(0), msg.value);\n    }\n\n    /**\n     * @dev withdraw ETH from pool\n     * @param amount Amount to withdraw\n     */\n    function withdraw(uint256 amount) public {\n        require(_balances[msg.sender] >= amount);\n        _balances[msg.sender] -= amount;\n        (bool success,) = payable(msg.sender).call{value: amount}(\"\");\n        require(success);\n        emit Transfer(address(0), msg.sender, amount);\n    }\n\n    /**\n     * @dev transferFrom Transfer balances within pool; only callable by Swap and Exchange\n     * @param from Pool fund sender\n     * @param to Pool fund recipient\n     * @param amount Amount to transfer\n     */\n    function transferFrom(address from, address to, uint256 amount)\n        public\n        returns (bool)\n    {\n        if (msg.sender != EXCHANGE && msg.sender != SWAP) {\n            revert('Caller is not authorized to transfer');\n        }\n        _transfer(from, to, amount);\n\n        return true;\n    }\n\n    function _transfer(address from, address to, uint256 amount) private {\n        require(_balances[from] >= amount);\n        require(to != address(0));\n        _balances[from] -= amount;\n        _balances[to] += amount;\n\n        emit Transfer(from, to, amount);\n    }\n\n    function balanceOf(address user) public view returns (uint256) {\n        return _balances[user];\n    }\n\n    function totalSupply() public view returns (uint256) {\n        return address(this).balance;\n    }\n}\n\n\n",
+        "Code": "pragma solidity ^0.8.17;\n\ninterface IPool {\n    function deposit() external payable;\n    function withdraw(uint256) external;\n\n    function transferFrom(address, address, uint256)\n        external\n        returns (bool);\n}\n\n\n// SPDX-License-Identifier: MIT\npragma solidity 0.8.17;\n\nimport \"@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol\";\n\nimport \"./interfaces/IPool.sol\";\n\n/**\n * @title Pool\n * @dev ETH pool; funds can only be transferred by Exchange or Swap\n */\ncontract Pool is IPool, OwnableUpgradeable, UUPSUpgradeable {\n    // required by the OZ UUPS module\n    function _authorizeUpgrade(address) internal override onlyOwner {}\n\n    address private constant EXCHANGE = 0x707531c9999AaeF9232C8FEfBA31FBa4cB78d84a;\n    // TODO: set proper address before deployment\n    address private constant SWAP = 0x707531c9999AaeF9232C8FEfBA31FBa4cB78d84a;\n\n    mapping(address => uint256) private _balances;\n\n    event Transfer(address indexed from, address indexed to, uint256 amount);\n\n    /**\n     * @dev receive deposit function\n     */\n    receive() external payable {\n        deposit();\n    }\n\n    /**\n     * @dev deposit ETH into pool\n     */\n    function deposit() public payable {\n        _balances[msg.sender] += msg.value;\n        emit Transfer(msg.sender, address(0), msg.value);\n    }\n\n    /**\n     * @dev withdraw ETH from pool\n     * @param amount Amount to withdraw\n     */\n    function withdraw(uint256 amount) public {\n        require(_balances[msg.sender] >= amount);\n        _balances[msg.sender] -= amount;\n        (bool success,) = payable(msg.sender).call{value: amount}(\"\");\n        require(success);\n        emit Transfer(address(0), msg.sender, amount);\n    }\n\n    /**\n     * @dev transferFrom Transfer balances within pool; only callable by Swap and Exchange\n     * @param from Pool fund sender\n     * @param to Pool fund recipient\n     * @param amount Amount to transfer\n     */\n    function transferFrom(address from, address to, uint256 amount)\n        public\n        returns (bool)\n    {\n        if (msg.sender != EXCHANGE && msg.sender != SWAP) {\n            revert('Caller is not authorized to transfer');\n        }\n        _transfer(from, to, amount);\n\n        return true;\n    }\n\n    function _transfer(address from, address to, uint256 amount) private {\n        require(_balances[from] >= amount);\n        require(to != address(0));\n        _balances[from] -= amount;\n        _balances[to] += amount;\n\n        emit Transfer(from, to, amount);\n    }\n\n    function balanceOf(address user) public view returns (uint256) {\n        return _balances[user];\n    }\n\n    function totalSupply() public view returns (uint256) {\n        return address(this).balance;\n    }\n}\n\n\n",
         "CodeNames": [
+            "IPool.sol",
             "Pool.sol"
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "Pool contract",
-                "Type": "Un-upgradeable contract",
-                "Description": "Pool designed to be upgradeable but does not set owner, making it un-upgradeable",
+                "Location": "Pool contract in IPool.sol",
+                "Type": "Pool designed to be upgradeable but does not set owner, making it un-upgradeable",
+                "Description": "The Pool contract is designed to be upgradeable but is actually not upgradeable. Whenever the EXCHANGE or SWAP address, or some functionality needs to be changed, it would not be possible.",
                 "Repair": "Implement an initializer for Pool similarly to the Exchange.sol contract"
             }
         ]

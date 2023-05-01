@@ -104,6 +104,11 @@ def query_message(
             else:
                 message += next_article
                 index += 1
+                # 处理结尾
+                if index == len(strings):
+                    messages += [message + question]
+
+
 
     return messages
 

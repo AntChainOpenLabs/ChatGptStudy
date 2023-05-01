@@ -6,39 +6,39 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "sNOTE contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "Cooldown and redeem windows can be rendered useless.",
-                "Repair": "Remove the cooldown/redeem period or bind the cooldown/redeem window to the amount that was minted at that time by the account"
+                "Location": "sNOTE.startCooldown()",
+                "Type": "Cooldown and redeem windows can be rendered useless",
+                "Description": "Cooldown and redeem windows can be rendered useless by transferring between redeem windows and making the redeem window effectively useless.",
+                "Repair": "Option B: Let the contract start the cooldown on mint, and bind the cooldown/redeem window to the amount that was minted at that time by the account. Don't make sNOTE.startCooldown() available externally. Redeem should verify amount of token available using this new logic."
             },
             {
-                "Location": "sNOTE contract",
-                "Type": "Smart contract vulnerability",
+                "Location": "sNOTE.sol#L99-L129",
+                "Type": "sNOTE Holders Are Not Incentivized To Vote On Proposals To Call  extractTokensForCollateralShortfall",
                 "Description": "sNOTE holders are not incentivized to vote on proposals to call extractTokensForCollateralShortfall.",
-                "Repair": "Redesign the mechanism to better align stakers with the health of the protocol, such as allocating a percentage of generated fees to an insurance fund"
+                "Repair": "Consider redesigning this mechanism to better align stakers with the health of the protocol. It might be useful to allocate a percentage of generated fees to an insurance fund which will be used to cover any collateral shortfall events. This fund can be staked to generate additional yield."
             },
             {
-                "Location": "sNOTE contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "Lack of slippage control in _mintFromAssets() function.",
-                "Repair": "Add a minAmountOut parameter for mintFromNOTE(), mintFromETH(), and mintFromWETH() functions"
+                "Location": "sNOTE.sol#L195-L209",
+                "Type": "sNOTE.sol#_mintFromAssets() Lack of slippage control",
+                "Description": "Lack of slippage control in sNOTE.sol#_mintFromAssets().",
+                "Repair": "Consider adding a minAmountOut parameter for these functions."
             },
             {
-                "Location": "extractTokensForCollateralShortfall() function in sNOTE.sol",
-                "Type": "Lack of Enforcement",
-                "Description": "The function extractTokensForCollateralShortfall() allows the owner of the sNote contract to withdraw up to 50% of the total amount of BPT. This limit is easily circumvented as the function can simply be called a second, third and fourth time, to withdraw almost all of the BPT.",
-                "Repair": "Rewrite the logic and enforce a limit during a time period i.e. do not allow to withdraw over 50% *per week* (or any time period that is longer than the cooldown period, so that users have time to withdraw their collateral)"
+                "Location": "extractTokensForCollateralShortfall function in sNOTE contract",
+                "Type": "Access Control",
+                "Description": "The extractTokensForCollateralShortfall function in sNOTE contract allows the owner to withdraw almost all of the BPT by calling the function multiple times, circumventing the 50% limit.",
+                "Repair": "Enforce a limit during a time period to prevent withdrawal over 50% of the total amount of BPT"
             },
             {
-                "Location": "startCooldown() function in sNOTE.sol",
-                "Type": "Lack of Limitation",
-                "Description": "It's possible for the owner of the sNOTE contract to choose a value for coolDownTimeInSeconds which always causes the startCooldown() function to revert. Should ownership over sNOTE become compromised then all of the users' assets may be locked indefinitely.",
+                "Location": "startCooldown function in sNOTE contract",
+                "Type": "Access Control",
+                "Description": "The startCooldown function in sNOTE contract allows the owner to choose an arbitrary value for coolDownTimeInSeconds, which can cause the function to revert and lock users' assets indefinitely.",
                 "Repair": "Provide a sensible upper limit to coolDownTimeInSeconds of, say, a month"
             },
             {
-                "Location": "getVotingPower() function in sNOTE.sol",
-                "Type": "Lack of Checkpointing",
-                "Description": "getVotingPower is a useful function in tracking the relative voting power a staker has, however, it does not utilise any checkpointing mechanism to ensure the user's voting power is a snapshot of a specific block number.",
+                "Location": "getVotingPower function in sNOTE contract",
+                "Type": "Access Control",
+                "Description": "The getVotingPower function in sNOTE contract does not utilize any checkpointing mechanism to ensure the user's voting power is a snapshot of a specific block number, allowing for manipulation of a user's voting power.",
                 "Repair": "Implement a getPriorVotingPower function which takes in a blockNumber argument and returns the correct balance at that specific block"
             }
         ]
@@ -50,10 +50,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "Treasury manager contract",
-                "Type": "Smart contract vulnerability",
+                "Location": "MixinExchangeCore.sol#L196-L250",
+                "Type": "A Malicious Treasury Manager Can Burn Treasury Tokens By Setting  makerFee  To The Amount The Maker Receives",
                 "Description": "A malicious treasury manager can burn treasury tokens by setting makerFee to the amount the maker receives.",
-                "Repair": "Check that makerFee and takerFee are set to zero in _validateOrder function"
+                "Repair": "Consider checking that makerFee == 0 and takerFee == 0 in EIP1271Wallet._validateOrder s.t. the treasury manager cannot sign unfair orders which severely impact the TreasuryManager contract."
             }
         ]
     },
@@ -64,10 +64,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "TreasuryAction.claimCOMPAndTransfer function",
-                "Type": "Smart contract vulnerability",
-                "Description": "Treasury cannot claim COMP tokens & COMP tokens are stuck.",
-                "Repair": "Don't use pre-and post-balances, use the entire balance"
+                "Location": "TreasuryAction.claimCOMPAndTransfer",
+                "Type": "Treasury cannot claim COMP tokens & COMP tokens are stuck",
+                "Description": "The treasury cannot claim COMP tokens and COMP tokens are stuck.",
+                "Repair": "Don't use pre-and post-balances, can you use the entire balance?"
             }
         ]
     },
@@ -78,16 +78,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "_validateOrder() function in EIP1271Wallet.sol",
-                "Type": "Lack of Validation",
-                "Description": "The _validateOrder function does not ensure that the takerAddress and senderAddress are set to the zero address. As a result, it is possible for the manager to have sole rights to an off-chain order and due to the flexibility in makerPrice, the manager is able to extract value from the treasury by maximising the allowed slippage.",
-                "Repair": "Add require(takerAddress == address(0), 'manager cannot set taker'); and require(senderAddress == address(0), 'manager cannot set sender'); statements to _validateOrder"
+                "Location": "_validateOrder function in EIP1271Wallet contract",
+                "Type": "Access Control",
+                "Description": "The _validateOrder function in EIP1271Wallet contract does not ensure that the takerAddress and senderAddress are set to the zero address, allowing the manager to restrict order trades to themselves.",
+                "Repair": "Add require statements to ensure takerAddress and senderAddress are set to the zero address"
             },
             {
-                "Location": "Chainlink API in EIP1271Wallet.sol",
-                "Type": "Deprecated API Usage",
-                "Description": "The Chainlink API (latestAnswer) used in the EIP1271Wallet contract is deprecated. This function does not error if no answer has been reached but returns 0.",
-                "Repair": "Use the latestRoundData function to get the price instead. Add checks on the return data with proper revert messages if the price is stale or the round is uncomplete"
+                "Location": "EIP1271Wallet contract",
+                "Type": "Deprecated Functionality",
+                "Description": "The EIP1271Wallet contract uses the deprecated latestAnswer function from Chainlink API, which can return 0 if no answer has been reached and has different decimal places for crypto and FX quotes.",
+                "Repair": "Use the latestRoundData function instead of the deprecated latestAnswer function"
             }
         ]
     }

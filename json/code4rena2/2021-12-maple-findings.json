@@ -21,7 +21,7 @@
                 "Location": "MapleLoan.sol L56-L63",
                 "Type": "Missing authorization",
                 "Description": "Anyone can call  closeLoan()  to close the loan.",
-                "Repair": "Add authorization check to ensure only the borrower can call closeLoan()"
+                "Repair": "Add authorization check to ensure only borrower can call closeLoan()"
             }
         ]
     }

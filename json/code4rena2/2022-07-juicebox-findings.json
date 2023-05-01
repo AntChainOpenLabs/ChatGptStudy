@@ -6,13 +6,13 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "JBTokenStore.sol line 246, JBTokenStore.sol line 266, JBController.sol line 605",
+                "Location": "JBTokenStore.sol:246, JBTokenStore.sol:266, JBController.sol:605",
                 "Type": "Token Change Can Be Frontrun, Blocking Token",
                 "Description": "This vulnerability allows malicious actors to block other users from changing tokens of their projects. Furthermore if ownership over the token contract is transferred to the JBTokenStore contract prior to the change, as suggested in the recourse section of Juicebox's 24.05.2022 post-mortem update, this vulnerability would allow an attacker to become the owner of tokens being transferred. For JBToken based tokens this would allow an attacker to begin issuing arbitrary amounts the token that was meant to be transferred.",
                 "Repair": "Before allowing a caller to change to a specific token ensure that they have control over it. This can be achieved by storing a list of trusted older JB directories and projects which are then queried. Alternatively the contract could require the caller to actually be the .owner() address of the token to migrate"
             },
             {
-                "Location": "JBController.sol line 760, JBSplitsStore.sol line 147",
+                "Location": "JBController.sol:760, JBSplitsStore.sol:147",
                 "Type": "Juicebox project owner can create a honeypot to cause grief",
                 "Description": "In a Juicebox project the project owner (or anyone that they approve) can set splits. These splits are details of the token distributions to other addresses in response to contributions to the project. The project owner could honeypot users by creating a project with the MAX_RESERVED_RATE reserved rate, and setting a large percentage split for the msg.sender who calls distributeReservedTokensOf in JBController.sol. The project owner could then fund the project with a series of large payments to ensure that the reserved amount was sufficiently large to entice a user to call distributeReservedTokensOf in the belief that they will be obtaining a large percentage of the reserve. However, when a user calls this method they will hit the block gas limit and will have spent a large amount of ETH on gas, without receiving any of their expected split.",
                 "Repair": "Set a minimum percentage for each split when calling set. Furthermore, it would probably be wise to prevent duplicate beneficiaries. An alternative to setting a minimum percentage would be to have a check on the length of the splits array and capping that at a sensible value."
@@ -20,92 +20,74 @@
             {
                 "Location": "JBChainlinkV3PriceFeed.sol, JBPrices.sol, JBSingleTokenPaymentTerminalStore.sol",
                 "Type": "Outdated Oracle Data Feed",
-                "Description": "The current implementation of JBChainlinkV3PriceFeed is used by the protocol to showcase how the feed will be retrieved via Chainlink Data Feeds. The feed is used to retrieve the currentPrice, which is also used afterwards by JBPrices.priceFor(), then by JBSingleTokenPaymentTerminalStore.recordPaymentFrom(), JBSingleTokenPaymentTerminalStore.recordDistributionFor, JBSingleTokenPaymentTerminalStore.recordUsedAllowanceOf, JBSingleTokenPaymentTerminalStore._overflowDuring and JBSingleTokenPaymentTerminalStore._currentTotalOverflowOf. The retrieved data can be outdated or out of bounds, impacting payment logic.",
-                "Repair": "Add a tolerance that compares the updatedAt return timestamp from latestRoundData() with the current block timestamp and ensure that the priceFeed is being updated with the required frequency. Use other oracles as redundancy in case of outdated values. Implement controls such as circuit breakers, contract update delays, manual kill-switches, monitoring, and soak testing as recommended by Chainlink."
+                "Description": "The current implementation of JBChainlinkV3PriceFeed is used by the protocol to showcase how the feed will be retrieved via Chainlink Data Feeds. The feed is used to retrieve the currentPrice, which is also used afterwards by JBPrices.priceFor(), then by JBSingleTokenPaymentTerminalStore.recordPaymentFrom(), JBSingleTokenPaymentTerminalStore.recordDistributionFor, JBSingleTokenPaymentTerminalStore.recordUsedAllowanceOf, JBSingleTokenPaymentTerminalStore._overflowDuring and JBSingleTokenPaymentTerminalStore._currentTotalOverflowOf. Although the current feeds are calculated by a non-implemented IJBPriceFeed, if the implementation of the price feed is the same as the showcased in JBChainlinkV3PriceFeed, the retrieved data can be outdated or out of bounds.",
+                "Repair": "Add a tolerance that compares the updatedAt return timestamp from latestRoundData() with the current block timestamp and ensure that the priceFeed is being updated with the required frequency. Use other oracle to get the price feed as redundancy in the case of having one oracle that returns outdated values."
             },
             {
-                "Location": "JBSplitsStore.sol#L211-L221",
-                "Type": "Duplicated locked splits can be discarded",
-                "Description": "The check of the locked split is not suitable for duplicated cases.",
-                "Repair": "Prevent duplicates in the splits or track the matches while checking the locked splits"
+                "Location": "JBSplitsStore.sol",
+                "Type": "Duplicated Locked Splits",
+                "Description": "The function of the protocol could be impacted. The check of the locked split is not suitable for duplicated cases.",
+                "Repair": "Either prevent duplicates in the splits or track the matches while checking the locked splits."
             },
             {
-                "Location": "JBSplitsStore.sol#L213-L220",
-                "Type": "Locked splits can be updated",
-                "Description": "The check for sameness does not check the equality of the struct properties preferClaimed and preferAddToBalance.",
-                "Repair": "Add two additional sameness checks for preferClaimed and preferAddToBalance"
+                "Location": "JBSplitsStore.sol",
+                "Type": "Locked Splits Can Be Updated",
+                "Description": "Locked sets with either preferClaimed or preferAddToBalance set to true can have their bool values overwritten by supplying the same split just with different bool values. The check for sameness does not check the equality of the struct properties preferClaimed and preferAddToBalance.",
+                "Repair": "Add two additional sameness checks for preferClaimed and preferAddToBalance."
             },
             {
                 "Location": "JBController.sol#L588-L606",
-                "Type": "ChangeTokenOf makes it impossible for holders of oldToken to redeem the overflowed assets",
-                "Description": "The token corresponding to the current project will be changed, which will make the oldToken holder unable to redeem the overflowing assets.",
-                "Repair": "Once a token is set for a project, it can not be changed anymore"
+                "Type": "changeTokenOf makes it impossible for holders of oldToken to redeem the overflowed assets",
+                "Description": "When the owner calls the changeTokenOf function of the JBController contract, the token corresponding to the current project will be changed, which will make the oldToken holder unable to redeem the overflowing assets.",
+                "Repair": "Consider adding a delay to changeTokenOf, or adding a function to convert oldToken to newToken"
             },
             {
-                "Location": "JBPayoutRedemptionPaymentTerminal.sol#L415-L448, JBPayoutRedemptionPaymentTerminal.sol#L788-L900, JBPayoutRedemptionPaymentTerminal.sol#L981-L1174, JBETHPaymentTerminal.sol#L63-L79, JBERC20PaymentTerminal.sol#L73-L89",
-                "Type": "Reentrancy issues on function distributePayoutsOf",
-                "Description": "The function _transferFrom gives back the control to the msg.sender creating a reentrancy attack vector. Also could end with a lot of bad calculation because is using uncheckeds statements and function _distributePayoutsOf its no respecting the checks, effects, interactions pattern.",
-                "Repair": "Add a reentrancyGuard as you do on JBSingleTokenPaymentTerminalStore.sol; Add nonReentrant modifier on function distributePayoutsOf"
+                "Location": "distributePayoutsOf function",
+                "Type": "Reentrancy issues",
+                "Description": "In the contract JBPayoutRedemptionPaymentTerminal, the function distributePayoutsOf calls the internal function _distributePayoutsOf and this internal function performs a loop where is using the function _distributeToPayoutSplitsOf. In these functions there are a _transferFrom what give back the control to the msg.sender (_to variable) creating a reentrancy attack vector.",
+                "Repair": "Add a reentrancyGuard as you do on JBSingleTokenPaymentTerminalStore.sol"
             },
             {
-                "Location": "JBFundingCycleStore.sol",
-                "Type": "Lack of check",
+                "Location": "JBFundingCycleStore.sol#L306-L312",
+                "Type": "Lack of check on mustStartAtOrAfter",
                 "Description": "By setting huge mustStartAtOrAfter, the owner can set start time in the past. It might open up possibility to bypass the ballot waiting time depending on the ballot's implementation.",
                 "Repair": "Add a check for the _mustStartAtOrAfter"
             },
             {
-                "Location": "JBPayoutRedemptionPaymentTerminal.sol",
-                "Type": "DOS",
+                "Location": "JBPayoutRedemptionPaymentTerminal.sol#L1147-L1152",
+                "Type": "Grieffer beneficiary can cause DOS",
                 "Description": "Payouts won't be able to be distributed if one of multiple beneficiaries decides to revert the transaction on receival.",
                 "Repair": "Have beneficiaries withdraw their benefit instead of sending it to them"
             },
             {
-                "Location": "JBController.sol",
-                "Type": "Token distribution inaccuracy",
+                "Location": "JBController._reservedTokenAmountFrom",
+                "Type": "Incorrect token distribution",
                 "Description": "More outstanding reserved tokens are distributed than anticipated leading to less redeemable assets and therefore loss of user funds.",
-                "Repair": "Fix the outstanding reserve token calculation by implementing the calculation as following"
+                "Repair": "Update the calculation in the _reservedTokenAmountFrom function to correctly calculate the amount of reserved tokens"
             },
             {
-                "Location": "JBERC20PaymentTerminal#_transferFrom function",
-                "Type": "Consistency checks",
-                "Description": "Tokens that return false rather than revert to indicate failed transfers may silently fail rather than reverting as expected. Attempting to transfer ERC20s with missing return values will revert. Juicebox payment terminals cannot support a number of popular ERC20s, including USDT and BNB.",
-                "Repair": "Use a safe transfer library like OpenZeppelin SafeERC20 to ensure consistent handling of ERC20 return values and abstract over inconsistent ERC20 implementations."
+                "Location": "JBERC20PaymentTerminal._transferFrom",
+                "Type": "Unsafe ERC20 transfer",
+                "Description": "Tokens that return false rather than revert to indicate failed transfers may silently fail rather than reverting as expected. Additionally, attempting to transfer ERC20s with missing return values will revert. This means Juicebox payment terminals cannot support a number of popular ERC20s, including USDT and BNB.",
+                "Repair": "Use a safe transfer library like OpenZeppelin SafeERC20 to ensure consistent handling of ERC20 return values and abstract over inconsistent ERC20 implementations"
             },
             {
-                "Location": "JBSingleTokenPaymentTerminalStore.recordPaymentFrom() and JBSingleTokenPaymentTerminalStore.recordDistributionFor() functions, and JBPayoutRedemptionPaymentTerminal.pay() and JBPayoutRedemptionPaymentTerminal.addToBalanceOf() functions",
-                "Type": "Insufficient balance vulnerability",
-                "Description": "ERC20 tokens with fee-on-transfer can cause insufficient balance issues if the contract does not allow for amounts to change after transfers. The vulnerability is caused by the terminals using the amounts stated rather than transferred in, and not consulting their balances to look for changes.",
-                "Repair": "Measure the contract balance before and after the call to transfer()/transferFrom() and use the difference between the two as the amount, rather than the amount stated"
+                "Location": "JBSingleTokenPaymentTerminalStore.recordPaymentFrom(), JBSingleTokenPaymentTerminalStore.addToBalanceOf(), JBPayoutRedemptionPaymentTerminal.pay(), JBPayoutRedemptionPaymentTerminal.addToBalanceOf(), JBPayoutRedemptionPaymentTerminal.processFees(), JBPrices.addFeedFor()",
+                "Type": "Code quality",
+                "Description": "Various vulnerabilities in the Juicebox smart contract code that could lead to issues such as denial of service, inconsistent currency conversions, and exceeding gas limits.",
+                "Repair": "Measure the contract balance before and after the call to transfer()/transferFrom() in JBERC20PaymentTerminal._transferFrom(), add a check for inverse feed in JBPrices.addFeedFor(), limit the loop in JBPayoutRedemptionPaymentTerminal.processFees() to a reasonable number of iterations"
             },
             {
-                "Location": "function currentPrice(uint256 _decimals) external view override returns (uint256)",
-                "Type": "Unhandled chainlink revert",
-                "Description": "Call to latestRoundData could potentially revert and make it impossible to query any prices. Feeds cannot be changed after they are configured so this would result in a permanent denial of service.",
-                "Repair": "Surround the call to latestRoundData() with try/catch instead of calling it directly"
-            },
-            {
-                "Location": "function addFeedFor(address _currency, address _base, IJBPriceFeed _feed)",
-                "Type": "Inconsistent currency conversions",
-                "Description": "addFeedFor requires that a price feed for the _currency _base doesn't exist when adding a new price feed but doesn't check if the inverse already exists. This means that two different oracles (potentially with different prices) could be used for _currency - _base vs. _base - _currency.",
-                "Repair": "Check if inverse feed already exists before adding a new price feed"
-            },
-            {
-                "Location": "function processFees()",
-                "Type": "Exceed gas limit",
-                "Description": "processFees() in JBPayoutRedemptionPaymentTerminal.sol may fail due to unbounded loop over _heldFeesOf[_projectId] which can get very large due to the function _takeFeeFrom() where it pushes fees that should be paid to a specific beneficiary onto the array. _heldFeesOf[_projectId] could get large and cause a DOS condition where no fees can be distributed due to exceed of gas limit.",
-                "Repair": "Limit the size of _heldFeesOf[_projectId] or distribute fees in batches"
-            },
-            {
-                "Location": "function _feeAmount(uint256 _amount, uint256 _fee, uint256 _feeDiscount) internal pure returns (uint256)",
-                "Type": "Imprecise fee calculation",
-                "Description": "The JBPayoutRedemptionPaymentTerminal._feeAmount function is used to calculate the fee based on a given _amount, a fee rate _fee and an optional discount _feeDiscount. However, the current implementation calculates the fee in a way that leads to inaccuracy and to fewer fees being paid than anticipated by the protocol.",
-                "Repair": "Adjust the formula to calculate the discounted fee"
-            },
-            {
-                "Location": "mint function in JBToken contract",
-                "Type": "Arbitrary Token Minting",
-                "Description": "The owner of the JBToken contract can mint arbitrary amount of tokens when the changeTokenOf function of the JBController contract is called, and the owner will be transferred to any address.",
+                "Location": "JBToken contract's mint function",
+                "Type": "Arbitrary token minting",
+                "Description": "The owner of the JBToken contract can mint arbitrary amount of tokens.",
                 "Repair": "Set minter as the JBTokenStore contract and add the onlyminter modifier to the mint function"
+            },
+            {
+                "Location": "JBPayoutRedemptionPaymentTerminal contract's _feeAmount function",
+                "Type": "Imprecise fee calculation",
+                "Description": "The current implementation calculates the fee in a way that leads to inaccuracy and to fewer fees being paid than anticipated by the protocol.",
+                "Repair": "Adjust the formula for calculating the discounted fee"
             }
         ]
     }

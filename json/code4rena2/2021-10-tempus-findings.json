@@ -9,7 +9,7 @@
                 "Location": "_depositAndProvideLiquidity function in TempusController.sol",
                 "Type": "Stealing Tokens",
                 "Description": "The function _depositAndProvideLiquidity can be used to retrieve arbitrary ERC20 tokens from the TempusController.sol contract.",
-                "Repair": "Added whitelist registry for both TempusAMM and TempusPool"
+                "Repair": "Create a whitelist registry for TempusAMMs and TempusPools to prevent possible attacks with fake AMMs and pools"
             },
             {
                 "Location": "_depositAndFix function in TempusController.sol",

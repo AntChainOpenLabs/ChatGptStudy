@@ -7,57 +7,57 @@
         "VulnerabilityDesc": [
             {
                 "Location": "L1Migrator contract",
-                "Type": "Missing receive() or fallback() function",
+                "Type": "Missing receive/fallback function",
                 "Description": "The L1Migrator contract is unable to receive ETH because it does not have a receive() or fallback() function, causing all ETH held by the BridgeMinter to get stuck in the contract.",
-                "Repair": "Add receive() external payable {} function to L1Migrator contract"
-            },
-            {
-                "Location": "L1Migrator contract",
-                "Type": "Loss of LPT tokens",
-                "Description": "The migrateLPT() function can be called by anyone and can be used to take away protocol's access to LPT tokens in BridgeMinter. If the function is called with parameters that make the creation of the RetryableTicket on L2 fail, the LPT sits in the L1Migrator contract with no way of moving it to L2 or anywhere else.",
-                "Repair": "Use the balance of the L1Migrator contract instead of the amount returned by IBridgeMinter(bridgeMinterAddr).withdrawLPTToL1Migrator() to specify the amount of LPT to be sent to L2. Limit access to the migrateLPT() function."
+                "Repair": "Add receive() external payable function to L1Migrator contract"
             },
             {
                 "Location": "outboundTransfer function in L1LPTGateway contract",
-                "Type": "Unintentional loss of funds",
-                "Description": "Fund can be lost if the L1 call value provided is insufficient to cover _maxSubmissionCost, or stuck if insufficient to cover _maxSubmissionCost + (_maxGas * _gasPriceBid). The outboundTransfer function in L1LPTGateway contract does not check if the call value is sufficient, causing unintentional loss of funds.",
-                "Repair": "Add a check to ensure that the call value is sufficient, similar to the one used in L1GatewayRouter provided by Arbitrum team"
+                "Type": "Loss of funds due to insufficient call value",
+                "Description": "Fund can be lost if the L1 call value provided is insufficient to cover _maxSubmissionCost, or stuck if insufficient to cover _maxSubmissionCost + (_maxGas * _gasPriceBid).",
+                "Repair": "Add a check to ensure that the call value is sufficient to cover _maxSubmissionCost and _maxGas * _gasPriceBid"
             },
             {
                 "Location": "mint function in L2LivepeerToken contract",
-                "Type": "Unrestricted Minter Role",
-                "Description": "The mint() function of L2LivepeerToken can be used by an address with MINTER_ROLE to burn an arbitrary amount of tokens, posing a serious centralization risk.",
-                "Repair": "Consider removing the MINTER_ROLE, make the L2LivepeerToken only mintable by the owner, and make the L2Minter contract to be the owner and therefore the only minter."
+                "Type": "Ability to mint arbitrary amount of tokens",
+                "Description": "An address with MINTER_ROLE can burn an arbitrary amount of tokens, posing a serious centralization risk.",
+                "Repair": "Remove MINTER_ROLE and make the L2LivepeerToken only mintable by the owner, which is the L2Minter contract"
+            },
+            {
+                "Location": "migrateLPT function in L1Migrator contract",
+                "Type": "Fund loss due to failed RetryableTicket creation",
+                "Description": "The L1Migrator.migrateLPT() function can be called by anyone and if the creation of the RetryableTicket on L2 fails due to insufficient funds, the LPT sits in the L1Migrator contract with no way of moving it to L2 or anywhere else, effectively causing the funds to be lost.",
+                "Repair": "Use the balance of the L1Migrator contract instead of the amount returned by IBridgeMinter(bridgeMinterAddr).withdrawLPTToL1Migrator(), and limit access to the function"
             },
             {
                 "Location": "sendTxToL2() function in L1Migrator.sol",
-                "Type": "Missing ETH transfer",
-                "Description": "ETH transferred to L2 does not include any funds from bridgeMinter, resulting in all the ETH from bridgeMinter being frozen in the contract.",
+                "Type": "lack of funds",
+                "Description": "The ETH transferred to L2 does not include any funds from bridgeMinter, resulting in all the ETH from bridgeMinter being frozen in the contract.",
                 "Repair": "Add the amount withdrawn from BridgeMinter to the msg.value parameter in sendTxToL2() function"
             },
             {
                 "Location": "approve() function in L1Escrow.sol",
-                "Type": "Admin can rug L2 Escrow tokens",
-                "Description": "Admin can approve an arbitrary spender with an arbitrary amount, leading to a reputation risk for the protocol.",
+                "Type": "admin privilege abuse",
+                "Description": "The admin can approve an arbitrary spender with an arbitrary amount, leading to a rug vector and reputation risk.",
                 "Repair": "Restrict the power of the approve() function by only allowing approvals to other trusted protocol contracts"
             },
             {
                 "Location": "burn() function in L2LivepeerToken.sol",
-                "Type": "Burning tokens from any address",
-                "Description": "A malicious or compromised BURNER_ROLE address can burn the balance of a Uniswap pool and steal almost all the funds from the liquidity pool.",
+                "Type": "centralization risk",
+                "Description": "An address with BURNER_ROLE can burn an arbitrary amount of tokens from any address, posing a serious centralization risk.",
                 "Repair": "Remove the BURNER_ROLE and change burn() function to only allow burning tokens from the caller's address"
             },
             {
                 "Location": "outboundTransfer() function in L2LPTGateway.sol",
-                "Type": "Withdrawal of LPT from L2 to L1 not working properly",
-                "Description": "The desired feature to withdraw LPT from L2 to L1 via Arbitrum Router will not work properly due to the missing implementation of outboundTransfer() function.",
-                "Repair": "Implement the outboundTransfer() function with the same signature as used by the Arbitrum Router"
+                "Type": "withdrawal issue",
+                "Description": "The desired feature to withdraw LPT from L2 to L1 via Arbitrum Router will not work properly due to the missing interface on L2LPTGateway.",
+                "Repair": "Implement the outboundTransfer() function with the same signature as the one used by the Arbitrum Router"
             },
             {
-                "Location": "L1Escrow.sol#approve()",
-                "Type": "Centralization Risk",
-                "Description": "An address with DEFAULT_ADMIN_ROLE can approve an arbitrary amount of tokens to any address, posing a serious centralization risk. A malicious or compromised DEFAULT_ADMIN_ROLE address can steal all the funds from the L1Escrow contract.",
-                "Repair": "Remove approve() function and approve l1LPT to l1Gateway in the constructor"
+                "Location": "approve() function in L1Escrow.sol",
+                "Type": "admin privilege abuse",
+                "Description": "An address with DEFAULT_ADMIN_ROLE can approve an arbitrary amount of tokens to any address, posing a serious centralization risk.",
+                "Repair": "Remove the approve() function and approve l1LPT to l1Gateway in the constructor"
             }
         ]
     }

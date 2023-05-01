@@ -7,21 +7,21 @@
         "VulnerabilityDesc": [
             {
                 "Location": "startDraw() and redraw() functions",
-                "Type": "Manipulation of Randomness",
-                "Description": "The draw organizer can rig the draw to favor certain participants such as their own account by waiting until redraw cooldown has passed and then funding their subscription ID to receive a favorable random response from Chainlink. This can be mitigated by enforcing a minimum cooldown of 24 hours before allowing redraws.",
+                "Type": "Rigging the draw",
+                "Description": "The draw organizer can rig the draw to favor certain participants by using an underfunded subscription ID to invalidate the assumption of fairness in the random selection process. This can be done by waiting until the redraw cooldown has passed, funding the subscription ID, and then frontrunning the Chainlink TX with a redraw() call if they don't like the response.",
                 "Repair": "Enforce a minimum cooldown of 24 hours before allowing redraws"
             },
             {
-                "Location": "VRFNFtRandomDraw.sol initialize() function",
-                "Type": "Smart contract vulnerability",
-                "Description": "Protocol safeguards for time durations are skewed by a factor of 7. Protocol may potentially lock NFT for period of 7 years.",
-                "Repair": "Fix MONTH_IN_SECONDS calculation to uint256 immutable MONTH_IN_SECONDS = (3600 * 24) * 30;"
+                "Location": "VRFNFtRandomDraw.sol",
+                "Type": "Protocol safeguards for time durations are skewed by a factor of 7",
+                "Description": "In VRFNFtRandomDraw.sol initialize(), the MONTH_IN_SECONDS variable is used to validate two values. The issue is that MONTH_IN_SECONDS is calculated incorrectly, multiplies by 7 incorrectly, as it was copied from WEEK_IN_SECONDS. Therefore, actual seconds calculated is equivalent of 7 months.",
+                "Repair": "Fix MONTH_IN_SECONDS calculation: uint256 immutable MONTH_IN_SECONDS = (3600 * 24) * 30;"
             },
             {
-                "Location": "Contest page",
-                "Type": "Smart contract vulnerability",
-                "Description": "Admin does not have to wait to call lastResortTimelockOwnerClaimNFT().",
-                "Repair": "Update recoverTimelock for each dice roll and ensure that it is updated in the same function as drawTimelock. <block.timestamp at fulfillRandomWords() + request.drawTimelock + <recoverBufferTime. Where <recoverBufferTime is essentially the drawBufferTime currently used, but for recoverTimelock."
+                "Location": "lastResortTimelockOwnerClaimNFT() function",
+                "Type": "Timelock bypass",
+                "Description": "The admin can call lastResortTimelockOwnerClaimNFT() before the specified time due to recoverTimelock not being updated properly.",
+                "Repair": "Update recoverTimelock for each dice roll and add a recoverBufferTime"
             }
         ]
     },
@@ -34,15 +34,15 @@
         "VulnerabilityDesc": [
             {
                 "Location": "VRFNFTRandomDraw.sol",
-                "Type": "Ownership Control",
-                "Description": "The raffle creator might not start the raffle draw. The NFT that is used for the raffle is transferred to the contract when startDraw is executed. Before that, the NFT is in the hands of the creator. This means that he might create a raffle to make users buy NFTs required to participate and then refuse to draw a winner and keep the NFT to himself. Furthermore, he might not even be the owner of the NFT in the first place, which he can achieve by flash loaning the NFT in order to pass the ownerOf check in initialize function.",
+                "Type": "Raffle creator might not start raffle draw",
+                "Description": "The raffle creator is not required to actually give the NFT away. The NFT that is used for the raffle is transferred to the contract when startDraw is executed. Before that, the NFT is in the hands of the creator.",
                 "Repair": "Transfer the NFT to the contract at the time of creation of the raffle. Add a check in lastResortTimelockOwnerClaimNFT if a winner was drawn. Allow anyone to execute startDraw function, but limit the time window of when startDraw can be executed. Introduce a new state variable firstDrawTime that acts as a timestamp after which drawing can happen. Add a role that has the power to change the VRF subscription or restore the NFT in cases where the winner is not picked in reasonable time."
             },
             {
-                "Location": "VRFNFTRandomDraw contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "The admin/owner of VRFNFTRandomDraw can prevent created or started raffle from taking place.",
-                "Repair": "Validate keyHash within coordinator.requestRandomWords() and ensure sufficient funds in the owner-provided chain.link VRF subscription to pay at the time the oracle attempts to supply random values in fulfillRandomWords(). Also, avoid calling startDraw() if the raffle is not intended to take place."
+                "Location": "VRFNFTRandomDraw.sol",
+                "Type": "VRFNFTRandomDraw admin can prevent created or started raffle from taking place",
+                "Description": "The admin/owner of VRFNFTRandomDraw can start a raffle, including emitting the SetupDraw event, but in a way that ensures fulfillRandomWords() is never called.",
+                "Repair": "Ensure that keyHash is validated within coordinator.requestRandomWords(). Ensure that the owner-provided chain.link VRF subscription has sufficient funds to pay at the time the oracle attempts to supply random values in fulfillRandomWords()."
             }
         ]
     }

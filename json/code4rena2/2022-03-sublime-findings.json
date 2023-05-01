@@ -8,38 +8,38 @@
             {
                 "Location": "LenderPool.sol#L442",
                 "Type": "Lack of access control",
-                "Description": "Anyone can withdraw interest for any lender.",
-                "Repair": "Add access control by requiring the caller to be the lender"
+                "Description": "Anyone can withdrawInterest() for any lender",
+                "Repair": "Add access control to withdrawInterest function"
             },
             {
                 "Location": "PooledCreditLine.sol#L1215-L1221",
                 "Type": "Interest calculation error",
-                "Description": "Interest accrued could be zero for small decimal tokens.",
-                "Repair": "Scale the principal amount to precision (1e18) amounts or use tokens with higher decimals"
+                "Description": "Interest accrued could be zero for small decimal tokens",
+                "Repair": "Scale the principal amount to precision (1e18) amounts"
             },
             {
                 "Location": "LenderPool.sol#L312, LenderPool.sol#L336",
-                "Type": "Potentially depositing at unfavorable rate",
-                "Description": "Anyone can deposit the entire lenderPool to a known strategy at a pre-fixed time, potentially at a less favorable rate.",
-                "Repair": "Add access control on start, e.g. only borrower can call through pooledCreditLine"
+                "Type": "Potential depositing at unfavorable rate",
+                "Description": "Potentially depositing at unfavorable rate since anyone can deposit the entire lenderPool to a known strategy at a pre-fixed time",
+                "Repair": "Add access control to start function, restrict it to be callable only by the borrower"
             },
             {
                 "Location": "LenderPool.sol#L327",
-                "Type": "Medium Severity",
+                "Type": "Functionality error",
                 "Description": "Pool Credit Line May Not Able to Start When _borrowAsset is Non ERC20 Compliant Tokens",
                 "Repair": "Use .safeTransfer instead of .transfer"
             },
             {
-                "Location": "LenderPool.sol#L594-L599, LenderPool.sol#L399-L404",
-                "Type": "High Severity",
-                "Description": "LenderPool : Principal withdrawable is incorrectly calculated if start() is invoked with non-zero start fee",
-                "Repair": "Save the initial supply in minBorrowAmount and replace totalSupply[_id] with it. In terminate(), the shares withdrawable can simply be _sharesHeld."
+                "Location": "LenderPool : Principal withdrawable is incorrectly calculated if start() is invoked with non-zero start fee",
+                "Type": "Incorrect calculation",
+                "Description": "The _principalWithdrawable calculated will be more than expected if _start() is invoked with a non-zero start fee, because the borrow limit is reduced by the fee, resulting in totalSupply[id] not being 1:1 with the borrow limit. Also, _principalWithdrawable is denominated in the borrowAsset, but subsequently treats it as the share amount to be withdrawn.",
+                "Repair": "Save the initial supply in minBorrowAmount when the credit line is accepted, and replace totalSupply[_id] with it. In terminate(), the shares withdrawable can simply be _sharesHeld."
             },
             {
-                "Location": "LenderPool.sol#L404-L406",
-                "Type": "High Severity",
-                "Description": "PooledCreditLine : termination likely fails because  _principleWithdrawable  is treated as shares",
-                "Repair": "The amount of shares to withdraw can simply be _sharesHeld."
+                "Location": "PooledCreditLine : termination likely fails because  _principleWithdrawable  is treated as shares",
+                "Type": "Incorrect treatment",
+                "Description": "_principalWithdrawable is denominated in the borrowAsset, but subsequently treats it as the share amount to be withdrawn.",
+                "Repair": "The amount of shares to withdraw can simply be _sharesHeld. Ensure that terminate() is only called when the credit line is ACTIVE or EXPIRED."
             }
         ]
     }

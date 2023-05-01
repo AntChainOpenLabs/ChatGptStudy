@@ -6,82 +6,82 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "mintReservesFor function",
+                "Location": "DelegateStore's _numberOfReservedTokensOutstandingFor function",
                 "Type": "Abuse of reserved token rounding",
-                "Description": "Projects can launch with several tierIDs of similar contribution size, and reserve rate as low as 1%. Once a victim contributes to the project, it can instantly mint a single reserve token of all the rest of the tiers. They can then redeem the reserve token and receive most of the user's contribution, without putting in any money of their own.",
-                "Repair": "Change the calculation to: _numberOfReservedTokensOutstandingFor(_nft, _i+1, _storedTier);"
+                "Description": "Reserved token rounding can be abused to honeypot and steal user's funds.",
+                "Repair": "Change the calculation to _numberOfReservedTokensOutstandingFor(_nft, _i+1, _storedTier)"
             },
             {
-                "Location": "redeemParams function",
+                "Location": "DelegateStore's _numberOfReservedTokensOutstandingFor function",
                 "Type": "Miscalculation of redemption weight",
-                "Description": "Users of projects can receive less or more funds than they are eligible for when redeeming NFT rewards.",
-                "Repair": "Change the calculation to: _numberOfReservedTokensOutstandingFor(_nft, _i+1, _storedTier);"
+                "Description": "Redemption weight of tiered NFTs miscalculates, making users redeem incorrect amounts.",
+                "Repair": "Change the calculation to _numberOfReservedTokensOutstandingFor(_nft, _i+1, _storedTier)"
             },
             {
-                "Location": "JBTiered721DelegateStore.sol",
-                "Type": "Incorrect calculation",
-                "Description": "The outstanding number of reserved tokens is incorrectly counted in total redemption weight, disrupting the redemption amount calculation formula.",
-                "Repair": "Either consider the outstanding number of reserved tokens as minted and add it to the quantity or not consider it at all"
-            },
-            {
-                "Location": "JBTiered721Delegate.sol",
-                "Type": "NFT not minted",
-                "Description": "A contributor won't get an NFT they're eligible for if the payment is made through a payment terminal that's supported by the project but not by the NFT delegate.",
-                "Repair": "Short term: Revert when a different currency is used and 'prices' is not set. Long term: Consider supporting multiple currencies in the NFT delegate."
+                "Location": "JBTiered721Delegate.sol's conversion step",
+                "Type": "NFT not minted when contributed via a supported payment terminal",
+                "Description": "NFT not minted when contributed via a supported payment terminal.",
+                "Repair": "Consider reverting when a different currency is used and prices is not set. Long term, consider supporting multiple currencies in the NFT delegate."
             },
             {
                 "Location": "_processPayment() function in JBTiered721Delegate.sol",
-                "Type": "Unintended Use of Beneficiary Credit Balance",
-                "Description": "An attacker can pay a small amount and specify the victim as the beneficiary to mint low-value tier NFT using the victim's credit balance. This can result in the victim receiving NFTs with lower voting power than they intended, which can have a higher impact if used in a governance system.",
-                "Repair": "Add a config parameter to allow/disallow the use of beneficiary credit balance by others. The default value should be set to false for every address. Beneficiaries can toggle this state for their address to allow others to use their credit balance."
+                "Type": "Beneficiary credit balance can unwillingly be used to mint low tier NFT",
+                "Description": "An attacker can pay a small amount (just enough to mint lowest tier NFT) and specify the victim to be the beneficiary. Function __processPayment() will use credit balance of beneficiary from previous payment to mint low-value tier.",
+                "Repair": "Add a config param to allow others from using beneficiary's credit balance. Its value can be default to false for every address. And if beneficiary want to, they can toggle this state for their address to allow other using their credit balance."
+            },
+            {
+                "Location": "JBTiered721DelegateStore.sol",
+                "Type": "Outstanding reserved tokens are incorrectly counted in total redemption weight",
+                "Description": "The total redemption weight calculation incorrectly accounts outstanding reserved tokens.",
+                "Repair": "Either consider the outstanding number of reserved tokens as minted and add it to the quantity or not consider it as minted and not count it at all."
             },
             {
                 "Location": "initialize() function in JBTiered721Delegate.sol",
-                "Type": "Multiple Initializations of JBTiered721Delegate",
-                "Description": "An attacker can initialize the JBTiered721Delegate contract with a store address of 0x0 and transfer ownership to themselves, allowing them to modify storage and manipulate creditsOf. They can then initialize the contract again with a non-zero store address, effectively hiding their actions.",
-                "Repair": "Ensure that the store address is not empty. Add a check in the abstract delegate contract to verify that msg.value==data.value to prevent an attacker from exploiting this vulnerability. Also, initialize the contract with a non-zero store address to prevent an attacker from transferring ownership and modifying storage."
+                "Type": "Multiples initializations of JBTiered721Delegate",
+                "Description": "The initialize method of the JBTiered721Delegate contract has as a flag that the _store argument is different from address(0), however, it can be initialized by anyone with this value to allow the project to continue with its usual initialization, the attacker could have interfered and modified the corresponding values to carry out an attack.",
+                "Repair": "Ensure that the store address is not empty. Add a check msg.value==data.value in the abstract delegate contract, i.e., if someone wants to do this, actually paying the credit is needed."
             },
             {
-                "Location": "_processPayment() function in JBTiered721Delegate.sol contract",
-                "Type": "Value Leakage",
-                "Description": "Paying the protocol with _dontMint parameter will result in lost funds for the user. If metadata is provided and _dontMint == true, the creditsOf[] balance of the user is not updated, resulting in value leakage.",
-                "Repair": "Update the code to add credits to the beneficiary's balance even when _dontMint is true"
+                "Location": "function _processPayment(JBDidPayData calldata _data) internal override",
+                "Type": "Value loss",
+                "Description": "User will have their funds lost if they tries to pay the protocol with _dontMint = False. A payment made with this parameter set should increase the creditsOf[] balance of user.",
+                "Repair": "Update the creditsOf[] in the if(_dontMint) check."
             },
             {
-                "Location": "reservedTokenBeneficiaryOf(address _nft, uint256 _tierId)",
-                "Type": "Changing default reserved token beneficiary may result in wrong beneficiary for tier",
+                "Location": "function reservedTokenBeneficiaryOf(address _nft, uint256 _tierId)",
+                "Type": "Incorrect beneficiary",
                 "Description": "When the reservedTokenBeneficiary of a tier is equal to defaultReservedTokenBeneficiaryOf[msg.sender], it is not explicitly set for this tier. This generally works well because in the function reservedTokenBeneficiaryOf(address _nft, uint256 _tierId), defaultReservedTokenBeneficiaryOf[_nft] is used as a backup when _reservedTokenBeneficiaryOf[_nft][_tierId] is not set. However, it will lead to the wrong beneficiary when defaultReservedTokenBeneficiaryOf[msg.sender] is later changed, as this new beneficiary will be used for the tier, which is not the intended one.",
-                "Repair": "Set _reservedTokenBeneficiaryOf[msg.sender][_tierId] when it is equal to the current default beneficiary"
+                "Repair": "Also set _reservedTokenBeneficiaryOf[msg.sender][_tierId] when it is equal to the current default beneficiary."
             },
             {
-                "Location": "JBTiered721DelegateStore.recordMintBestAvailableTier",
-                "Type": "Iterations over all tiers in recordMintBestAvailableTier can render system unusable",
-                "Description": "JBTiered721DelegateStore.recordMintBestAvailableTier potentially iterates over all tiers to find the one with the highest contribution floor that is lower than _amount. When there are many tiers, this loop can always run out of gas, which will cause some transactions (the ones that have a high _leftoverAmount within _processPayment) to always revert. The (implicit) limit for the number of tiers is 2^16 1, so it is possible that this happens in practice.",
-                "Repair": "Use a binary search (which requires some architectural changes) for determining the best available tier. Then, the gas usage grows logarithmically (instead of linear with the current design) with the number of tiers, meaning that it would only be ~16 times higher for 65535 tiers as for 2 tiers."
+                "Location": "function recordMintBestAvailableTier(uint256 _tierId, uint256 _amount)",
+                "Type": "Gas inefficiency",
+                "Description": "JBTiered721DelegateStore.recordMintBestAvailableTier potentially iterates over all tiers to find the one with the highest contribution floor that is lower than _amount. When there are many tiers, this loop can always run out of gas, which will cause some transactions (the ones that have a high _leftoverAmount within _processPayment) to always revert.",
+                "Repair": "Use a binary search (which requires some architectural changes) for determining the best available tier."
             },
             {
-                "Location": "JBTiered721DelegateStore.recordAddTiers",
-                "Type": "The tier setting parameter are unsafely downcasted from type uint256 to type uint80 / uint48 / uint40 / uint16",
-                "Description": "The tier setting parameter are unsafely downcasted from uint256 to uint80 / uint48 / uint16. For example, the owner wants to set the initial supply to a number larger than uint40, but the supply is truncated to type(uint40).max. The owner wants to set the contribution floor price above uint80, but the contribution floor price is truncated to type(uint80).max, the user may underpay the price and get the NFT price at a discount.",
+                "Location": "JBTiered721Delegate.sol#initialize - Store#recordAddTiers",
+                "Type": "Type Conversion Vulnerability",
+                "Description": "The tier setting parameter are unsafely downcasted from type uint256 to type uint80 / uint48 / uint40 / uint16, which can cause unexpected truncation of the original setting.",
                 "Repair": "Change the data type in the struct or safely downcast the number to make sure the number is not shortened unexpectedly"
             },
             {
                 "Location": "JBTiered721DelegateStore#_numberOfReservedTokensOutstandingFor",
-                "Type": "Minting and redeeming break",
-                "Description": "Minting and redeeming become impossible when a tier is fully minted with reserveRate != 0 and reserveRate / MaxReserveRate tokens burned.",
-                "Repair": "Add a check before returning"
+                "Type": "Minting and Redeeming Break Vulnerability",
+                "Description": "Minting and redeeming become impossible when fully minted tiers with reserveRate != 0 and reserveRate / MaxReserveRate tokens burned, due to an underflow in the calculation of the available number of reserve tokens that can be minted.",
+                "Repair": "Add a check before returning to avoid underflow"
             },
             {
                 "Location": "JBTiered721DelegateStore._numberOfReservedTokensOutstandingFor",
-                "Type": "Tier reserved rate not validated",
+                "Type": "Validation",
                 "Description": "The tier reserved rate is not validated and can surpass JBConstants.MAX_RESERVED_RATE.",
-                "Repair": "Validate the tier reserved rate in the JBTiered721DelegateStore.recordAddTiers function"
+                "Repair": "Validate the tier reserved rate in the JBTiered721DelegateStore.recordAddTiers function to ensure the reserved rate is not greater than JBConstants.MAX_RESERVED_RATE."
             },
             {
-                "Location": "recordMintReservesFor() function and _numberOfReservedTokensOutstandingFor() function",
-                "Type": "Deactivated Tier Reserve Token Minting",
+                "Location": "function recordMintReservesFor",
+                "Type": "Access Control",
                 "Description": "Deactivated tiers can still mint reserve tokens, even if no non-reserve tokens were minted.",
-                "Repair": "Pass an argument isDeactivated which, if true, deactivates the rounding logic"
+                "Repair": "Pass an argument isDeactivated which, if true, deactivates the rounding logic."
             }
         ]
     }

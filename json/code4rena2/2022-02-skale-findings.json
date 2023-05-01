@@ -6,82 +6,58 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MessageProxy.sol",
-                "Type": "Replay Attack",
-                "Description": "Transactions can be replayed when a connectedChain is removed and then reconnected.",
-                "Repair": "Instead of delete/reset the counter, consider leaving the counter as it is when removeConnectedChain, _addConnectedChain also should not reset the counter"
-            },
-            {
                 "Location": "TokenManagerERC20.sol",
                 "Type": "Use of transferFrom() instead of safeTransferFrom()",
-                "Description": "TokenManagerERC20.sol uses transferFrom() instead of safeTransferFrom().",
-                "Repair": "Use OpenZeppelin\u2019s SafeERC20 versions with the safeTransfer and safeTransferFrom functions that handle the return value check as well as non-standard-compliant tokens"
+                "Description": "Tokens that don\u2019t correctly implement the latest EIP20 spec will be unusable in the protocol as they revert the transaction because of the missing return value.",
+                "Repair": "Use OpenZeppelin\u2019s SafeERC20 versions with the safeTransfer and safeTransferFrom functions that handle the return value check as well as non-standard-compliant tokens."
             },
             {
-                "Location": "DepositBoxERC20.sol, ERC20OnChain.sol, TokenManagerERC20.sol",
-                "Type": "Token Drain",
-                "Description": "transferredAmount on mainnet can be drained if a malicious account can mint more tokens on Schain.",
-                "Repair": "Disable minting function to be called directly in ERC20OnChain. Only allow minting when bridging tokens over. Switching from a role based system to an immutable Minter Address (the bridge contract) can be used as mitigation, alternatively sChain end users will have to monitor for these types of changes and act accordingly"
+                "Location": "MessageProxy.sol",
+                "Type": "Transactions can be replayed when a connectedChain is removed and then reconnected",
+                "Description": "Once the incomingMessageCounter resets to 0, all the past messages (transactions) can be replayed with the old signatures.",
+                "Repair": "Instead of delete/reset the counter, consider leaving the counter as it is when removeConnectedChain, _addConnectedChain also should not reset the counter."
             },
             {
-                "Location": "TokenManagerERC20.sol",
-                "Type": "Token Transfer Vulnerability",
-                "Description": "When transferring tokens native on SKALE to Ethereum with TokenManagerERC20.exitToMainERC20(), the tokens on the schain will be frozen on TokenManagerERC20, but they will not receive tokens on Ethereum due to a vulnerability in the implementation of TokenManagerERC20 that allows a user to set mainnet as the target chain.",
+                "Location": "TokenManagerERC20.exitToMainERC20()",
+                "Type": "Token transfer vulnerability",
+                "Description": "Tokens on the schain will be frozen on TokenManagerERC20, but they will not receive tokens on Ethereum.",
                 "Repair": "Prevent moving schain native tokens to Ethereum MAINNET by adding require(chainHash != MAINNET_HASH)"
             },
             {
-                "Location": "getFunds() functions in DepositBoxEth.sol, DepositBoxERC20.sol, DepositBoxERC721.sol, and DepositBoxERC1155.sol",
-                "Type": "Rug pull",
-                "Description": "Schain owners can rug pull users' funds",
-                "Repair": "Add a long time lock for killing so users have plenty of time to get their funds out before a kill"
-            },
-            {
-                "Location": "setTokenURI() function in ERC721OnChain.sol",
-                "Type": "NFT URI spoofing",
-                "Description": "NFT owner can change token URI",
+                "Location": "ERC721OnChain.setTokenURI()",
+                "Type": "NFT URI change vulnerability",
+                "Description": "A user that owns an NFT can just spoof any other NFT data by changing the token URI to any of the other NFTs.",
                 "Repair": "Disallow the owner of an NFT to change its token URI"
             },
             {
-                "Location": "transferToSchainERC20() function in TokenManagerERC20.sol",
-                "Type": "Token freeze",
-                "Description": "S2S Transfer from the origin schain to another schain with automatic deploy disabled can cause funds to be frozen",
-                "Repair": "Add a mapping storage to cache whether automaticDeploy is enabled on a certain schain, and only allow S2S transfer when automaticDeploy is enabled on the target schain. Introduce a 24 hrs timelock for disabling automaticDeploy."
+                "Location": "DepositBoxEth.sol, DepositBoxERC20.sol, DepositBoxERC721.sol, DepositBoxERC1155.sol, TokenManagerERC20.sol",
+                "Type": "Smart contract vulnerability",
+                "Description": "Various vulnerabilities in the smart contracts including rug pull, frozen funds, centralization risk, and arbitrary burning of tokens.",
+                "Repair": "Add a long time lock for killing, cache whether automaticDeploy is enabled on a certain schain, remove setEthErc20Address() function, update forceBurn function for only owner can burn his tokens"
             },
             {
-                "Location": "TokenManagerEth.sol",
-                "Type": "Centralisation risk",
-                "Description": "The DEFAULT_ADMIN_ROLE of TokenManagerEth.sol is able to modify the ERC20 token on the SChain to any arbitrary address.",
-                "Repair": "Remove the function setEthErc20Address() as ethErc20 is set in the initialize() function and does not need to be changed"
+                "Location": "CommunityPool.sol",
+                "Type": "Gas price extortion",
+                "Description": "The function refundGasByUser() can be exploited by the message sender to drain nodes and SChain owners of their balances when processing incoming messages.",
+                "Repair": "Use a gas price oracle rather than tx.gasprice or set a maximum gas price and have incentives for nodes submitting at a lower gas price"
             },
             {
                 "Location": "DepositBoxERC20 contract",
                 "Type": "Incompatibility with rebasing/deflationary/inflationary tokens",
                 "Description": "The DepositBoxERC20 contract does not appear to support rebasing/deflationary/inflationary tokens whose balance changes during transfers or over time.",
-                "Repair": "Add support in contracts for such tokens before accepting user-supplied tokens"
+                "Repair": "Add support for such tokens before accepting user-supplied tokens or check before/after balance on the vault"
             },
             {
-                "Location": "EthErc20.sol",
-                "Type": "Burning arbitrary amount of tokens",
-                "Description": "An address with BURNER_ROLE can burn an arbitrary amount of tokens from any address.",
-                "Repair": "Update forceBurn function for only owner can burn his tokens"
-            },
-            {
-                "Location": "CommunityPool.sol and MessageProxyForMainnet.sol",
-                "Type": "Gas pricing attack",
-                "Description": "The function refundGasByUser() can be exploited by the message sender to drain nodes and SChain owners of their balances when processing incoming messages.",
-                "Repair": "Use a gas price oracle rather than tx.gasprice or set a maximum gas price and have some incentives for the node submitting at a gas price below the maximum"
-            },
-            {
-                "Location": "postIncomingMessages function in MessageProxyForSchain contract",
+                "Location": "MessageProxyForSchain contract",
                 "Type": "Reentrancy",
-                "Description": "The attacker can re-enter into the postIncomingMessages function and submit the same messages again, creating a replay attack.",
+                "Description": "The postIncomingMessages function calls _callReceiverContract(fromChainHash, messages[i], startingCounter + 1) which gives control to a contract that is potentially attacker controlled before updating the incomingMessageCounter.",
                 "Repair": "Add a messageInProgressLocker modifier to postIncomingMessages"
             },
             {
-                "Location": "removeConnectedChain function in MessageProxy contract",
+                "Location": "MessageProxy.sol",
                 "Type": "Loss of pending messages",
-                "Description": "If there are any unprocessed messages to be executed or processed, while removeConnectedChain is called, then they may be stuck from getting processed on the other end.",
-                "Repair": "Check if there are any pending or unprocessed messages while removeConnectedChain is called and revert in that case. Implement some functionality like pause just locally for the chain to be removed, before the actual removeConnectedChain is called."
+                "Description": "If there are any unprocessed messages to be executed or processed while removeConnectedChain is called, then they may be stuck from getting processed on the other end.",
+                "Repair": "Check if there are any pending or unprocessed messages while removeConnectedChain is called and revert in that case or implement some functionality like pause just locally for the chain to be removed before the actual removeConnectedChain is called"
             }
         ]
     }

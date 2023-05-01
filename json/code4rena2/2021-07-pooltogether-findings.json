@@ -8,50 +8,50 @@
             {
                 "Location": "SwappableYieldSource.redeemToken function",
                 "Type": "ERC20 token transfer vulnerability",
-                "Description": "The transferFrom function checks if the contract approved itself for the redeemableBalance instead of skipping the allowance check in case the sender is the from address, which can make the transaction revert and the deposited funds will be unrecoverable for the user.",
+                "Description": "Some deposit token implementations might fail as transferFrom checks if the contract approved itself for the redeemableBalance instead of skipping the allowance check in case the sender is the from address. This can make the transaction revert and the deposited funds will be unrecoverable for the user.",
                 "Repair": "Use _depositToken.safeTransfer(msg.sender, redeemableBalance) instead of ERC20.transferFrom(address(this), msg.sender, redeemableBalance)"
             },
             {
                 "Location": "SwappableYieldSource.transferFunds function",
-                "Type": "Asset valuation exploit",
-                "Description": "The transferFunds function fails to check that the deposit tokens are the same, which can allow a malicious owner or asset manager to exploit and pocket the difference in asset valuation.",
-                "Repair": "Removed transferFunds function and added a check for the same depositToken in _setYieldSource function"
+                "Type": "Missing deposit token check",
+                "Description": "If the specified yield source's assets are of a higher valuation, then a malicious owner or asset manager will be able to exploit and pocket the difference.",
+                "Repair": "Check that the deposit tokens are the same before transferring funds"
             },
             {
-                "Location": "After swapping a yield source",
+                "Location": "SwappableYieldSource contract",
+                "Type": "Single-step ownership transfer/renounce",
+                "Description": "Critical address transfer/renouncing in one-step is very risky because it is irrecoverable from any mistakes.",
+                "Repair": "Override the inherited methods to null functions and use separate functions for a two-step address change"
+            },
+            {
+                "Location": "SwappableYieldSource contract",
                 "Type": "Infinite approval vulnerability",
-                "Description": "After swapping a yield source, the old yield source still has infinite approval, which can be used in large attacks if the yield source isn't perfectly safe.",
+                "Description": "After swapping a yield source, the old yield source still has infinite approval.",
                 "Repair": "Decrease approval after swapping the yield source"
             },
             {
-                "Location": "SwappableYieldSource contract ownership management",
-                "Type": "Critical ownership transfer/renounce vulnerability",
-                "Description": "The one-step process for critical ownership transfer/renounce is risky because it is irrecoverable from any mistakes, and can prevent the use of all the onlyOwner() functions forever, which includes the changing of various critical addresses and parameters.",
-                "Repair": "Override the inherited methods to null functions and use separate functions for a two-step address change, and consider adding a time-delay for sensitive actions"
+                "Location": "SwappableYieldSource.swapYieldSource function",
+                "Type": "Rug pull vulnerability",
+                "Description": "If either the owner or the asset manager have malicious intent, this function allows them to instantly rug all funds.",
+                "Repair": "Check that the YieldSource is from a trusted registry before allowing the swap"
             },
             {
-                "Location": "function swapYieldSource",
-                "Type": "Access control",
-                "Description": "The function allows the owner or asset manager to instantly rug all funds by swapping the yield source without proper access control.",
-                "Repair": "Implement access control to prevent unauthorized access to the function"
+                "Location": "setYieldSource function, supplyTokenTo function, balanceOfToken function, _mintShares function, _tokenToShares function, _sharesToToken function",
+                "Type": "Temporary Inconsistent State",
+                "Description": "The use of setYieldSource leaves the contract in a temporary inconsistent state because it changes the underlying yield source, but doesn't (yet) transfer the underlying balances, while the shares stay the same.",
+                "Repair": "Remove setYieldSource function or temporarily disable actions like supplyTokenTo, redeemToken and balanceOfToken after setYieldSource and until transferFunds has been done"
             },
             {
-                "Location": "function setYieldSource",
-                "Type": "Inconsistent state",
-                "Description": "The use of setYieldSource leaves the contract in a temporary inconsistent state because it changes the underlying yield source but doesn't (yet) transfer the underlying balances, while the shares stay the same.",
-                "Repair": "Remove the function setYieldSource or temporarily disable actions like supplyTokenTo, redeemToken and balanceOfToken after setYieldSource and until transferFunds has been done"
-            },
-            {
-                "Location": "function supplyTokenTo",
-                "Type": "Inconsistent balance",
-                "Description": "The supplyTokenTo function assumes that amount of _depositToken is transferred to itself after calling the safeTransferFrom function, which may not be true if the _depositToken is a transfer-on-fee token or a deflationary/rebasing token, causing the received amount to be less than the accounted amount.",
+                "Location": "supplyTokenTo function",
+                "Type": "Inconsistent Balance",
+                "Description": "The supplyTokenTo function of SwappableYieldSource assumes that amount of _depositToken is transferred to itself after calling the safeTransferFrom function (and thus it supplies amount of token to the yield source). However, this may not be true if the _depositToken is a transfer-on-fee token or a deflationary/rebasing token, causing the received amount to be less than the accounted amount.",
                 "Repair": "Get the actual received amount by calculating the difference of token balance before and after the transfer"
             },
             {
-                "Location": "function _approveMax",
-                "Type": "SafeApprove usage",
-                "Description": "The usage of safeApprove will always cause approveMax to revert, making it impossible to increase the allowance when it falls low.",
-                "Repair": "Use logic similar to SwappableYieldSource instead of using safeApprove()"
+                "Location": "safeApprove function",
+                "Type": "Incorrect Usage of Function",
+                "Description": "Unlike SwappableYieldSource which uses safeIncreaseAllowance to increase the allowance to uint256.max, mStableYieldSource uses OpenZeppelin\u2019s safeApprove() which has been documented as (1) Deprecated because of approve-like race condition and (2) To be used only for initial setting of allowance (current allowance == 0) or resetting to 0 because it reverts otherwise.",
+                "Repair": "Use logic similar to SwappableYieldSource instead of using safeApprove"
             }
         ]
     }

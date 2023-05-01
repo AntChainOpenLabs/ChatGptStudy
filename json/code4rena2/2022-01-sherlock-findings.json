@@ -40,8 +40,8 @@
             {
                 "Location": "SherlockClaimManager contract",
                 "Type": "Incorrect amounts needed and paid for escalated claims",
-                "Description": "The protocol agent is required to pay and stake a certain amount for the process of escalating claims. However, in reality, the protocol agent ends up paying more due to UMA burning half of the BOND collected + final fee, which goes against the claim that the protocol agent will be able to reclaim his stake in full.",
-                "Repair": "Change the parameters of requestAndProposePriceFor() to set BOND as the reward and the actual bond for UMA as 1. Ideally, it should be set to 0, but if set as such, UMA interprets it to use the final fee as the bond amount instead."
+                "Description": "The protocol agent is required to pay and stake a certain amount for the process of escalating claims. However, the actual amount required from the protocol agent is more than what is expected due to UMA burning half of the BOND collected + final fee. The documentation is also incorrect about the burned amount.",
+                "Repair": "Change the parameters of requestAndProposePriceFor() to set BOND as the reward and the actual bond for UMA as 1. Update the documentation to reflect the correct burned amount."
             }
         ]
     }

@@ -6,9 +6,9 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "permitAndMulticall() function in PermitAndMulticall.sol and TWABDelegator.sol contracts",
-                "Type": "Unauthorized fund transfer",
-                "Description": "An attacker may use the permitAndMulticall() function to steal funds or as a Denial of Service (DoS) attack if the _from address is not the message sender. If an attacker calls permitAndMulticall() before the _from user, they may use their signature and nonce combination, which could result in a DoS attack by continually front-running permitAndCall() using other users' signatures. The severity of the vulnerability was initially disputed, but it was ultimately labeled as a Medium Risk (2) vulnerability because funds are not directly at risk, but the attacker would enjoy better odds of winning.",
+                "Location": "permitAndMulticall() function in PermitAndMulticall.sol and TWABDelegator.sol",
+                "Type": "Unauthorized fund transfer and DoS",
+                "Description": "The permitAndMulticall() function can be used to steal funds or as a Denial of Service (DoS) attack if the _from address is not the message sender. If an attacker calls permitAndMulticall() before the _from user, they may use their signature and nonce combination, causing the signature to no longer be valid and permitToken.permit() to fail on the second call. This can be used as a DoS attack by continually front-running permitAndCall() using other users' signatures. The attacker can also control the _data parsed to the _multicall() function and delegate call to the TWABDelegator.sol contract. Although, in this case, msg.sender will be the attacker and not the delegatee. The only attack vector possible would be with the updateDelegatee function since an attacker could pass a _delegatee address and compute the delegation with the passed _delegator param. Funds wouldn't be at risk but delegated to the attacker address.",
                 "Repair": "Update the _from field to be the msg.sender in permitAndMulticall() or alternatively do this in _permitAndMulticall() to save some gas."
             }
         ]

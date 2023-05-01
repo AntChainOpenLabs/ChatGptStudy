@@ -6,16 +6,34 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "[M-03], [M-01], [M-02], [H-01]",
-                "Type": "Smart Contract",
-                "Description": "The vulnerabilities include failing to receive commission rewards, losing reward tokens due to rounding down, incorrect implementation of updateGlobalExchangeRate, and usage of an incorrect version of Ownable library that can potentially malfunction all onlyOwner functions.",
-                "Repair": "Add additional checks and conditions to the code to prevent the vulnerabilities from being exploited"
+                "Location": "[M-03]",
+                "Type": "Medium Severity",
+                "Description": "Validator can fail to receive commission reward in redeemAllRewards.",
+                "Repair": "Limit the commisionRate to less than the value that causes issues"
             },
             {
-                "Location": "unstake function",
-                "Type": "Incorrect Calculation",
-                "Description": "The unstake function does not immediately update the exchange rates, resulting in more shares being burned than required and users losing rewards in the end.",
-                "Repair": "Move the updateGlobalExchangeRate() and updateValidator(v) calls to the beginning of the function."
+                "Location": "[M-01]",
+                "Type": "Medium Severity",
+                "Description": "Reward tokens could get lost due to rounding down.",
+                "Repair": "Add a check to ensure that amount is a multiple of allocatedTokensPerEpoch in depositRewardTokens, takeOutRewardTokens, and setAllocatedTokensPerEpoch functions"
+            },
+            {
+                "Location": "[M-02]",
+                "Type": "Medium Severity",
+                "Description": "unstake should update exchange rates first.",
+                "Repair": "Separate the shares accounting from the activation of validator, simply removing the subtraction of global shares in disableValidator would allow them to claim those shares"
+            },
+            {
+                "Location": "[H-01]",
+                "Type": "High Severity",
+                "Description": "Usage of an incorrect version of Ownable library can potentially malfunction all onlyOwner functions.",
+                "Repair": "Use @openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol and @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol instead of @openzeppelin/contracts/access/Ownable.sol and change the initialize() function"
+            },
+            {
+                "Location": "[H-02]",
+                "Type": "High Severity",
+                "Description": "unstake should update exchange rates first.",
+                "Repair": "Move the updateGlobalExchangeRate() and updateValidator(v) calls to the beginning of the function"
             }
         ]
     }

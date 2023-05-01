@@ -9,13 +9,13 @@
                 "Location": "NestedFactory.sol#L71, NestedFactory.sol#L286-L296, NestedFactory.sol#L370-L375, NestedFactory.sol#L482-L492",
                 "Type": "Accidental ETH transfer",
                 "Description": "Should a user accidentally send ETH to the NestedFactory, anyone can utilise it to their own benefit by calling processOutputOrders() / processInputAndOutputOrders().",
-                "Repair": "Restrict the sender to be 'weth' in receive() function or add a check that _fromReserve is false in the scenario address(_inputToken) == ETH"
+                "Repair": "Restrict the sender to be 'weth' in receive() function and check that _fromReserve is false in the scenario address(_inputToken) == ETH"
             },
             {
                 "Location": "NestedFactory.sol#L446",
                 "Type": "Fee avoidance",
                 "Description": "A user can destroy their NFTs and not pay fees on most of their assets.",
-                "Repair": "Replace the safeTransfer with your safeTransferWithFees function or set a maximum 'slippage' amount in the safeSubmitOrder function"
+                "Repair": "Replace the safeTransfer with safeTransferWithFees function or set a maximum 'slippage' amount in the safeSubmitOrder function"
             }
         ]
     },
@@ -29,7 +29,7 @@
                 "Location": "NestedRecords.sol#L117-L131",
                 "Type": "Undesired behavior",
                 "Description": "You push a parameter into an array of tokens without checking if it already exists. And, if at first it's added with amount 0, it can later on be pushed with a greater amount and be twice in the array.",
-                "Repair": "Check if the parameter already exists before pushing it into the array of tokens"
+                "Repair": "Check the _amount parameter before pushing it into the array of tokens"
             }
         ]
     },
@@ -43,7 +43,7 @@
                 "Location": "OperatorResolver.sol#L42-L43",
                 "Type": "Incorrect logic",
                 "Description": "The logic related to the areOperatorsImported method is incorrect and can cause an operator not to be updated because the owner thinks it is already updated, and a vulnerable or defective one can be used.",
-                "Repair": "Change && by ||"
+                "Repair": "Change && by || in the areOperatorsImported method"
             }
         ]
     },
@@ -55,9 +55,9 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "NestedFactory.sol#L99-L108, MixinOperatorResolver.sol#L30-L47, NestedFactory.sol#L110-L122, MixinOperatorResolver.sol#L49-L55",
-                "Type": "Operator tracking problem",
-                "Description": "The NestedFactory does not track operators properly, causing inconsistency issues in the cache and leading to incorrect assumptions in core operations.",
+                "Location": "NestedFactory.sol, MixinOperatorResolver.sol",
+                "Type": "Cache inconsistency",
+                "Description": "The NestedFactory contract does not track operators properly, leading to cache inconsistency issues. There are four separate instances of operator tracking problems in this submission. Many core operations are dependent on the assumption that the operatorCache cache is synced prior to these functions being executed, but this may not necessarily be the case.",
                 "Repair": "Add calls to rebuildCache() in addOperator() and removeOperator(), have INestedFactory also track operators that have been removed with a new array, and have isResolverCached() also check whether this new array is empty or not."
             }
         ]

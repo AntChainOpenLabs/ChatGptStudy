@@ -1,0 +1,10 @@
+{"Vulnerability Type": "Medium Severity", "Vulnerability Location": "[M-03]", "Repair Method": "Limit the commisionRate to less than the value that causes issues", "Vulnerability Information": "Validator can fail to receive commission reward in redeemAllRewards."}
+
+{"Vulnerability Type": "Medium Severity", "Vulnerability Location": "[M-01]", "Repair Method": "Add a check to ensure that amount is a multiple of allocatedTokensPerEpoch in depositRewardTokens, takeOutRewardTokens, and setAllocatedTokensPerEpoch functions", "Vulnerability Information": "Reward tokens could get lost due to rounding down."}
+
+{"Vulnerability Type": "Medium Severity", "Vulnerability Location": "[M-02]", "Repair Method": "Separate the shares accounting from the activation of validator, simply removing the subtraction of global shares in disableValidator would allow them to claim those shares", "Vulnerability Information": "unstake should update exchange rates first."}
+
+{"Vulnerability Type": "High Severity", "Vulnerability Location": "[H-01]", "Repair Method": "Use @openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol and @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol instead of @openzeppelin/contracts/access/Ownable.sol and change the initialize() function", "Vulnerability Information": "Usage of an incorrect version of Ownable library can potentially malfunction all onlyOwner functions."}
+
+{"Vulnerability Type": "High Severity", "Vulnerability Location": "[H-02]", "Repair Method": "Move the updateGlobalExchangeRate() and updateValidator(v) calls to the beginning of the function", "Vulnerability Information": "unstake should update exchange rates first."}
+

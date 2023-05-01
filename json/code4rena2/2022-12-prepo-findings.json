@@ -6,52 +6,58 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "Redeem function in PrePOMarket contract",
+                "Location": "DepositHook.sol, PrePOMarket.sol",
                 "Type": "Access Control",
-                "Description": "PrePO NFT holders will not be able to redeem collateral",
-                "Repair": "Add an additional check in DepositHook to NFT holders through NFTScoreRequirement"
+                "Description": "PrePO NFT holders will not be able to redeem collateral.",
+                "Repair": "Add an additional check in DepositHook to NFT holders through NFTScoreRequirement. Set the RedeemHook AccountList to allow all users to redeem positions via the PrePOMarket contract once trading on the UniswapV3Pool is closed."
             },
             {
-                "Location": "Collateral.sol, DepositHook.sol, WithdrawHook.sol, PrePOMarket.sol, PrePOMarketFactory.sol",
-                "Type": "Smart contract vulnerability",
-                "Description": "The recipient receives free collateral token if an ERC20 token that deducts a fee on transfer used as baseToken. Frontrunning for unallowed minting of Short and Long tokens.",
-                "Repair": "Calculate the actual amount by recording the balance before and after, and use actualAmount instead of _amount to perform any further calculations or external calls. Set the _mintHook in the deployment in the PrePOMarketFactory or add a default MintHook-Contract address that will always revert until it's changed to a valid one."
+                "Location": "PrePOMarket.sol",
+                "Type": "Front-running",
+                "Description": "Frontrunning for unallowed minting of Short and Long tokens.",
+                "Repair": "Set the _mintHook in the deployment in the PrePOMarketFactory or add a default MintHook-Contract address that will always revert until it's changed to a valid one."
+            },
+            {
+                "Location": "Collateral.sol, DepositHook.sol, WithdrawHook.sol",
+                "Type": "Free collateral token",
+                "Description": "If an ERC20 token that deducts a fee on every transfer call is used as baseToken, the recipient receives free collateral token.",
+                "Repair": "Calculate actual amount by recording balance before and after transfer"
+            },
+            {
+                "Location": "TokenSender.sol, DepositHook.sol, RedeemHook.sol, WithdrawHook.sol",
+                "Type": "Users not receiving owed tokens",
+                "Description": "Users do not receive owed tokens if TokenSender contract cannot cover their owed amount.",
+                "Repair": "Track users whose balance wasn't covered in a mapping and provide a function for them to manually claim tokens later on if the contract's balance is topped up"
             },
             {
                 "Location": "WithdrawHook contract",
                 "Type": "griefing / blocking / delaying users to withdraw",
-                "Description": "The check for the user withdraw is wrongly implemented and can lead to an unexpected delay for a user with a position userWithdrawLimitPerPeriod. To withdraw all his funds he needs to be the first in every first new epoch (lastUserPeriodReset + userPeriodLength) to get his amount out. If he is not the first transaction in the new epoch, he needs to wait for a complete new epoch and depending on the timeframe from lastUserPeriodReset + userPeriodLength this can get a long delay to get his funds out.",
-                "Repair": "Change the lastUserPeriodReset variable to a mapping to track the time for every user separately and modify the condition to check the user's withdraw limit for every user separately"
+                "Description": "The check for the user withdraw is wrongly implemented and can lead to an unexpected delay for a user with a position userWithdrawLimitPerPeriod.",
+                "Repair": "Change the implementation to reset the amount for every user separately using a mapping"
             },
             {
-                "Location": "TokenSender contract",
-                "Type": "Users do not receive owed tokens if TokenSender contract cannot cover their owed amount",
-                "Description": "The TokenSender contract checks its own balance to see if it can cover the required amount. If it cannot, it simply doesn't send tokens. These tokens are intended to be a compensation for fees paid elsewhere in the process, and thus do represent a value loss.",
-                "Repair": "Track users whose balance wasn't covered in a mapping, as well as a function for them to manually claim tokens later on if the contract's balance is topped up"
-            },
-            {
-                "Location": "Collateral.sol",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Manager can get around min reserves check, draining all funds from Collateral.sol.",
-                "Repair": "Add a check on the reserves in the withdraw() function as well as managerWithdraw()"
-            },
-            {
-                "Location": "PrePOMarket.setFinalLongPayout()",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "PrePOMarket.setFinalLongPayout() shouldn't be called twice.",
-                "Repair": "Modify setFinalLongPayout() to prevent it from being finalized twice"
+                "Location": "withdraw() and managerWithdraw() functions in Collateral.sol",
+                "Type": "Manager can get around min reserves check, draining all funds from Collateral.sol",
+                "Description": "The manager can use this flaw to get around the reserve balance by making a large deposit, taking a manager withdrawal, and then withdrawing their deposit.",
+                "Repair": "Include a check on the reserves in the withdraw() function as well as managerWithdraw()"
             },
             {
                 "Location": "WithdrawHook.sol",
-                "Type": "Smart Contract Vulnerability",
+                "Type": "Bypassing Withdraw Limit Check",
                 "Description": "A whale user is able to cause freeze of funds of other users by bypassing withdraw limit.",
-                "Repair": "Add limit checks in the if blocks as well, to make sure the first request does not overflow the limit"
+                "Repair": "Add limit checks in the if blocks as well, to make sure the first request does not overflow the limit."
             },
             {
-                "Location": "withdraw function",
-                "Type": "Bypass userWithdrawLimitPerPeriod check",
+                "Location": "PrePOMarket.sol",
+                "Type": "Calling setFinalLongPayout() Twice",
+                "Description": "If finalLongPayout is changed twice by admin fault, the market would be insolvent as it should pay more collateral than it has.",
+                "Repair": "Modify setFinalLongPayout() to prevent it from being finalized twice."
+            },
+            {
+                "Location": "WithdrawHook.sol",
+                "Type": "Bypassing userWithdrawLimitPerPeriod Check",
                 "Description": "User can bypass the userWithdrawLimitPerPeriod check by transferring the balance to another account.",
-                "Repair": "User should only be allowed to transfer leftover limit. For example if User already utilized limit X then he should only be able to transfer userWithdrawLimitPerPeriod-X."
+                "Repair": "User should only be allowed to transfer leftover limit."
             }
         ]
     }

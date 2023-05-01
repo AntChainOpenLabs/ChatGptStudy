@@ -9,13 +9,13 @@
                 "Location": "function _calcAuction",
                 "Type": "Incorrect amount of Collateral moves for Auction",
                 "Description": "The debt and collateral which moves for Auction is calculated incorrectly. In case where line.proportion is set to small value, chances are art will become lower than min debt. This causes whole collateral to go for auction, which was not expected.",
-                "Repair": "Revise the calculation as mentioned in the text"
+                "Repair": "Revise the calculation as mentioned in the report"
             },
             {
                 "Location": "function auction",
                 "Type": "Someone can create non-liquidatable auction",
-                "Description": "If someone starts an auction with to = address(0), this auction becomes un-liquidatable. A malicious user can run a bot to monitor his own vault, and if they got underwater and they don\u2019t have enough collateral to top up, they can immediately start an auction on their own vault and set actioneer to 0 to avoid actually being liquidated, which breaks the design of the system.",
-                "Repair": "Add check while starting an auction as mentioned in the text"
+                "Description": "If someone starts an auction with to = address(0), this auction becomes un-liquidatable. A malicious user can exploit this vulnerability to avoid being liquidated, which breaks the design of the system.",
+                "Repair": "Add a check while starting an auction to ensure that the to address is not address(0)"
             }
         ]
     }

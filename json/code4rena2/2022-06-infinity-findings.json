@@ -13,21 +13,119 @@
             },
             {
                 "Location": "MatchOneToManyOrders and matchOrders functions in InfinityExchange.sol",
-                "Type": "Tokens Theft",
+                "Type": "Malicious Sell Order",
                 "Description": "The MatchOneToManyOrders function does not check whether a given sell order is malicious, i.e., containing no NFT tokens but still requiring payment, which may cause the sellers to maliciously profit.",
-                "Repair": "Ban any empty NFT transfers by ensuring numNfts is bigger than zero and ERC1155 transfers at least 1 item"
+                "Repair": "Ban empty NFT transfers by requiring numNfts to be bigger than zero and ensuring ERC1155 transfers at least 1 item"
             },
             {
-                "Location": "InfinityExchange.sol",
-                "Type": "Gas cost discrepancy",
-                "Description": "The gas refunds are computed in a way where the first order's buyer pays less than the later ones, causing a loss of funds for the buyers whose orders came last in the batch.",
-                "Repair": "Initialize startGasPerOrder variable outside the for-loop"
+                "Location": "updateWethTranferGas function in InfinityExchange.sol",
+                "Type": "Malicious governance can steal WETH from buyers",
+                "Description": "Malicious governance can use updateWethTranferGas to steal WETH from buyers.",
+                "Repair": "Set a sanity check in updateWethTranferGas so governance can't set it to unreasonable value. Consider using timelock for setting governance settings."
             },
             {
-                "Location": "InfinityExchange contract, takeOrders and takeMultipleOneOrders functions",
-                "Type": "Overpayment not refunded",
-                "Description": "The InfinityExchange contract accepts payments in native ETH, but does not return overpayments to the buyer. Overpayments are likely in the case of auction orders priced in native ETH.",
+                "Location": "startGasPerOrder variable in InfinityExchange.sol",
+                "Type": "Gas refunds computed in a way where the first order's buyer pays less than the later ones",
+                "Description": "InfinityExchange computes gas refunds in a way where the first order's buyer pays less than the later ones.",
+                "Repair": "Initialize startGasPerOrder outside the for-loop."
+            },
+            {
+                "Location": "gasCost computation in InfinityExchange.sol",
+                "Type": "Maker order buyer is forced to reimburse the gas cost at any tx.gasprice",
+                "Description": "Maker order buyer is forced to reimburse the gas cost at any tx.gasprice.",
+                "Repair": "Consider adding a new parameter to maker buy orders, maxGasCost, to allow the buyer to limit the max gas they agreed to pay."
+            },
+            {
+                "Location": "rescueETH() function in InfinityExchange.sol",
+                "Type": "Accumulated ETH fees cannot be retrieved",
+                "Description": "ETH fees accumulated from takeOrders() and takeMultipleOneOrders() operations are permanently frozen within the contract as there is only one way designed to retrieve them, a rescueETH() function, and it will work as intended, not being able to access ETH balance of the contract.",
+                "Repair": "Add contract balance to the funds transferred in rescueETH() function"
+            },
+            {
+                "Location": "takeMultipleOneOrders() function in InfinityExchange.sol",
+                "Type": "Missing Complication check in takeMultipleOneOrders",
+                "Description": "An order's type and its rules are defined in its Complication. Not checking it would allow anyone to take any orders regardless of their Complication's rule, causing unexpected execution for order makers.",
+                "Repair": "Add canExecTakeOneOrder function in IComplication.sol and implement it in InfinityOrderBookComplication (and future Complications) to support takeMultipleOneOrders operation, then modify takeMultipleOneOrders to use the check"
+            },
+            {
+                "Location": "_transferNFTs() function in InfinityExchange.sol",
+                "Type": "_transferNFTs() succeeds even if no transfer is performed",
+                "Description": "If an NFT is sold that does not specify support for the ERC-721 or ERC-1155 standard interface, the sale will still succeed. In doing so, the seller will receive funds from the buyer, but the buyer will not receive any NFT from the seller.",
+                "Repair": "If neither the ERC-721 nor the ERC-1155 interface is supported the function should revert. An alternative approach would be to attempt a transferFrom and check the balance before and after to ensure that it succeeded"
+            }
+        ]
+    },
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "function matchOneToOneOrders",
+                "Type": "Arbitrary WETH transfer",
+                "Description": "The function matchOneToOneOrders transfers an arbitrary amount of WETH from the user, buy.signer, in its inner call to _execMatchOneToOneOrders. The amount charged to the user is calculated dynamically based off of the gas consumption consumed during the trace. Notably, this amount is controlled by the seller since the seller's token can be malicious and purposefully consume a large amount of gas to grief the buyer.",
+                "Repair": "Allow users to input a maximum fee/gas cost they are willing to spend on each order. Pulling an arbitrary amount from a user's wallet without any restriction is a dangerous practice given that many users give large/infinite approval to contracts."
+            },
+            {
+                "Location": "function canExecTakeOrder",
+                "Type": "Order matching logic",
+                "Description": "When any user provides a sellOrder and they are trying to sell multiple tokens from *n* (n > 1) different ERC1155 collections in a single order, hackers can get the tokens of most expensive collections (with n times of the original amount) by paying the same price. The logic of canExecTakeOrder and canExecMatchOneToMany is not correct. The problem comes when there are duplicated items in takerItems. The aggregated number would be correct and all taker's Items are indeed in the order. However, it does not mean takerItems exactly matches all items in makerOrder, which means violation of the order.",
+                "Repair": "Hash all the items and put them into a list. Then check whether the lists match."
+            },
+            {
+                "Location": "function _transferNFTs",
+                "Type": "ERC721/ERC1155 interoperability issue",
+                "Description": "Many real-world NFT tokens may support both ERC721 and ERC1155 standards, which may break InfinityExchange::_transferNFTs, i.e., transferring less tokens than expected.",
+                "Repair": "Reorder the checks to prioritize ERC1155 interface over ERC721 interface"
+            },
+            {
+                "Location": "function setProtocolFee",
+                "Type": "Arbitrary modification of protocol fee rate",
+                "Description": "Protocol fee rate can be arbitrarily modified by the owner and the new rate will apply to all existing orders.",
+                "Repair": "Consider making the protocol fee rate a constant, or changing to the protocol fee always be paid by the taker, or changing to the new protocol fee only applies to the orders created after the rate updated"
+            },
+            {
+                "Location": "function matchOneToManyOrders",
+                "Type": "Reentrancy",
+                "Description": "Reentrancy from matchOneToManyOrders. matchOneToManyOrders doesn't conform to Checks-Effects-Interactions pattern, and updates the maker order nonce only after the NFTs and payment have been sent.",
+                "Repair": "Conform to CEI and set the nonce to true before executing external calls"
+            },
+            {
+                "Location": "_updateUserStakedAmounts() function",
+                "Type": "Locked Funds",
+                "Description": "Calling unstake() can cause locked funds.",
+                "Repair": "Do not set userstakedAmounts.amount to 0 if none of its tokens are removed (vestedAmount == 0)"
+            },
+            {
+                "Location": "takeOrders() and takeMultipleOneOrders() functions",
+                "Type": "Overpayment",
+                "Description": "Overpayment of native ETH is not refunded to buyer.",
                 "Repair": "Calculate and refund overpayment amounts to callers"
+            },
+            {
+                "Location": "areNumItemsValid() and matchOrders() functions",
+                "Type": "NFT Loss",
+                "Description": "Sellers may lose NFTs when orders are matched with matchOrders().",
+                "Repair": "Replace check buy.constraints[0] <= sell.constraints[0] with numConstructedItems <= sell.constraints[0] and remove doItemsIntersect(sell.nfts, buy.nfts)"
+            },
+            {
+                "Location": "canExecMatchOrder() and doItemsIntersect() functions",
+                "Type": "Invalid Order",
+                "Description": "Incorrect condition marks valid order as invalid.",
+                "Repair": "Remove doItemsIntersect(sell.nfts, buy.nfts) from canExecMatchOrder() function"
+            },
+            {
+                "Location": "",
+                "Type": "None",
+                "Description": "No vulnerability mentioned in this section.",
+                "Repair": ""
+            },
+            {
+                "Location": "Functions matchOneToOneOrders(), matchOneToManyOrders(), matchOrders(), takeMultipleOneOrders(), takeOrders()",
+                "Type": "Wrong Order Matching",
+                "Description": "Functions for order matching and execution do not check if seller and buyer are different, which can result in fund loss or griefing.",
+                "Repair": "Add checks to ensure that seller != buyer"
             }
         ]
     },
@@ -39,108 +137,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "canExecTakeOrder function and canExecMatchOneToMany function in InfinityOrderBookComplication.sol and InfinityExchange.sol",
-                "Type": "Incorrect logic",
-                "Description": "The vulnerability allows hackers to violate user-defined orders when a user provides a sellOrder and tries to sell multiple tokens from n (n > 1) different ERC1155 collections in a single order. The logic of canExecTakeOrder and canExecMatchOneToMany is not correct, and it mismatches makerOrder and takerItems when duplicated items are present.",
-                "Repair": "Hash all the items and put them into a list. Then check whether the lists match."
-            },
-            {
                 "Location": "matchOneToManyOrders(), takeOrders(), and matchOrders() functions in InfinityOrderBookComplication.sol and InfinityExchange.sol contracts",
                 "Type": "Loss of funds",
-                "Description": "The code doesn't check that different ids in one collection are different, so it's possible to sell one id multiple times instead of selling multiple id one time in one collection of order, leading to loss of funds in ERC1155 tokens.",
+                "Description": "The code doesn't check that different ids in one collection are different, so it's possible to sell one id multiple times instead of selling multiple id one time in one collection of order, leading to loss of funds for ERC1155 tokens.",
                 "Repair": "Add checks to ensure that an order's one collection's token ids are not duplicates in doTokenIdsIntersect() function"
             },
             {
                 "Location": "matchOneToManyOrders() function in InfinityOrderBookComplication.sol and _execMatchOneMakerSellToManyMakerBuys() function in InfinityExchange.sol",
                 "Type": "Missing input validation",
-                "Description": "A maker buy order with no specified NFT tokenIds may get fulfilled in matchOneToManyOrders without receiving any NFT, allowing a buyer to spend money and get nothing in return.",
+                "Description": "A maker buy order with no specified NFT tokenIds may get fulfilled in matchOneToManyOrders without receiving any NFT, allowing a buyer to pay full price and receive nothing in return.",
                 "Repair": "Add input validation to ensure that buy orders with empty tokenIds cannot be matched with sell orders unless there are no other buy orders with specified tokenIds that match the sell order's tokenIds"
-            }
-        ]
-    },
-    {
-        "Code": "",
-        "CodeNames": [
-            ""
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "matchOneToOneOrders function and other similar functions",
-                "Type": "Arbitrary WETH transfer",
-                "Description": "Malicious tokens can be used to grief buyers and cause loss of their WETH balance.",
-                "Repair": "Allow users to input a maximum fee/gas cost they are willing to spend on each order. Pulling an arbitrary amount from a user's wallet without any restriction is a dangerous practice given that many users give large/infinite approval to contracts."
-            },
-            {
-                "Location": "updateWethTranferGas function",
-                "Type": "Stealing approved WETH",
-                "Description": "Malicious governance can use updateWethTranferGas to steal WETH from buyers.",
-                "Repair": "Set a sanity check in updateWethTranferGas so governance can't set it to an unreasonable value. Consider using timelock for setting governance settings."
-            },
-            {
-                "Location": "MATCH_EXECUTOR",
-                "Type": "Maker order gas cost reimbursement",
-                "Description": "While the order is executed by the MATCH_EXECUTOR, the gas cost will always be paid by the maker order's buyer, resulting in the buyer sometimes paying much higher total price (incl. gas cost) for the items they bought.",
-                "Repair": "Consider adding a new parameter to maker buy orders, maxGasCost, to allow the buyer to limit the max gas they agreed to pay"
-            },
-            {
-                "Location": "InfinityExchange::_transferNFTs",
-                "Type": "Transferring less tokens than expected",
-                "Description": "Many real-world NFT tokens may support both ERC721 and ERC1155 standards, which may break InfinityExchange::_transferNFTs, i.e., transferring less tokens than expected.",
-                "Repair": "Reorder the checks to prioritize ERC1155 interface over ERC721 interface"
-            },
-            {
-                "Location": "matchOneToManyOrders function",
-                "Type": "Reentrancy",
-                "Description": "matchOneToManyOrders function doesn't conform to Checks-Effects-Interactions pattern, and updates the maker order nonce only after the NFTs and payment have been sent. Using this, a malicious user can re-enter the contract and re-fulfill the order using takeOrders. Orders can be executed twice.",
-                "Repair": "Conform to CEI and set the nonce to true before executing external calls"
-            },
-            {
-                "Location": "setProtocolFee function",
-                "Type": "Arbitrary Modification of Protocol Fee Rate",
-                "Description": "Protocol fee rate can be arbitrarily modified by the owner and the new rate will apply to all existing orders. When the protocol fee rate updated to a higher rate, an maker order placed before this fee rate update can be fulfilled by a buyer, while the buyer still pays the same amount, the seller (maker) will receive less than the initial sell order amount.",
-                "Repair": "Consider making the protocol fee rate a constant, ie, can not be changed; Or, consider changing to the protocol fee always be paid by the taker; while matching the maker buy and maker sell orders, the protocol fee must be paid from the price difference between the buy price and sell price; Or, consider changing to the new protocol fee only applies to the orders created after the rate updated."
-            },
-            {
-                "Location": "_updateUserStakedAmounts() function",
-                "Type": "Locked Funds",
-                "Description": "Calling unstake() can cause locked funds if unvested tokens become locked in the contract forever.",
-                "Repair": "Do not set userstakedAmounts.amount to 0 if none of its tokens are removed (vestedAmount == 0)"
-            },
-            {
-                "Location": "function areNumItemsValid()",
-                "Type": "NFT loss",
-                "Description": "Sellers may lose NFTs when orders are matched with matchOrders() due to wrong checking in function areNumItemsValid() which leads to wrong logic in matchOrders() function.",
-                "Repair": "Replace check buy.constraints[0] <= sell.constraints[0] with numConstructedItems <= sell.constraints[0]"
-            },
-            {
-                "Location": "function rescueETH()",
-                "Type": "Frozen ETH fees",
-                "Description": "Accumulated ETH fees of InfinityExchange cannot be retrieved as they are permanently frozen within the contract and the only way to retrieve them, rescueETH() function, cannot reach ETH on the contract balance.",
-                "Repair": "Add contract balance to the funds transferred in rescueETH() function"
-            },
-            {
-                "Location": "canExecMatchOrder function",
-                "Type": "Incorrect condition",
-                "Description": "canExecMatchOrder is having an incorrect check which makes a valid order as invalid.",
-                "Repair": "Remove doItemsIntersect(sell.nfts, buy.nfts) from InfinityOrderBookComplication.sol#L140"
-            },
-            {
-                "Location": "_transferNFTs() function",
-                "Type": "NFT transfer failure",
-                "Description": "If an NFT is sold that does not specify support for the ERC-721 or ERC-1155 standard interface, the sale will still succeed, but the buyer will not receive any NFT from the seller.",
-                "Repair": "Add a check to ensure that either the ERC-721 or the ERC-1155 interface is supported, or attempt a transferFrom and check the balance before and after to ensure that it succeeded."
-            },
-            {
-                "Location": "takeMultipleOneOrders function",
-                "Type": "Missing Complication check",
-                "Description": "Not checking the Complication of an order in takeMultipleOneOrders would allow anyone to take any orders regardless of their Complication's rule, causing unexpected execution for order makers.",
-                "Repair": "Add canExecTakeOneOrder function in IComplication.sol and implement it in InfinityOrderBookComplication (and future Complications) to support takeMultipleOneOrders operation, then modify takeMultipleOneOrders to use the check."
-            },
-            {
-                "Location": "Functions matchOneToOneOrders(), matchOneToManyOrders(), matchOrders(), takeMultipleOneOrders(), takeOrders()",
-                "Type": "Wrong order matching resulting in fund lose or fund theft or griefing",
-                "Description": "Functions for order matching and execution validate different things about orders but there is no check for that seller != buyer, which can cause wrong order matching resulting in fund lose or fund theft or griefing.",
-                "Repair": "Add checks to ensure that seller != buyer"
             }
         ]
     }

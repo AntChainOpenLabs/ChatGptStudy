@@ -6,45 +6,39 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "redeem() function in Zap.sol",
-                "Type": "Missing address check",
-                "Description": "The user can provide any possible ERC20 token in the redeem() function without the function reverting.",
+                "Location": "IbbtcVaultZap.sol deposit function",
+                "Type": "No slippage control",
+                "Description": "There is no slippage control on deposit of IbbtcVaultZap.sol, which expose user to sandwich attack.",
+                "Repair": "Add a minOut in line with the mint function of other contacts, and pass it as a parameter on L174"
+            },
+            {
+                "Location": "Zap.sol redeem function",
+                "Type": "Improper input validation",
+                "Description": "In the redeem() function, the user can pass a token address. That's the token they receive in return for the ibbtc they give back. Because of missing address checks the user can provide any possible ERC20 token here without the function reverting.",
                 "Repair": "Verify that the passed token address is either wBTC or renbtc"
             },
             {
-                "Location": "deposit() function in IbbtcVaultZap.sol",
-                "Type": "No slippage control",
-                "Description": "There is no slippage control on deposit of IbbtcVaultZap.sol, which exposes the user to a sandwich attack.",
-                "Repair": "Add a minOut parameter to the deposit function and implement a slippage check"
-            },
-            {
-                "Location": "setZapConfig() function in SettToRenIbbtcZap.sol",
+                "Location": "SettToRenIbbtcZap.sol setZapConfig function",
                 "Type": "Missing token approval",
-                "Description": "When curvePool or token is updated, token is not approved to curvePool, which can malfunction the contract and break minting.",
-                "Repair": "Add a token approval check to the setZapConfig() function"
+                "Description": "When curvePool or token got updated, token is not approved to curvePool, which will malfunction the contract and break minting.",
+                "Repair": "Add an if statement to check if curvePool has been updated and approve _token to _curvePool if it has."
             },
             {
-                "Location": "deposit() function in IbbtcVaultZap.sol",
+                "Location": "IbbtcVaultZap.sol deposit function",
                 "Type": "Excessive require",
-                "Description": "The check for RENCRV_VAULT.blockLock is done at the very first, making transactions unrelated to RENCRV_VAULT fail unexpectedly if there is a prior transaction involved with RENCRV_VAULT in the same block.",
-                "Repair": "Check for blockLock only under specific conditions"
+                "Description": "The check for RENCRV_VAULT.blockLock is only needed when if (_amounts[1] > 0 || _amounts[2] > 0). However, in the current implementation, the check is done at the very first, making transactions unrelated to RENCRV_VAULT fail unexpectedly if there is a prior transaction involved with RENCRV_VAULT in the same block.",
+                "Repair": "Check for RENCRV_VAULT.blockLock only when if (_amounts[1] > 0 || _amounts[2] > 0)"
             },
             {
-                "Location": "redeem() function in Zap.sol",
-                "Type": "Improper implementation of slippage check",
-                "Description": "The outAmount of IbyvWbtc.withdraw() is not controlled by minOut, which can lead to users getting rekt.",
-                "Repair": "Implement a slippage check at the end of the function"
-            },
-            {
-                "Location": "setGuardian() function in IbbtcVaultZap.sol and SettToRenIbbtcZap.sol",
-                "Type": "Wrong implementation",
+                "Location": "IbbtcVaultZap.sol and SettToRenIbbtcZap.sol setGuardian function",
+                "Type": "Improper implementation",
                 "Description": "governance = _guardian should be guardian = _guardian.",
-                "Repair": "Change governance to guardian"
+                "Repair": "Change governance = _guardian to guardian = _guardian"
             },
             {
-                "Location": "calcMint() function in Zap.sol",
-                "Type": "Calculation error",
-                "Description": "calcMint() always returns poolId=0 and idx=0, while the docstring specified it should return the most optimal route instead.",
+                "Location": "Zap.sol calcMint function",
+                "Type": "Incorrect function implementation",
+                "Description": "calcMint in Zap.sol always return poolId=0 and idx=0, while the docstring specified it should return the most optimal route instead. This will lead to suboptimal zap.",
                 "Repair": "Implement the missing functions for calcMint"
             }
         ]

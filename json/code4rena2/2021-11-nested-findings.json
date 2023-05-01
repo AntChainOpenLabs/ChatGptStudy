@@ -6,34 +6,34 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "NestedFactory.sol create() and sendFeesWithRoyalties() functions",
-                "Type": "Smart Contract Logic",
+                "Location": "create() function in NestedFactory.sol",
+                "Type": "Copy portfolio to earn royalties",
                 "Description": "Users can copy their own portfolio and receive royalty shares for it, repeating the process over and over again.",
                 "Repair": "Add a require statement to prevent users from copying their own portfolios"
             },
             {
-                "Location": "NestedFactory.sol _transferInputTokens() function",
-                "Type": "Smart Contract Logic",
-                "Description": "If a user mistakenly calls create() or addToken() with WETH (or another ERC20) as the input token, but includes native ETH with the function call, their native ETH will be permanently locked in the contract.",
-                "Repair": "Ensure msg.value = 0 in the scenario where inputToken is not ETH"
-            },
-            {
-                "Location": "NestedFactory.sol submitInOrders() function",
-                "Type": "Smart Contract Logic",
-                "Description": "Passing multiple ETH deposits in orders array will use the same msg.value many times, resulting in multiple deposits that sum up to a much bigger accounted value than actually deposited value, up to contract's ETH holdings.",
+                "Location": "create() function in NestedFactory.sol",
+                "Type": "Using same msg.value multiple times",
+                "Description": "Passing multiple ETH deposits in orders array will use the same msg.value many times, resulting in multiple deposits that sum up to a much bigger accounted value than actually deposited value.",
                 "Repair": "Treat ETH exclusively, not allowing ETH operations to be batched at all"
             },
             {
-                "Location": "NestedFactory.sol setReserve() function",
-                "Type": "Smart Contract Logic",
+                "Location": "_transferInputTokens() function in NestedFactory.sol",
+                "Type": "Locked ETH in contract",
+                "Description": "A user that mistakenly calls create() or addToken() with WETH (or another ERC20) as the input token, but includes native ETH with the function call will have their native ETH permanently locked in the contract.",
+                "Repair": "Ensure msg.value = 0 in _transferInputTokens() for non-ETH transfers"
+            },
+            {
+                "Location": "setReserve() function in NestedFactory.sol",
+                "Type": "Front-running",
                 "Description": "The reserve address variable in NestedFactory.sol remains equal to 0 before the setReserve() function is called by an owner, which may lead to incorrect transfers of tokens or invalid comparison with the asset reserve.",
                 "Repair": "Initialize the value for the reserve variable in the constructor"
             },
             {
-                "Location": "NestedFactory.sol _submitInOrders() function",
-                "Type": "Smart Contract Logic",
+                "Location": "_submitInOrders() function in NestedFactory.sol",
+                "Type": "Overcharging users",
                 "Description": "When executing orders, the actual amountSpent + feesAmount can be lower than _inputTokenAmount, and the unspent amount should be returned to the user. However, in the current implementation, the unspent amount will be taken as part of the fee.",
-                "Repair": "Change the implementation to return the unspent amount to the user"
+                "Repair": "Update the records if input is from the reserve, and transfer back any unspent amount that exceeds the 1% fixed fee"
             }
         ]
     },
@@ -44,28 +44,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "FeeSplitter: No sanity check to prevent shareholder from being added twice.",
-                "Type": "No sanity check",
-                "Description": "It is possible for duplicate shareholders to be added. These shareholders will get more than intended when _sendFee() is called.",
-                "Repair": "Ensure that the _accounts array is sorted in setShareholders()."
-            },
-            {
-                "Location": "FeeSplitter: Unbounded number of shareholders can cause DOS",
-                "Type": "Unbounded number of shareholders",
-                "Description": "There is no limit to the number of shareholders. It is therefore possible to set a large number of shareholders such that _sendFees() will run out of gas when adding shares to each shareholder.",
-                "Repair": "It would be best to set a sanity maximum number of shareholders that can be added."
-            },
-            {
-                "Location": "isResolverCached() will always return false after removing operator",
-                "Type": "Cache functionality broken",
-                "Description": "Removing an operator will cause the cache functionality to be permanently broken.",
-                "Repair": "Instead of doing an element deletion, it should be replaced with the last element, then have the last element popped in removeOperator()."
-            },
-            {
-                "Location": "Ensure on-chain that cache is synced",
-                "Type": "Cache not synced",
+                "Location": "isResolverCached() function, create() function, swapTokenForTokens() function",
+                "Type": "Cache Syncing",
                 "Description": "Many core operations are dependent on the assumption that the cache is synced before these functions are executed however this may not necessarily be the case.",
                 "Repair": "Add a modifier to require that the cache is synced to all functions that interact with the operators."
+            },
+            {
+                "Location": "removeOperator() function",
+                "Type": "Array Manipulation",
+                "Description": "Removing an operator will cause the cache functionality to be permanently broken.",
+                "Repair": "Instead of doing an element deletion, it should be replaced with the last element, then have the last element popped in removeOperator()."
             }
         ]
     }

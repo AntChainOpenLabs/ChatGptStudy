@@ -1,0 +1,8 @@
+{"Vulnerability Type": "Miners Can Re-Roll the VRF Output to Game the Protocol", "Vulnerability Location": "PoolTogether protocol", "Repair Method": "Add a confirmation time between when the actual VRF request was made and when it was later fulfilled on-chain", "Vulnerability Information": "Miners are able to rewrite a chain's history if they dislike the VRF output used by the protocol."}
+
+{"Vulnerability Type": "Erroneously Emits Events", "Vulnerability Location": "PrizePool.awardExternalERC721() function", "Repair Method": "Emit only successfully transferred tokenIds in the AwardedExternalERC721 event", "Vulnerability Information": "The AwardedExternalERC721 is emitted with the entire list of tokenIds, regardless of failure."}
+
+{"Vulnerability Type": "Deposits don't work with fee-on transfer tokens", "Vulnerability Location": "PrizePool._depositTo() function", "Repair Method": "Do not use feeOnTransfer tokens in the protocol", "Vulnerability Information": "The _depositTo() function will try to supply more _amount than was actually transferred."}
+
+{"Vulnerability Type": "The formula of number of prizes for a degree is wrong", "Vulnerability Location": "DrawCalculator.sol contract", "Repair Method": "Change the formula of the number of prizes for a degree", "Vulnerability Information": "The formula of the number of prizes for a degree is wrong, causing the protocol to give out more prizes than designed."}
+

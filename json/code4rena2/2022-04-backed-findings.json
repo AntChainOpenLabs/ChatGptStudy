@@ -8,61 +8,61 @@
             {
                 "Location": "NFTLoanFacilitator.sol#L205-L208, NFTLoanFacilitator.sol#L215-L218",
                 "Type": "Reentrancy Attack",
-                "Description": "An attacker can manipulate loanInfo by reentrancy attack when any lenders try to buyout.",
-                "Repair": "Use nonReentrant modifier on lend() to prevent reentrancy attack"
+                "Description": "An attacker can manipulate loanInfo by reentrancy attack when any lenders try to buyout. The attacker can set bad values of lendInfo (e.g. very long duration, and 0 interest rate) that the lender who wants to buyout don't expect.",
+                "Repair": "Use nonReentrant modifier on lend() to prevent reentrancy attack or block ERC777 tokens"
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L205-L208, NFTLoanFacilitator.sol#L215-L218",
                 "Type": "Denial of Service (DoS)",
-                "Description": "If an attacker (lender) lends to a loan, they can always revert transactions when any lenders try to buyout, making anyone unable to buyout the loan of the attacker.",
-                "Repair": "Don't transfer ERC20(loanAssetContractAddress) to currentLoanOwner in lend(), use a global mapping to record redemption of lenders and add an external function redeem for lenders to transfer ERC20(loanAssetContractAddress)."
+                "Description": "If an attacker (lender) lends to a loan, the attacker can always revert transactions when any lenders try to buyout, making anyone can not buyout the loan of the attacker.",
+                "Repair": "Don't transfer ERC20(loanAssetContractAddress) to currentLoanOwner in lend(), use a global mapping to record redemption of lenders and add an external function redeem for lenders to transfer ERC20(loanAssetContractAddress) or block ERC777 tokens"
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L214-L221, NFTLoanFacilitator.sol#L230-L250",
                 "Type": "Reentrancy Attack",
-                "Description": "If a borrower lends to their own loan, they can repay and close the loan before ownership of the lend ticket is transferred to the new lender. The borrower will keep the NFT + loan amount + accrued interest.",
-                "Repair": "Move the line to transfer the lend ticket to the new lender above the line to transfer to funds to the original lender. Or, use ReentrancyGuard from OpenZeppelin to remove the risk of reentrant calls completely. If desired, also require that the lender cannot be the same account as the borrower of a loan."
+                "Description": "If borrower lends their own loan, they can repay and close the loan before ownership of the lend ticket is transferred to the new lender. The borrower will keep the NFT + loan amount + accrued interest.",
+                "Repair": "Move the line to transfer the lend ticket to the new lender above the line to transfer to funds to the original lender. Or, use reentrancyGuard from OpenZeppelin to remove the risk of reentrant calls completely. If desired, also require that the lender cannot be the same account as the borrower of a loan."
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L155-L160",
-                "Type": "Handling of fee on transfer tokens",
-                "Description": "The borrower is able to specify any asset token, and if a fee on transfer asset token is chosen, the protocol will contain a point of failure on the original lend() call.",
-                "Repair": "Calculate the origination fee based on the requested loan amount or calculate the amount received from the initial transfer and use this amount to calculate the origination fee"
+                "Type": "Protocol doesn't handle fee on transfer tokens",
+                "Description": "Loans can be created with tokens that support fee on transfer, which can cause the second transfer to fail or be received at a loss for the borrower and lender.",
+                "Repair": "Calculate the originationFee based on the requested loan amount or calculate the amount received from the initial transfer and use this amount to calculate the originationFee"
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L102-L102",
-                "Type": "ERC721 safety",
-                "Description": "If mintBorrowTicketTo is a contract that does not implement the onERC721Received method, the BorrowTicket NFT will be frozen and put users' funds at risk.",
+                "Type": "mintBorrowTicketTo can be a contract with no onERC721Received method, which may cause the BorrowTicket NFT to be frozen and put users' funds at risk",
+                "Description": "If mintBorrowTicketTo is a contract that does not implement the onERC721Received method, the BorrowTicket NFT will be used later to get back the user's funds, which can put users' funds at risk.",
                 "Repair": "Use safeMint in NFTLoanTicket.sol#mint()"
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L148",
-                "Type": "Forced payment of huge interest",
+                "Type": "Min loan amount semantics",
                 "Description": "The loan amount is used as a min loan amount. It can be matched as high as possible (realistically up to the collateral NFT's worth to remain in profit) and the borrower has to pay interest on the entire amount instead of just on the desired loan amount when the loan was created.",
-                "Repair": "Add a maxLoanAmount parameter to limit the loan amount"
-            },
-            {
-                "Location": "NFTLoanFacilitator.sol#L241",
-                "Type": "Funds can be lost",
-                "Description": "The repayAndCloseLoan function does not revert if there has not been a lender for a loan (matched with lend). Users should use closeLoan in this case but the contract should disallow calling repayAndCloseLoan because users can lose funds.",
-                "Repair": "Add a check that there actually is something to repay"
+                "Repair": "Add a maxLoanAmount parameter to limit the loan amount that can be matched to the collateral NFT's worth."
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L167-L179",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "When previousInterestRate is less than 10 and requiredImprovementRate is 100, due to precision loss, the new interestRate is allowed to be the same as the previous one.",
-                "Repair": "Change the check to use OpenZeppelin/Math.sol#L39-L42 and Math.ceilDiv"
+                "Repair": "Use OpenZeppelin/Math.sol#L39-L42 to avoid precision loss and change the check to previousInterestRate != 0 && previousInterestRate < Math.ceilDiv(previousInterestRate * requiredImprovementRate, SCALAR)."
+            },
+            {
+                "Location": "NFTLoanFacilitator.sol#L241",
+                "Type": "Incorrect function call",
+                "Description": "The repayAndCloseLoan function does not revert if there has not been a lender for a loan (matched with lend). Users should use closeLoan in this case but the contract should disallow calling repayAndCloseLoan because users can lose funds.",
+                "Repair": "Add a check that there actually is something to repay by requiring loan.lastAccumulatedTimestamp > 0 before calling repayAndCloseLoan."
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L116-L126",
-                "Type": "Unchecked Transfer",
+                "Type": "Unchecked transfer",
                 "Description": "The sendCollateralTo address is unchecked in closeLoan(), which can cause user's collateral NFT to be frozen.",
                 "Repair": "Use safeTransferFrom instead of transferFrom"
             },
             {
                 "Location": "NFTLoanFacilitator.sol#L309",
-                "Type": "Incorrect Calculation",
-                "Description": "If admins increase the origination fee, the borrower receives fewer funds than required to cover their rent and might become homeless.",
+                "Type": "Incorrect loan amount calculation",
+                "Description": "The borrower might not get the desired min loan amount if the originationFeeRate changes, as the minLoanAmount is calculated based on the current origination fee rate and not the rate at the time of loan creation.",
                 "Repair": "Store originationFeeRate in the Loan struct at the time of origination to guarantee a borrower gets the fee rate that was present when they created the loan"
             }
         ]

@@ -9,13 +9,13 @@
                 "Location": "ConvexYieldWrapper.sol",
                 "Type": "Malicious token duplication",
                 "Description": "It is possible to transfer wCVX tokens to another account after an initial checkpoint has been made, allowing a user to replicate their deposited balance over any number of accounts.",
-                "Repair": "Implement the _beforeTokenTransfer() function and exclude wrapper contract and collateral vaults from checkpointing"
+                "Repair": "Implement the _beforeTokenTransfer() function as shown in the reference contract and exclude the wrapper contract and collateral vaults from checkpointing"
             },
             {
                 "Location": "ConvexYieldWrapper.sol",
-                "Type": "Checkpoint Manipulation",
-                "Description": "A user is able to generate protocol yield multiple times over on a single collateral amount by manipulating the result of the _getDepositedBalance() function through checkpoint manipulation.",
-                "Repair": "Ensure that any change to a vault will correctly checkpoint the previous and new vault owner. The affected actions include but are not limited to; transferring ownership of a vault to a new account, transferring collateral to another vault and adding/removing collateral to/from a vault."
+                "Type": "Vault collateral transfer",
+                "Description": "It is possible to manipulate the result of _getDepositedBalance() by transferring ownership of a vault to another user, moving collateral between vaults, and adding/removing collateral, allowing a user to generate protocol yield multiple times over on a single collateral amount.",
+                "Repair": "Checkpoint the previous and new vault owner when any change to a vault occurs, including transferring ownership of a vault to a new account, transferring collateral to another vault, and adding/removing collateral to/from a vault"
             }
         ]
     },
@@ -28,14 +28,22 @@
             {
                 "Location": "ConvexStakingWrapper.sol",
                 "Type": "Rewards distribution disruption",
-                "Description": "An early user can cause the rewards distribution to be disrupted by exceeding type(uint128).max and causing an overflow.",
-                "Repair": "Wrap a certain amount of initial totalSupply and never burn it, use uint256 instead of uint128 for reward.reward_integral, and lower 1e20 down to 1e12"
-            },
+                "Description": "An early user can grief the system by causing reward.reward_integral to exceed type(uint128).max and overflow, disrupting the rewards distribution.",
+                "Repair": "Cast up to uint256 for calculations and then back to uint128 to store again"
+            }
+        ]
+    },
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
             {
-                "Location": "_peek() function in ConvexStakingWrapper.sol",
+                "Location": "_peek() function",
                 "Type": "Insufficient validation of oracle data feed",
-                "Description": "The oracle data feed is insufficiently validated, allowing for stale prices to be used and leading to incorrect quoteAmount return values.",
-                "Repair": "Validate data feed by checking for stale price and round completeness"
+                "Description": "There is no check for stale price and round completeness, which can lead to wrong quoteAmount return value.",
+                "Repair": "Add additional checks for stale price and round completeness"
             }
         ]
     }

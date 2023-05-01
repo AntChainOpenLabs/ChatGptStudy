@@ -8,7 +8,7 @@
             {
                 "Location": "UniV3LpVault._swap",
                 "Type": "Arbitrary contract call",
-                "Description": "UniV3LpVault._swap utilizes swapRouter.exactInput to perform swaps between two tokens. During swaps, transfer function of each token along the path will be called to propagate the assets. Anyone can create a uniswap pair of arbitrary assets, it is possible to include intermediate hop with malicious tokens within the path. Thus UniV3LpVault._swap effectively grants users the ability to perform arbitrary contract calls during the swap process if swapPath is not validated properly.",
+                "Description": "Allows users to perform arbitrary contract calls during the swap process if swapPath is not validated properly.",
                 "Repair": "Validate the entire path against a predefined whitelist while in _checkSwapPath"
             }
         ]
@@ -20,9 +20,9 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "contracts/vault_and_oracles/FlashLoan.sol, contracts/vault_and_oracles/UniV3LpVault.sol",
-                "Type": "Improper handling of tokens",
-                "Description": "Not calling approve(0) before setting a new approval causes the call to revert when used with Tether (USDT). The code as currently implemented does not handle these sorts of tokens properly when they're a Uniswap pool asset.",
+                "Location": "contracts/vault_and_oracles/FlashLoan.sol (line 48, 58), contracts/vault_and_oracles/UniV3LpVault.sol (line 418)",
+                "Type": "Improper handling of ERC20 tokens",
+                "Description": "The code as currently implemented does not handle tokens such as Tether (USDT) properly when they're a Uniswap pool asset, which would prevent USDT from being used by this project.",
                 "Repair": "Use OpenZeppelin\u2019s SafeERC20's safeTransfer() instead of approve()"
             }
         ]
@@ -36,7 +36,7 @@
             {
                 "Location": "Comptroller._setUniV3LpVault",
                 "Type": "In-use uniswapV3 positions become stuck",
-                "Description": "Comptroller._setUniV3LpVault will always cause in-use uniswapV3 positions to become stuck in UniV3LpVault. The mutual reliance causes NFT tokens to become stuck. In some cases users can solve this issue by depositing more collateral to cover the shortcoming caused by disappearing NFTs. In other cases such as liquidation, the functionality becomes downright broken and unuseable.",
+                "Description": "Changing Comptroller.uniV3LpVault would mean all actions including collateral calculation, uniswapV3 position withdrawal, uniswapV3 collateral liquidation are no longer performable on existing NFTs, causing NFT tokens to become stuck.",
                 "Repair": "Remove the option to change Comptroller.uniV3LpVault altogether"
             },
             {

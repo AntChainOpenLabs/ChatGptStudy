@@ -6,82 +6,64 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "EmergencyWithdraw function in HolyPaladinToken.sol",
+                "Location": "EmergencyWithdraw function in HolyPaladinToken.sol at line 1338",
                 "Type": "Updating the state",
-                "Description": "Users can claim funds with the wrong ratio due to userCurrentBonusRatio and durationRatio not being updated in the EmergencyWithdraw function.",
+                "Description": "userCurrentBonusRatio and durationRatio aren't updated which will allow users to claim funds with the wrong ratio.",
                 "Repair": "Set userCurrentBonusRatio and durationRatio to zero in the EmergencyWithdraw function"
             },
             {
-                "Location": "HolyPaladinToken.sol",
+                "Location": "HolyPaladinToken.sol at lines 253, 284, and 268",
                 "Type": "System could be wrapped and made useless without contract whitelisting",
-                "Description": "Anyone could create a contract or a contract factory 'PAL Locker' with a function to deposit PAL tokens through a contract, lock them, and delegate the voting power to the contract owner. This would eventually break the overall system of hPAL.",
-                "Repair": "Implement a whitelisting/blacklisting system for contracts to ensure their interests are aligned with the protocol"
+                "Description": "Anyone could create a contract or a contract factory 'PAL Locker' with a function to deposit PAL tokens through a contract, lock them, and delegate the voting power to the contract owner. Then, the ownership of this contract could be sold, which would eventually break the overall system of hPAL.",
+                "Repair": "Implement a whitelisting/blacklisting system for contracts"
             },
             {
-                "Location": "getUserPastLock function in HolyPaladinToken.sol",
+                "Location": "HolyPaladinToken.sol at lines 446-468",
                 "Type": "UserLock information can be found during emergency mode",
-                "Description": "When the contract is in blocked state (emergency mode), the protocol wants to return an empty UserLock info, but users can find the same information using the getUserPastLock function.",
-                "Repair": "Add additional user access check to the function to return correct value when the caller is admin or owner"
+                "Description": "When the contract is in blocked state (emergency mode), the protocol wants to return an empty UserLock info, on calling the function getUserLock. However, there is another way, by which the users can find the same information.",
+                "Repair": "Add additional user access check, so that the function returns correct value when the caller (msg.sender) is admin or owner"
             },
             {
-                "Location": "triggerEmergencyWithdraw function in HolyPaladinToken.sol",
+                "Location": "HolyPaladinToken.sol at line 1425",
                 "Type": "Emergency mode enable/disable issue",
-                "Description": "Enabling emergency mode should be a one-way process that sets contracts in emergency mode and should not be possible to revert that process.",
-                "Repair": "Remove the bool trigger parameter from the function and set emergency to true after successfully executing the function"
+                "Description": "Enabling emergency mode should be a one-way process that sets contract(s) in emergency mode. It should not be possible to revert that process, otherwise, it puts the owner of the contract(s) in a very privileged position.",
+                "Repair": "Remove bool trigger parameter from triggerEmergencyWithdraw function and set emergency to true after successfully executing function"
             },
             {
-                "Location": "transferFrom function in HolyPaladinToken.sol",
+                "Location": "HolyPaladinToken.sol at transferFrom function",
                 "Type": "ERC20 token with a highly unsafe pattern",
-                "Description": "The transferFrom function in ERC20.sol used by HolyPaladinToken.sol calls _transfer first and then updates the sender allowance, which is highly unsafe.",
-                "Repair": "Follow the Checks Effects and Interactions safety pattern by updating the sender allowance before calling _transfer"
+                "Description": "The transferFrom() function does not follow the Checks Effect and Interactions safety pattern to safely make external calls to other contracts.",
+                "Repair": "Follow the Checks Effects and Interactions safety pattern as the transferFrom function is one of the most important functions in any protocol. Consider importing the Open Zeppelin ERC20.sol contract code directly as it is battle-tested and safe code"
             },
             {
-                "Location": "Multiple functions in HolyPaladinToken.sol including _getPastLock, getPastTotalLock, _getPastDelegate",
+                "Location": "Multiple functions in HolyPaladinToken.sol",
                 "Type": "State Manipulation",
-                "Description": "Multiple states with the same block number are allowed to have multiple entries, resulting in a one-to-many mapping between block number and history entry. This makes queried results imprecise and manipulatable by malicious users to present an incorrect history.",
-                "Repair": "Adopt the same strategy as checkpoint, and modify last entry in array instead of pushing new one if it fromBlock == block.number"
+                "Description": "Multiple states with the same block number can be manipulated to present an incorrect history.",
+                "Repair": "Adopt the same strategy as checkpoint, and modify last entry in array instead of pushing new one if it fromBlock == block.number."
             },
             {
-                "Location": "updateUserRewardState() function in HolyPaladinToken.sol",
+                "Location": "Functions _beforeTokenTransfer() and _updateUserRewards() in HolyPaladinToken.sol",
                 "Type": "Bypassing Emergency Restrictions",
-                "Description": "Users can bypass emergency restrictions on updateUserRewardState() by transferring a small amount of unlocked tokens to their account.",
-                "Repair": "Add a check for the boolean 'emergency' value in _beforeTokenTransfer() to not call _updateUserRewards() on any account if this value is set. Alternatively, a check could be added into the _updateUserRewards() function to return if 'emergency' is true."
-            },
-            {
-                "Location": "_beforeTokenTransfer() function in HolyPaladinToken.sol",
-                "Type": "Griefing Other Users",
-                "Description": "Users with large cooldowns can grief other users by sending small amounts to them.",
-                "Repair": "N/A"
+                "Description": "Users can bypass emergency restrictions on the updateUserRewardState() function by transferring a small amount of unlocked tokens to their account.",
+                "Repair": "Add a check for the boolean emergency value in _beforeTokenTransfer() to not call _updateUserRewards on any account if this value is set. Alternatively, a check could be added into the _updateUserRewards() function to return if emergency is true."
             },
             {
                 "Location": "ONE_YEAR variable in HolyPaladinToken.sol",
-                "Type": "Incorrect Number of Seconds in ONE_YEAR Variable",
-                "Description": "In HolyPaladinToken.sol, the ONE_YEAR variable claims that there are 31557600 seconds in a year when this is incorrect.",
-                "Repair": "Change the ONE_YEAR variable to ONE_YEAR = 31_536_000."
+                "Type": "incorrect variable value",
+                "Description": "The ONE_YEAR variable in HolyPaladinToken.sol is set to an incorrect value, which can negatively affect users in functions that use this variable.",
+                "Repair": "Change the value of ONE_YEAR variable to the correct number of seconds in a year (31,536,000)"
             },
             {
-                "Location": "_beforeTokenTransfer() function in HolyPaladinToken.sol",
-                "Type": "Cooldown Set to 0 When User Sends All Tokens to Himself",
-                "Description": "Cooldown is set to 0 when the user sends all tokens to himself.",
-                "Repair": "Add an extra test for that scenario and apply the recommended mitigation."
+                "Location": "function cooldown() in HolyPaladinToken.sol",
+                "Type": "unprotected function",
+                "Description": "The cooldown() function in HolyPaladinToken.sol is not protected when the protocol is in emergency mode, allowing users to set the cooldown and plan for unstaking when the emergency mode is lifted.",
+                "Repair": "Add a check for emergency mode to the cooldown() function"
             },
             {
-                "Location": "HolyPaladinToken.sol#L228-L235",
-                "Type": "Missing emergency mode check",
-                "Description": "Function cooldown() is not protected when protocol is in emergency mode.",
-                "Repair": "Add checking for emergency mode for the cooldown() function"
-            },
-            {
-                "Location": "HolyPaladinToken.sol#L284-L294",
-                "Type": "Lock amount increase issue",
-                "Description": "Increasing the Lock Amount on an Expired Lock Will Cause Users to Miss Out on Rewards.",
+                "Location": "function lock(uint256 amount, uint256 duration) in HolyPaladinToken.sol",
+                "Type": "bonus ratio calculation",
+                "Description": "If a user increases the lock amount on an expired lock, a new lock will be created with the duration of the previous lock and the provided non-zero amount. Because the userCurrentBonusRatio is not updated, the user will not receive any rewards for their active lock.",
                 "Repair": "Prevent users from increasing the amount on an expired lock"
-            },
-            {
-                "Location": "HolyPaladinToken.sol#L715-L743",
-                "Type": "Incorrect rewards emission rate",
-                "Description": "DropPerSecond is not updated homogeneously, the rewards emission can be much higher than expected in some cases.",
-                "Repair": "Update the calculation of the number of months elapsed"
             }
         ]
     },
@@ -93,15 +75,15 @@
         "VulnerabilityDesc": [
             {
                 "Location": "PaladinRewardReserve.sol",
-                "Type": "Potential Bugs with New Tokens as Rewards",
+                "Type": "Potential Bugs",
                 "Description": "PaladinRewardReserve.sol may have potential bugs if it uses new tokens as rewards.",
-                "Repair": "Either stop having 'address token' argument at setNewSpender(), updateSpenderAllowance(), removeSpender() and transferToken() functions and instead set 'token' at the constructor or other ways, and limit the ability to flexibly set 'token' from functions, or update data structure of 'approvedSpenders' mapping and change the logic."
+                "Repair": "(1) If PAL token is only used and other token will never be used at PaladinRewardReserve.sol, stop having address token argument at setNewSpender, updateSpenderAllowance, removeSpender and transferToken functions. Instead, set token at the constructor or other ways, and limit the ability to flexibly set token from functions.(2) If other tokens potentially will be used at PaladinRewardReserve.sol, update data structure of approvedSpenders mapping and change the logic."
             },
             {
-                "Location": "PaladinRewardReserve.sol#L28, PaladinRewardReserve.sol#L52",
-                "Type": "Timelock missing",
-                "Description": "The owner of PaladinRewardReserve can approve and transfer any amount of tokens with no limits on any account.",
-                "Repair": "Add a timelock to transfer and spender approved functions"
+                "Location": "PaladinRewardReserve.sol",
+                "Type": "timelock",
+                "Description": "The owner of PaladinRewardReserve can approve and transfer any amount of tokens with no limits on any account, which is not good for investors. To give more trust to users, these functions should be put behind a timelock.",
+                "Repair": "Put the approve and transfer functions behind a timelock"
             }
         ]
     },
@@ -112,10 +94,28 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "function _getNewReceiverCooldown()",
-                "Type": "Assisting in Unstaking Tokens",
-                "Description": "Users at UNSTAKE_PERIOD can assist other users in unstaking tokens by deploying a smart contract that takes advantage of the weighted average calculation in the _getNewReceiverCooldown() function. The number of tokens that can be assisted in unstaking is determined by the equation UNSTAKE_PERIOD/COOLDOWN_PERIOD = UNSTAKE_AMOUNT/USER_BALANCE. The vulnerability was resolved by reducing the UNSTAKE_PERIOD to 2 days.",
-                "Repair": "Adjusting the UNSTAKE_PERIOD to reduce the possibility of the scenario"
+                "Location": "function _beforeTokenTransfer(address from, address to, uint256 amount)",
+                "Type": "griefing attack",
+                "Description": "Users with large cooldowns can grief other users by sending small amounts to them, increasing their cooldowns and preventing them from unstaking.",
+                "Repair": "Implement a financial safeguard against griefing attacks by limiting the amount that can be transferred to a waiting account based on the receiver's balance"
+            },
+            {
+                "Location": "function _beforeTokenTransfer(address from, address to, uint256 amount)",
+                "Type": "cooldown reset",
+                "Description": "If a user transfers all their tokens to themselves, the cooldown is reset to 0, preventing them from unstaking and extending the duration of the lock.",
+                "Repair": "Do not reset cooldown to 0 when the user transfers all tokens to themselves"
+            },
+            {
+                "Location": "function _updateDropPerSecond() internal",
+                "Type": "Precision Loss",
+                "Description": "Due to precision loss in calculating the number of months elapsed, for each _updateDropPerSecond() there can be a short of up to 1 * dropDecreasePerMonth for the decrease of emission rate.",
+                "Repair": "Update the calculation of nbMonthEllapsed to include more precision"
+            },
+            {
+                "Location": "function _getNewReceiverCooldown(uint256 senderCooldown, uint256 amount, address receiver, uint256 receiverBalance) internal view",
+                "Type": "Assisted Unstaking",
+                "Description": "Users at UNSTAKE_PERIOD can assist other users in unstaking tokens.",
+                "Repair": "Reduce the Unstake Period to reduce the possibility of such scenario"
             }
         ]
     }

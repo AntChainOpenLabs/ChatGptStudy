@@ -8,7 +8,7 @@
             {
                 "Location": "KYCRegistry contract's addKYCAddressViaSignature function",
                 "Type": "signature replay attack",
-                "Description": "The addKYCAddressViaSignature function does not prevent replaying of signatures in the case where KYC status was revoked from a user, allowing a malicious user to forcefully grant KYC status to themselves again until the deadline has passed. This can result in unwanted moving of funds by the user in/out of Ondo protocol.",
+                "Description": "The addKYCAddressViaSignature function does not prevent replaying of signatures in the case where KYC status was revoked from a user, allowing a malicious user to forcefully grant KYC status to themselves again.",
                 "Repair": "Maintain a nonce mapping for message signers that can be incremented for every successful signature validation"
             }
         ]
@@ -23,7 +23,7 @@
                 "Location": "CTokenModified.sol",
                 "Type": "Arithmetic",
                 "Description": "The exchange rate is dependent upon the ratio of CToken's totalSupply and underlying token balance of CToken contract, which can be manipulated by an attacker to steal funds of initial depositors of a freshly deployed CToken contract.",
-                "Repair": "Enforce a minimum deposit that cannot be withdrawn by minting a small amount of CToken units to 0x00 address on the first deposit or use an admin controlled parameterized value to control the burn amount on a per CToken basis."
+                "Repair": "Enforce a minimum deposit that cannot be withdrawn by minting a small amount of CToken units to 0x00 address on the first deposit"
             }
         ]
     },
@@ -34,16 +34,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "completeRedemptions function in CashManager contract",
+                "Location": "completeRedemptions() function in CashManager contract",
                 "Type": "Loss of user funds",
-                "Description": "The refunded amount is not updated in the totalBurned storage variable for the given epoch. Any subsequent call to this function won't take into account refunds from previous calls. Redemptions that are processed after one or more previous refunds will receive less collateral tokens even if they redeemed the same amount of CASH tokens, causing loss of funds for the users.",
+                "Description": "Refunded amount is not updated in the totalBurned storage variable for the given epoch, causing loss of funds for the users.",
                 "Repair": "Update the totalBurned amount to consider refunds resulting from the call to _processRefund"
             },
             {
-                "Location": "CashManager.setEpochDuration",
-                "Type": "Inconsistent output",
-                "Description": "The setEpochDuration function updates the epochDuration value without invoking the transitionEpoch function first, leading to inconsistent results.",
-                "Repair": "Add updateEpoch modifier to execute transitionEpoch before setEpochDuration"
+                "Location": "setPendingRedemptionBalance() function in CashManager contract",
+                "Type": "Overwriting user balance",
+                "Description": "setPendingRedemptionBalance() does not check old balances, resulting in the possibility of overwriting the new balance added by the user.",
+                "Repair": "Add oldBalance check to revert if not equal"
             }
         ]
     },
@@ -54,16 +54,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "setPendingRedemptionBalance()",
-                "Type": "Overwriting user's cash token",
-                "Description": "setPendingRedemptionBalance() are not checking Old balances, resulting in the possibility of overwriting the new balance added by the user.",
-                "Repair": "Add oldBalance check to revert if not equal"
+                "Location": "function completeRedemptions()",
+                "Type": "Locked Funds",
+                "Description": "Sanctioned user's funds are locked and even the admin has no control over it.",
+                "Repair": "Remove KYC check for redeemers and refundees or find a way to allow admin to refund or redeem locked funds"
             },
             {
-                "Location": "completeRedemptions()",
-                "Type": "Locked funds",
-                "Description": "Sanctioned user's funds are locked and cannot be refunded or redeemed even by the admin due to KYC checks in the completeRedemptions() function.",
-                "Repair": "Not in scope, cannot be fixed"
+                "Location": "function setEpochDuration()",
+                "Type": "Inconsistent Output",
+                "Description": "The result of the setEpochDuration function execution can be impacted by any external agent leading to inconsistent output.",
+                "Repair": "Add updateEpoch modifier to ensure transitionEpoch is executed before setEpochDuration"
             }
         ]
     }

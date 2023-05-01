@@ -1,0 +1,3 @@
+1. {"Vulnerability Type": "Recreated contract exploit", "Vulnerability Location": "_acceptNewTerms function in MapleLoanInternals.sol", "Repair Method": "Whitelist allowable Refinancer contracts to protect lenders", "Vulnerability Information": "An attacker can use CREATE2 to re-create a new malicious contract on same address."}
+2. {"Vulnerability Type": "Lost tokens", "Vulnerability Location": "_sendFee function in MapleLoanInternals.sol", "Repair Method": "Check returnData.length == 32 before decoding", "Vulnerability Information": "MapleLoanInternals._sendFee should check returnData.length == 32 before decoding, otherwise if it returns bytes data, the abi.decode will return 0x20, result in lost tokens."}
+

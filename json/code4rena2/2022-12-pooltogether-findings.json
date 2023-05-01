@@ -6,22 +6,22 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "CrossChainExecutor contracts",
-                "Type": "Stateful Reentrancy",
-                "Description": "The CrossChainExecutor contracts do not update the necessary states for failing transactions, which creates several issues for CrossChainExecutor contracts.",
-                "Repair": "The CrossChainExecutor contract should store whether a relayed call was attempted to be executed to make sure the execution cannot be tried again. The CallLib library can be changed to not completely revert the transaction when any individual Call gets failed."
-            },
-            {
                 "Location": "EthereumToArbitrumRelayer.sol#L118-#L127",
-                "Type": "User unable to cancel L1 calls",
+                "Type": "User's inability to cancel L1 calls",
                 "Description": "An attacker can make users unable to cancel their L1 calls on Ethereum To Arbitrum.",
                 "Repair": "Change callValueRefundAddress in createRetryableTicket to _sender"
             },
             {
+                "Location": "EthereumToOptimismExecutor.sol#L45-L59, EthereumToArbitrumExecutor.sol#L31-L45",
+                "Type": "Failure to update necessary states for failing transactions",
+                "Description": "CrossChainExecutor contracts do not update the necessary states for failing transactions.",
+                "Repair": "Store whether a relayed call was attempted to be executed to make sure the execution cannot be tried again"
+            },
+            {
                 "Location": "CrossChainRelayerArbitrum.processCalls",
-                "Type": "Excess submission fees may be lost",
-                "Description": "When a smart contract calls CrossChainRelayerArbitrum.processCalls, excess submission fees may be lost.",
-                "Repair": "Allow the user to specify excessFeeRefundAddress and callValueRefundAddress when calling CrossChainRelayerArbitrum.processCalls"
+                "Type": "Loss of Excess Submission Fees",
+                "Description": "When a smart contract calls CrossChainRelayerArbitrum.processCalls, excess submission fees may be lost. For EOA accounts, the excess submission fees are correctly refunded to their address on L2. However, for smart contracts, since there may not exist a corresponding address on L2, these excess submission fees will be lost. Also, since the callValueRefundAddress is also msg.sender, according to the documentation, if the Retryable Ticket is cancelled or expired, then the smart contract caller may lose all the submission fees.",
+                "Repair": "Allowing the user to specify excessFeeRefundAddress and callValueRefundAddress when calling CrossChainRelayerArbitrum.processCalls"
             }
         ]
     }

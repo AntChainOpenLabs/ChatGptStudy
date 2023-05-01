@@ -8,14 +8,20 @@
             {
                 "Location": "updateValset function",
                 "Type": "Missing check",
-                "Description": "The updateValset function doesn't check that the sum of the powers of the new validators in the new valset is greater than the threshold, which can lead to unwanted behavior.",
+                "Description": "The updateValset function don't check that the sum of the powers of the new validators in the new valset is greater than the threshold, which can lead to unwanted behavior.",
                 "Repair": "Add a check in the updateValset to assure that the sum of the new powers is greater than the threshold."
             },
             {
-                "Location": "withdrawERC20 function",
-                "Type": "Admin drains ERC20 funds",
-                "Description": "Ability for admin to drain all ERC20 funds stored in contract at will, meaning all ERC20 based Cudos tokens (and any other ERC20 tokens stored in the contract) could be extracted by anyone with admin role and later sold, leaving users funds bridged on Cudos Cosmos chain with no ERC20 representation stored across the bridge similar in impact as the wormhole hack.",
-                "Repair": "Delete the function or alternatively, send all funds to the '0' address to burn rather than give them to the admin."
+                "Location": "sendToCosmos function",
+                "Type": "Loss of funds",
+                "Description": "No checks for non-Cudos tokens mean that non-Cudos ERC20 tokens will be lost to the contract, with the user not having any chance of retrieving them.",
+                "Repair": "Add checks in sendToCosmos to check the incoming tokenAddress against a supported token list, so that user funds don't get lost and admin don't need to bother refunding."
+            },
+            {
+                "Location": "Calls inside loops",
+                "Type": "DoS",
+                "Description": "Calls to external contracts inside a loop are dangerous (especially if the loop index can be user-controlled) because it could lead to DoS if one of the calls reverts or execution runs out of gas.",
+                "Repair": "Avoid combining multiple calls in a single transaction, especially when calls are executed as part of a loop. Always assume that external calls can fail. Implement the contract logic to handle failed calls."
             }
         ]
     },
@@ -27,15 +33,9 @@
         "VulnerabilityDesc": [
             {
                 "Location": "Gravity.sol contract",
-                "Type": "No pause/unpause functionality",
-                "Description": "In case a hack is occurring or an exploit is discovered, the team (or validators in this case) should be able to pause functionality until the necessary changes are made to the system.",
-                "Repair": "Add pause/unpause functionality to the contract."
-            },
-            {
-                "Location": "Gravity.sol contract",
-                "Type": "Calls inside loops",
-                "Description": "Calls to external contracts inside a loop are dangerous (especially if the loop index can be user-controlled) because it could lead to DoS if one of the calls reverts or execution runs out of gas.",
-                "Repair": "Avoid combining multiple calls in a single transaction, especially when calls are executed as part of a loop. Always assume that external calls can fail. Implement the contract logic to handle failed calls."
+                "Type": "Lack of functionality",
+                "Description": "The Gravity.sol should have pause/unpause functionality.",
+                "Repair": "Implement pause functionality on the contract and manage the contract by proxy so that upgrades can be made by the validators."
             },
             {
                 "Location": "Gravity.sol#L600",

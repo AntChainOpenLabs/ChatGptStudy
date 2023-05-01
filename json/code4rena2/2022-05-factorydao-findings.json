@@ -6,64 +6,70 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "Merkle-tree-related contracts",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Merkle-tree-related contracts vulnerable to cross-chain-replay attacks",
+                "Location": "contracts/MerkleVesting.sol, contracts/MerkleDropFactory.sol",
+                "Type": "incomplete verification",
+                "Description": "Contracts should clarify what is the intended behavior for Merkle trees with multiple leafs with the same address. If there's a fork, since anyone can call withdraw(), an attacker can monitor the blockchain for calls to withdraw(), and then make the same call with the same arguments on the other chain, which will send funds to the unsupported address.",
                 "Repair": "Add EIP-712 protections and add a mechanism to allow tokens to be transferred to a different address using EIP-2612 permit()"
             },
             {
-                "Location": "Pool owners can prevent withdrawals of specific receipts",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Pool owners can prevent withdrawals of specific receipts without impacting any other functionality",
-                "Repair": "Return a boolean of whether all withdrawals were successful, and allow withdraw() to be called multiple times, keeping track of what has been transferred and what hasn't"
+                "Location": "contracts/PermissionlessBasicPoolFactory.sol",
+                "Type": "lack of input validation",
+                "Description": "Pool owners can prevent withdrawals of specific receipts without impacting any other functionality. Receipts are non-transferrable, so a malicious owner can monitor the blockchain for receipt creations, and inspect which account holds the receiptId. Next, by changing settings in a custom reward token that reverts for specific addresses, the owner can prevent that specific receipt owner from withdrawing.",
+                "Repair": "Add input validation to prevent pool owners from preventing withdrawals of specific receipts"
             },
             {
-                "Location": "Verification should be leafed based and not address based",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Contracts should clarify what is the intended behavior for Merkle trees with multiple leafs with the same address.",
-                "Repair": "Clarify the behavior in the comments at least, and make clear to merkle tree builders"
-            },
-            {
-                "Location": "amount requires to be updated to contract balance increase",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Every time transferFrom or transfer function in ERC20 standard is called there is a possibility that underlying smart contract did not transfer the exact amount entered.",
-                "Repair": "Update actual amount to the contract balance increase"
-            },
-            {
-                "Location": "safeTransferFrom function in ERC20 contracts",
-                "Type": "smart contract vulnerability",
-                "Description": "Using transfer function in ERC20 contracts can lead to funds getting stuck in the contract without possibility to retrieve them, especially for tokens like USDT that return nothing. Using safeTransferFrom of SafeERC20.sol is recommended instead.",
+                "Location": "ERC20 standard transfer functions",
+                "Type": "lack of input validation",
+                "Description": "ERC20 standard allows transfer function of some contracts to return bool or return nothing. This could lead to funds stuck in the contract without possibility to retrieve them.",
                 "Repair": "Use safeTransferFrom of SafeERC20.sol instead of transfer"
             },
             {
-                "Location": "Deposit and Merkle-tree-related contracts",
-                "Type": "Rebasing tokens go to the pool owner, or remain locked in the various contracts",
-                "Description": "Deposited tokens will grow in value, but the value in excess of the pre-calculated getMaximumRewards()/deposited amounts go solely to the owner/creator, or will remain locked in the contract.",
-                "Repair": "Provide a function for the pool owner to withdraw excess deposited tokens and repay any associated taxes. In the case of the Merkle trees though, pro rata share amounts need to be calculated and tracked and updated with every withdrawal, which will require drastic changes to the code, making it much more expensive."
+                "Location": "contracts/MerkleDropFactory.sol, contracts/MerkleVesting.sol",
+                "Type": "incomplete verification",
+                "Description": "Bank is a token vesting, airdrop and payroll tool. It uses merkle trees to massively scale token distributions with integrated vesting (time locks). If someone generates an exchange address for their drops, that address may only be valid for that chain (e.g. exchange supports BTC but not BSV), and any funds sent to the unsupported chain are lost. If there's a fork, since anyone can call withdraw(), an attacker can monitor the blockchain for calls to withdraw(), and then make the same call with the same arguments on the other chain, which will send funds to the unsupported address.",
+                "Repair": "Add EIP-712 protections and add a mechanism to allow tokens to be transferred to a different address using EIP-2612 permit()"
             },
             {
-                "Location": "withdrawExcessRewards() function",
-                "Type": "DoS",
-                "Description": "An attacker may cause a DoS attack on withdrawExcessRewards() by creating an excessive number of receipts with minimal value.",
-                "Repair": "Add a minimum deposit amount for each pool that can be configured by the pool owner. Alternatively, allow the owner to call withdrawExcessRewards() given some other criteria such as a fixed period of time (e.g. 1 month) has passed since the end of the auction and 90% of the deposits have been withdrawn."
+                "Location": "function fundPool(uint poolId) internal",
+                "Type": "incomplete verification",
+                "Description": "Every time transferFrom or transfer function in ERC20 standard is called there is a possibility that underlying smart contract did not transfer the exact amount entered. It is required to find out contract balance increase/decrease after the transfer. This pattern also prevents from re-entrancy attack vector.",
+                "Repair": "Update amount to contract balance increase after transfer"
             },
             {
-                "Location": "withdrawTaxes() function",
-                "Type": "Prevention of tax payment",
-                "Description": "Pool owners can prevent taxes from being paid without impacting any other functionality.",
-                "Repair": "Force taxes to be paid during withdraw()."
+                "Location": "Pools and Merkle-tree-related contracts",
+                "Type": "Excess deposited rebasing tokens",
+                "Description": "Rebasing tokens go to the pool owner, or remain locked in the various contracts",
+                "Repair": "Provide a function for the pool owner to withdraw excess deposited tokens and repay any associated taxes"
             },
             {
-                "Location": "addPool() function",
-                "Type": "Prevention of tax payment",
-                "Description": "It is possible for the owner of a pool to prevent any taxes being withdrawn by the globalBeneficiary.",
-                "Repair": "The withdrawTaxes() function can take both poolId and rewardIndex as parameters to allow the tax beneficiary to only withdraw from certain reward tokens in the pool. Alternatively, implement a try-catch condition around the withdrawal of reward tokens. In the catch statement, re-instate the taxes[poolId][i] = tax if the transfer fails. Alternatively, just skip the reward tokens if the transfer fails though this would be undesirable if a token is paused for some reason."
+                "Location": "withdraw() function",
+                "Type": "Unchecked Transfer",
+                "Description": "When the transfer is made in the withdraw() function, it is not validated if the transfer was done correctly. This could be a conflict since not being able to perform it would return a false and that case would not be handled, the most common is to revert.",
+                "Repair": "Wrap the transfer with a require"
             },
             {
-                "Location": "setGlobalTax() function",
+                "Location": "SpeedBumpPriceGate: passThruGate()",
+                "Type": "Excess ether not returned",
+                "Description": "The passThruGate function did not return the excess ether, which would cause asset loss to the user.",
+                "Repair": "Add a check to return excess ether to the user"
+            },
+            {
+                "Location": "PermissionlessBasicPoolFactory: withdraw()",
+                "Type": "Unbounded loop",
+                "Description": "The withdraw() has an unbounded loop with external calls. If the gas costs of functions change between when deposits are made and when rewards are withdrawn, or if the gas cost of the deposit (transferFrom()) is less than the gas cost of the withdrawal (transfer()), then the withdraw() function may revert due to exceeding the block size gas limit.",
+                "Repair": "Allow the specification of an offset and length to the withdraw() function"
+            },
+            {
+                "Location": "MerkleDropFactory: depositTokens()",
+                "Type": "Lack of input validation",
+                "Description": "The function depositTokens() does not first check to ensure that the treeIndex exists.",
+                "Repair": "Add a check to ensure 0 < treeIndex <= numTrees"
+            },
+            {
+                "Location": "PermissionlessBasicPoolFactory: setGlobalTax()",
                 "Type": "Centralisation Risk",
-                "Description": "Owner may abuse the tax rate to claim 99.9% of pools. The globalBeneficiary can modify the tax rate and front-run transactions to create pools with the 99.9% tax rate.",
-                "Repair": "Set upper bounds for the tax rate, consider setting it to 5%"
+                "Description": "It is possible for the owner to increase the tax rate to 99.9% in setGlobalTax().",
+                "Repair": "Put some reasonable upper bounds on the tax rate"
             }
         ]
     },
@@ -74,46 +80,46 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "getRewards() function in PermissionlessBasicPoolFactory contract",
-                "Type": "smart contract vulnerability",
-                "Description": "The getRewards() function in PermissionlessBasicPoolFactory contract calculates the wrong reward amount for receiptId==0, which can be exploited by sending receiptId as 0.",
-                "Repair": "Add a check to ensure receiptId is not 0 or check for uninitialized receipts with owner field as non-zero"
-            },
-            {
-                "Location": "withdraw function in PermissionlessBasicPoolFactory contract",
-                "Type": "smart contract vulnerability",
-                "Description": "Malicious token reward could disable withdrawals in the PermissionlessBasicPoolFactory contract, and an emergencyWithdraw function is needed to ignore failed reward token transfers.",
+                "Location": "PermissionlessBasicPoolFactory.withdraw function",
+                "Type": "Malicious token reward",
+                "Description": "Malicious token reward could disable withdrawals",
                 "Repair": "Add an emergencyWithdraw function that ignores failed reward token transfers"
             },
             {
-                "Location": "PermissionlessBasicPoolFactory.sol contract",
-                "Type": "DoS: Blacklisted user may prevent  withdrawExcessRewards()",
-                "Description": "If one user becomes blacklisted or otherwise cannot be transferred funds in any of the rewards tokens or the deposit token then they will not be able to call withdraw() for that token.",
-                "Repair": "Consider allowing withdrawExcessRewards() to be called after a set period of time after the pool end if most users have withdrawn or some similar criteria."
+                "Location": "getRewards() function in PermissionlessBasicPoolFactory contract",
+                "Type": "Incorrect receiptId check",
+                "Description": "getRewards() in PermissionlessBasicPoolFactory calculate wrong reward amount for receiptId==0",
+                "Repair": "Add a check for uninitialized receipts with owner field as non-zero"
             },
             {
                 "Location": "PermissionlessBasicPoolFactory.sol",
-                "Type": "Unchecked transfer",
-                "Description": "When the transfer is made in the withdraw() function, it is not validated if the transfer was done correctly. This could be a conflict since not being able to perform it would return a false and that case would not be handled, the most common is to revert.",
-                "Repair": "Wrap the transfer with a require"
+                "Type": "Denial of Service (DoS)",
+                "Description": "If one user becomes blacklisted or otherwise cannot be transferred funds in any of the rewards tokens or the deposit token then they will not be able to call withdraw() for that token. The impact of one user not being able to call withdraw() is that the owner will now never be able to call withdrawExcessRewards() and therefore lock not only the users rewards and deposit but also and excess rewards attributed to the owner.",
+                "Repair": "Allow withdrawExcessRewards() to be called after a set period of time after the pool end if most users have withdrawn or some similar criteria."
             },
             {
-                "Location": "PermissionlessBasicPoolFactory.sol",
-                "Type": "User fund freeze",
-                "Description": "Reward tokens that do not allow for zero amount transfers can prevent user pool exit. If withdraw was called at the moment when some reward amount is zero, the withdraw() will revert. As withdraw() the only way for a user to exit pool, her funds will be frozen within.",
-                "Repair": "Control for zero amounts in reward transfer cycle"
+                "Location": "withdraw() function in PermissionlessBasicPoolFactory.sol",
+                "Type": "PermissionlessBasicPoolFactory's withdraw can become frozen on zero reward token transfers",
+                "Description": "Reward tokens that do not allow for zero amount transfers can prevent user pool exit.",
+                "Repair": "Control for zero amounts in reward transfer cycle by adding a check for zero amounts in the for loop in line 224-L231"
             },
             {
-                "Location": "PermissionlessBasicPoolFactory contract",
-                "Type": "Incorrect reward calculation",
-                "Description": "Contract PermissionlessBasicPoolFactory calculates rewards by using hardcoded value of decimals 18 (1e18) for ERC20 tokens. This leads to wrong rewards calculations and effectively loss of funds for all pools that will be using ERC20 tokens with different decimals than 18.",
-                "Repair": "Add support for different numbers of decimals than 18 by dynamically checking decimals() for the tokens that are part of the rewards calculations. Alternatively, if such support is not needed, new require statements should be added to addPool that will be checking that the number of decimals for all ERC20 tokens is 18."
+                "Location": "withdrawExcessRewards() function in PermissionlessBasicPoolFactory.sol",
+                "Type": "DoS: Attacker may significantly increase the cost of  withdrawExcessRewards()  by creating a significant number of excess receipts",
+                "Description": "An attacker may cause a DoS attack on withdrawExcessRewards() by creating an excessive number of receipts with minimal value.",
+                "Repair": "Add a minimum deposit amount for each pool that can be configured by the pool owner or allow the owner to call withdrawExcessRewards() given some other criteria such as a fixed period of time has passed since the end of the auction and 90% of the deposits have been withdrawn"
             },
             {
-                "Location": "withdraw() function in PermissionlessBasicPoolFactory contract",
-                "Type": "Unbounded loop",
-                "Description": "The withdraw() function has an unbounded loop with external calls, which may cause the function to revert due to exceeding the block size gas limit.",
-                "Repair": "Allow the specification of an offset and length to the withdraw() function"
+                "Location": "addPool() function in PermissionlessBasicPoolFactory.sol",
+                "Type": "ERC20 tokens with different decimals than 18 leads to loss of funds",
+                "Description": "Contract PermissionlessBasicPoolFactory calculates rewards by using hardcoded value of decimals 18 (1e18) for ERC20 tokens.",
+                "Repair": "Add support for different numbers of decimals than 18 by dynamically checking decimals() for the tokens that are part of the rewards calculations or add new require statements to addPool() that will be checking that the number of decimals for all ERC20 tokens is 18"
+            },
+            {
+                "Location": "withdrawTaxes() function in PermissionlessBasicPoolFactory.sol",
+                "Type": "Owner of a pool may prevent any taxes being withdrawn",
+                "Description": "It is possible for the owner of a pool to prevent taxes from being paid without impacting any other functionality.",
+                "Repair": "Implement a try-catch condition around the withdrawal of reward tokens. In the catch statement re-instate the taxes[poolId][i] = tax if the transfer fails or force taxes to be paid during withdraw()"
             }
         ]
     },
@@ -124,9 +130,9 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "withdraw function in MerkleVesting contract",
-                "Type": "smart contract vulnerability",
-                "Description": "The MerkleVesting withdrawal function does not verify that tokens were transferred successfully, which can lead to users losing their allocation and funds if the ERC20 transfer is temporarily failing.",
+                "Location": "MerkleVesting withdrawal function",
+                "Type": "Failure to verify ERC20 transfer success",
+                "Description": "MerkleVesting withdrawal does not verify that tokens were transferred successfully",
                 "Repair": "Add a check that verifies that the transfer has succeeded"
             }
         ]
@@ -139,10 +145,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MerkleLib.sol and MerkleDropFactory.sol contracts",
-                "Type": "Merkle leaves are the same length as the parents that are hashed",
-                "Description": "The size of a leaf is the same size of the parent data that is hashed, both are 64 bytes. As a result it is possible to have a hash collision between a leaf and any node in the tree.",
-                "Repair": "Consider using leaf = keccak(abi.encodePacked(destination, value)) in withdraw() as this will reduce the size of the leaf data being hashed to 52 bytes. Since keccak256 prevents length extension attacks a different length of data to be hashed can be assumed to give different hashes and prevent a collision between a leaf and other nodes in the tree."
+                "Location": "MerkleLib.sol, MerkleDropFactory.sol",
+                "Type": "Hash Collision",
+                "Description": "The size of a leaf is the same size of the parent data that is hashed, both are 64 bytes. As a result it is possible to have a hash collision between a leaf and any node in the tree. This allows for proofs to be repeated multiple times by taking subtrees as leaves.",
+                "Repair": "Use leaf = keccak(abi.encodePacked(destination, value)) in withdraw() as this will reduce the size of the leaf data being hashed to 52 bytes. Since keccak256 prevents length extension attacks a different length of data to be hashed can be assumed to give different hashes and prevent a collision between a leaf and other nodes in the tree."
             }
         ]
     },
@@ -154,29 +160,9 @@
         "VulnerabilityDesc": [
             {
                 "Location": "MerkleResistor.sol",
-                "Type": "Division by zero",
+                "Type": "Zero Division",
                 "Description": "It is possible for coinsPerSecond to be zero. In these cases, the startTime calculation will revert from division by zero, preventing initialization, and by extension, withdrawals of vested tokens.",
-                "Repair": "Scale up coinsPerSecond by PRECISION, then scale down when executing withdrawals"
-            }
-        ]
-    },
-    {
-        "Code": "// SPDX-License-Identifier: GPL-3.0-only\n\npragma solidity 0.8.9;\n\nimport \"../interfaces/IPriceGate.sol\";\n\n/// @title A factory pattern for a price gate whose price increases exponentially on purchase and decays linearly thereafter\n/// @author metapriest, adrian.wachel, marek.babiarz, radoslaw.gorecki\n/// @notice This contract has no management key, anyone can add a gate\n/// @dev Note passing thru the gate forwards all gas, so beneficiary can be a contract, possibly malicious\ncontract SpeedBumpPriceGate is IPriceGate {\n\n    // this represents a single gate\n    struct Gate {\n        uint priceIncreaseFactor;\n        uint priceIncreaseDenominator;\n        uint lastPrice;\n        uint decayFactor;\n        uint priceFloor;\n        uint lastPurchaseBlock;\n        address beneficiary;\n    }\n\n    // array-like mapping of gate structs\n    mapping (uint => Gate) public gates;\n    // count the gates as they come in!\n    uint public numGates;\n\n    /// @notice Add a price gate to the list of available price gates\n    /// @dev Anyone can call this, but it must be connected to MerkleIdentity via priceGateIndex to be used\n    /// @dev The price increase factor is split into numerator and denominator to enable fractions (wow! I love fractions!)\n    /// @param priceFloor the starting price and the lowest price that can be reached via decay\n    /// @param priceDecay the per-block rate at which the price reduces until it hits the price floor\n    /// @param priceIncrease the numerator of the factor by which the price multiplies when a purchase occurs\n    /// @param priceIncreaseDenominator the denominator of the price increase factor\n    /// @param beneficiary who receives the proceeds from a purchase\n    function addGate(uint priceFloor, uint priceDecay, uint priceIncrease, uint priceIncreaseDenominator, address beneficiary) external {\n        // prefix operator increments then evaluates\n        Gate storage gate = gates[++numGates];\n        gate.priceFloor = priceFloor;\n        gate.decayFactor = priceDecay;\n        gate.priceIncreaseFactor = priceIncrease;\n        gate.priceIncreaseDenominator = priceIncreaseDenominator;\n        gate.beneficiary = beneficiary;\n    }\n\n    /// @notice Get the cost of passing thru this gate\n    /// @param index which gate are we talking about?\n    /// @return _ethCost the amount of ether required to pass thru this gate\n    function getCost(uint index) override public view returns (uint _ethCost) {\n        Gate memory gate = gates[index];\n        // compute the linear decay\n        uint decay = gate.decayFactor * (block.number - gate.lastPurchaseBlock);\n        // gate.lastPrice - decay < gate.priceFloor (left side could underflow)\n        if (gate.lastPrice < decay + gate.priceFloor) {\n            return gate.priceFloor;\n        } else {\n            return gate.lastPrice - decay;\n        }\n    }\n\n    /// @notice Pass thru this gate, should be called by MerkleIndex\n    /// @dev This can be called by anyone, devs can call it to test it on mainnet\n    /// @param index which gate are we passing thru?\n    function passThruGate(uint index, address) override external payable {\n        uint price = getCost(index);\n        require(msg.value >= price, 'Please send more ETH');\n\n        // bump up the price\n        Gate storage gate = gates[index];\n        // multiply by the price increase factor\n        gate.lastPrice = (price * gate.priceIncreaseFactor) / gate.priceIncreaseDenominator;\n        // move up the reference\n        gate.lastPurchaseBlock = block.number;\n\n        // pass thru the ether\n        if (msg.value > 0) {\n            // use .call so we can send to contracts, for example gnosis safe, re-entrance is not a threat here\n            (bool sent, bytes memory data) = gate.beneficiary.call{value: msg.value}(\"\");\n            require(sent, 'ETH transfer failed');\n        }\n    }\n}\n\n\n",
-        "CodeNames": [
-            "SpeedBumpPriceGate.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "SpeedBumpPriceGate contract's passThruGate function",
-                "Type": "Excess ether not returned",
-                "Description": "The passThruGate function did not return the excess ether, which would cause asset loss to the user.",
-                "Repair": "Add a check to return excess ether to the user"
-            },
-            {
-                "Location": "SpeedBumpPriceGate contract's addGate() function",
-                "Type": "Lack of input validation",
-                "Description": "If priceIncreaseDenominator is set to 0 when addGate(), in passThruGate() the tx will revert at L72 because of div by 0.",
-                "Repair": "Add a check to require priceIncreaseDenominator > 0"
+                "Repair": "Scale up coinsPerSecond by PRECISION, then scale down when executing withdrawals."
             }
         ]
     },
@@ -187,24 +173,24 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MerkleIdentity contract's merkleIndex check",
+                "Location": "MerkleIdentity.sol: merkleIndex check",
                 "Type": "Out of range check",
-                "Description": "The merkleIndex check did not fail for index 0, which should have failed.",
-                "Repair": "Change the check to require merkleIndex <= numTrees && merkleIndex > 0"
+                "Description": "This line checks that the index is valid. However, the trees start at index 1, therefore index 0 should fail this check, but it doesn't.",
+                "Repair": "Change the range check to include 0"
             }
         ]
     },
     {
-        "Code": "// SPDX-License-Identifier: GPL-3.0-only\n\npragma solidity 0.8.9;\n\nimport \"../interfaces/IERC20.sol\";\nimport \"./MerkleLib.sol\";\n\n/// @title A factory pattern for merkledrops, that is, airdrops using merkleproofs to compute eligibility\n/// @author metapriest, adrian.wachel, marek.babiarz, radoslaw.gorecki\n/// @notice This contract is permissionless and public facing. Any fees must be included in the data of the merkle tree.\n/// @dev The contract cannot introspect into the contents of the merkle tree, except when provided a merkle proof,\n/// @dev therefore the total liabilities of the merkle tree are untrusted and tree balances must be managed separately\ncontract MerkleDropFactory {\n    using MerkleLib for bytes32;\n\n    // the number of airdrops in this contract\n    uint public numTrees = 0;\n\n    // this represents a single airdrop\n    struct MerkleTree {\n        bytes32 merkleRoot;  // merkleroot of tree whose leaves are (address,uint) pairs representing amount owed to user\n        bytes32 ipfsHash; // ipfs hash of entire dataset, as backup in case our servers turn off...\n        address tokenAddress; // address of token that is being airdropped\n        uint tokenBalance; // amount of tokens allocated for this tree\n        uint spentTokens; // amount of tokens dispensed from this tree\n    }\n\n    // withdrawn[recipient][treeIndex] = hasUserWithdrawnAirdrop\n    mapping (address => mapping (uint => bool)) public withdrawn;\n\n    // array-like map for all ze merkle trees (airdrops)\n    mapping (uint => MerkleTree) public merkleTrees;\n\n    // every time there's a withdraw\n    event WithdrawalOccurred(uint indexed treeIndex, address indexed destination, uint value);\n\n    // every time a tree is added\n    event MerkleTreeAdded(uint indexed treeIndex, address indexed tokenAddress, bytes32 newRoot, bytes32 ipfsHash);\n\n    // every time a tree is topped up\n    event TokensDeposited(uint indexed treeIndex, address indexed tokenAddress, uint amount);\n\n    /// @notice Add a new merkle tree to the contract, creating a new merkle-drop\n    /// @dev Anyone may call this function, therefore we must make sure trees cannot affect each other\n    /// @param newRoot root hash of merkle tree representing liabilities == (destination, value) pairs\n    /// @param ipfsHash the ipfs hash of the entire dataset, used for redundance so that creator can ensure merkleproof are always computable\n    /// @param tokenAddress the address of the token contract that is being distributed\n    /// @param tokenBalance the amount of tokens user wishes to use to fund the airdrop, note trees can be under/overfunded\n    function addMerkleTree(bytes32 newRoot, bytes32 ipfsHash, address tokenAddress, uint tokenBalance) public {\n        // prefix operator ++ increments then evaluates\n        merkleTrees[++numTrees] = MerkleTree(\n            newRoot,\n            ipfsHash,\n            tokenAddress,\n            0,  // ain't no tokens in here yet\n            0   // ain't nobody claimed no tokens yet either\n        );\n        // you don't get to add a tree without funding it\n        depositTokens(numTrees, tokenBalance);\n        // I guess we should tell people (interfaces) what happened\n        emit MerkleTreeAdded(numTrees, tokenAddress, newRoot, ipfsHash);\n    }\n\n    /// @notice Add funds to an existing merkle-drop\n    /// @dev Anyone may call this function, the only risk here is that the token contract is malicious, rendering the tree malicious\n    /// @param treeIndex index into array-like map of merkleTrees\n    /// @param value the amount of tokens user wishes to use to fund the airdrop, note trees can be under/overfunded\n    function depositTokens(uint treeIndex, uint value) public {\n        // storage since we are editing\n        MerkleTree storage merkleTree = merkleTrees[treeIndex];\n\n        // bookkeeping to make sure trees don't share tokens\n        merkleTree.tokenBalance += value;\n\n        // transfer tokens, if this is a malicious token, then this whole tree is malicious\n        // but it does not effect the other trees\n        require(IERC20(merkleTree.tokenAddress).transferFrom(msg.sender, address(this), value), \"ERC20 transfer failed\");\n        emit TokensDeposited(treeIndex, merkleTree.tokenAddress, value);\n    }\n\n    /// @notice Claim funds as a recipient in the merkle-drop\n    /// @dev Anyone may call this function for anyone else, funds go to destination regardless, it's just a question of\n    /// @dev who provides the proof and pays the gas, msg.sender is not used in this function\n    /// @param treeIndex index into array-like map of merkleTrees, which tree should we apply the proof to?\n    /// @param destination recipient of tokens\n    /// @param value amount of tokens that will be sent to destination\n    /// @param proof array of hashes bridging from leaf (hash of destination | value) to merkle root\n    function withdraw(uint treeIndex, address destination, uint value, bytes32[] memory proof) public {\n        // no withdrawing from uninitialized merkle trees\n        require(treeIndex <= numTrees, \"Provided merkle index doesn't exist\");\n        // no withdrawing same airdrop twice\n        require(!withdrawn[destination][treeIndex], \"You have already withdrawn your entitled token.\");\n        // compute merkle leaf, this is first element of proof\n        bytes32 leaf = keccak256(abi.encode(destination, value));\n        // storage because we edit\n        MerkleTree storage tree = merkleTrees[treeIndex];\n        // this calls to MerkleLib, will return false if recursive hashes do not end in merkle root\n        require(tree.merkleRoot.verifyProof(leaf, proof), \"The proof could not be verified.\");\n        // close re-entrance gate, prevent double claims\n        withdrawn[destination][treeIndex] = true;\n        // update struct\n        tree.tokenBalance -= value;\n        tree.spentTokens += value;\n        // transfer the tokens\n        // NOTE: if the token contract is malicious this call could re-enter this function\n        // which will fail because withdrawn will be set to true\n        require(IERC20(tree.tokenAddress).transfer(destination, value), \"ERC20 transfer failed\");\n        emit WithdrawalOccurred(treeIndex, destination, value);\n    }\n\n}\n\n",
+        "Code": "// SPDX-License-Identifier: GPL-3.0-only\n\npragma solidity 0.8.9;\n\nimport \"../interfaces/IPriceGate.sol\";\n\n/// @title A factory pattern for a price gate whose price increases exponentially on purchase and decays linearly thereafter\n/// @author metapriest, adrian.wachel, marek.babiarz, radoslaw.gorecki\n/// @notice This contract has no management key, anyone can add a gate\n/// @dev Note passing thru the gate forwards all gas, so beneficiary can be a contract, possibly malicious\ncontract SpeedBumpPriceGate is IPriceGate {\n\n    // this represents a single gate\n    struct Gate {\n        uint priceIncreaseFactor;\n        uint priceIncreaseDenominator;\n        uint lastPrice;\n        uint decayFactor;\n        uint priceFloor;\n        uint lastPurchaseBlock;\n        address beneficiary;\n    }\n\n    // array-like mapping of gate structs\n    mapping (uint => Gate) public gates;\n    // count the gates as they come in!\n    uint public numGates;\n\n    /// @notice Add a price gate to the list of available price gates\n    /// @dev Anyone can call this, but it must be connected to MerkleIdentity via priceGateIndex to be used\n    /// @dev The price increase factor is split into numerator and denominator to enable fractions (wow! I love fractions!)\n    /// @param priceFloor the starting price and the lowest price that can be reached via decay\n    /// @param priceDecay the per-block rate at which the price reduces until it hits the price floor\n    /// @param priceIncrease the numerator of the factor by which the price multiplies when a purchase occurs\n    /// @param priceIncreaseDenominator the denominator of the price increase factor\n    /// @param beneficiary who receives the proceeds from a purchase\n    function addGate(uint priceFloor, uint priceDecay, uint priceIncrease, uint priceIncreaseDenominator, address beneficiary) external {\n        // prefix operator increments then evaluates\n        Gate storage gate = gates[++numGates];\n        gate.priceFloor = priceFloor;\n        gate.decayFactor = priceDecay;\n        gate.priceIncreaseFactor = priceIncrease;\n        gate.priceIncreaseDenominator = priceIncreaseDenominator;\n        gate.beneficiary = beneficiary;\n    }\n\n    /// @notice Get the cost of passing thru this gate\n    /// @param index which gate are we talking about?\n    /// @return _ethCost the amount of ether required to pass thru this gate\n    function getCost(uint index) override public view returns (uint _ethCost) {\n        Gate memory gate = gates[index];\n        // compute the linear decay\n        uint decay = gate.decayFactor * (block.number - gate.lastPurchaseBlock);\n        // gate.lastPrice - decay < gate.priceFloor (left side could underflow)\n        if (gate.lastPrice < decay + gate.priceFloor) {\n            return gate.priceFloor;\n        } else {\n            return gate.lastPrice - decay;\n        }\n    }\n\n    /// @notice Pass thru this gate, should be called by MerkleIndex\n    /// @dev This can be called by anyone, devs can call it to test it on mainnet\n    /// @param index which gate are we passing thru?\n    function passThruGate(uint index, address) override external payable {\n        uint price = getCost(index);\n        require(msg.value >= price, 'Please send more ETH');\n\n        // bump up the price\n        Gate storage gate = gates[index];\n        // multiply by the price increase factor\n        gate.lastPrice = (price * gate.priceIncreaseFactor) / gate.priceIncreaseDenominator;\n        // move up the reference\n        gate.lastPurchaseBlock = block.number;\n\n        // pass thru the ether\n        if (msg.value > 0) {\n            // use .call so we can send to contracts, for example gnosis safe, re-entrance is not a threat here\n            (bool sent, bytes memory data) = gate.beneficiary.call{value: msg.value}(\"\");\n            require(sent, 'ETH transfer failed');\n        }\n    }\n}\n\n\n",
         "CodeNames": [
-            "MerkleDropFactory.sol"
+            "SpeedBumpPriceGate.sol"
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MerkleDropFactory contract's depositTokens() function",
-                "Type": "Missing input validation",
-                "Description": "The depositTokens() function does not first check to ensure that the treeIndex exists.",
-                "Repair": "Add a check to ensure 0 < treeIndex <= numTrees"
+                "Location": "SpeedBumpPriceGate.sol: addGate()",
+                "Type": "Lack of input validation",
+                "Description": "If priceIncreaseDenominator is set to 0 when addGate(), in passThruGate() the tx will revert at L72 because of div by 0.",
+                "Repair": "Add a check to require priceIncreaseDenominator > 0"
             }
         ]
     }

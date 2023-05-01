@@ -8,61 +8,61 @@
             {
                 "Location": "withdrawBounty() function in Auction.sol",
                 "Type": "Incorrect data location specifier",
-                "Description": "The data location specifier used for bounty is memory which makes a copy of the _bounties array member instead of a reference. So when bounty.active is set to false, this is changing only the memory copy and not the array element of the storage variable.",
+                "Description": "The data location specifier used for bounty is memory which makes a copy of the _bounties array member instead of a reference, resulting in bounties never being set to inactive.",
                 "Repair": "Change storage specifier of bounty to 'storage' instead of 'memory'"
             },
             {
-                "Location": "Auction contract",
-                "Type": "Scoop ERC20 tokens from basket contract",
-                "Description": "Suppose some unrelated ERC20 tokens end up in the basket contract (via an airdrop, a user mistake etc). Then anyone can do a bondForRebalance() and settleAuction() to scoop these tokens.",
+                "Location": "settleAuction() function in Auction.sol",
+                "Type": "Reentrancy",
+                "Description": "The function calls withdrawBounty() before setting auctionOngoing = false, allowing reentrancy and enabling a malicious publisher to bypass the index timelock mechanism and rug the basket.",
+                "Repair": "Move basketAsERC20.transfer() and withdrawBounty() to the end of the function, conforming with Checks Effects Interactions pattern"
+            },
+            {
+                "Location": "bondForRebalance() and settleAuction() functions in Auction.sol",
+                "Type": "Unauthorized token transfer",
+                "Description": "If unrelated ERC20 tokens end up in the basket contract, anyone can use bondForRebalance() and settleAuction() to retrieve additional tokens, including bounties specified in a token that is not protected.",
                 "Repair": "Check outputTokens are part of the previous basket tokens"
             },
             {
-                "Location": "Auction contract",
-                "Type": "No minimum rate in the auction may break the protocol under network failure",
-                "Description": "The aution contract decides a new ibRatio in the function settleAuction. There's a chance that newRatio would be really close to zero. This imposes too much risk on the protocol.",
-                "Repair": "Set a minimum ibRatio when a publisher publishes a new index or modify settleAuction mechanism"
+                "Location": "settleAuction function in Auction.sol",
+                "Type": "Medium Severity",
+                "Description": "The settleAuction function in Auction.sol can cause huge damage to the protocol if the newRatio is really close to zero under network failure.",
+                "Repair": "Set a minimum ibRatio when a publisher publishes a new index and kill the auction if the ibRatio is too low"
             },
             {
-                "Location": "Auction.sol",
-                "Type": "Smart Contract Vulnerability",
+                "Location": "settleAuction function in Auction.sol",
+                "Type": "High Severity",
+                "Description": "The settleAuction function in Auction.sol allows re-entrancy attacks that can steal all funds from the basket.",
+                "Repair": "Add re-entrancy checks (for example, OpenZeppelin's 'locks') to the settleAuction function, require the list of input tokens to match the output, and set the time difference (bondTimestamp, auctionStart) to be 0 to negate the ability to further manipulate the ibRatio"
+            },
+            {
+                "Location": "settleAuction function in Auction contract",
+                "Type": "smart contract vulnerability",
                 "Description": "settleAuction may be impossible if locked at a wrong time.",
-                "Repair": "Calculate the new irate in bondForRebalance or allow many people to bond and only one to settle"
+                "Repair": "Calculate the new irate in bondForRebalance"
             },
             {
-                "Location": "Auction.sol",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Auction settler can steal user funds if bond timestamp is high enough.",
-                "Repair": "Add a sanity check in settleAuction: require (newRatio > basket.ibRatio())"
-            },
-            {
-                "Location": "Auction.sol",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Use safeTransfer instead of transfer.",
-                "Repair": "Use safeTransfer instead of transfer or check the return value if length of returned data is 0"
-            },
-            {
-                "Location": "Auction.sol",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Auction multiplier set to zero.",
-                "Repair": "Add a check to not allow the auction multiplier to be set to zero"
-            },
-            {
-                "Location": "Auction.sol",
-                "Type": "Smart Contract Vulnerability",
+                "Location": "bondForRebalance, settleAuction, and bondBurn functions in Auction contract",
+                "Type": "smart contract vulnerability",
                 "Description": "Bonding mechanism allows malicious user to DOS auctions.",
-                "Repair": "Move to a mapping of bonders that rebalance, allowing anyone to bond and rebalance while still allowing the same dynamic of burning their bonds"
+                "Repair": "Move to a mapping of bonders that rebalance"
             },
             {
-                "Location": "Auction smart contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "Auction.sol#settleAuction() Mishandling bounty state could potentially disrupt settleAuction()",
-                "Repair": "Change the storage keyword to bounty in withdrawBounty function to ensure that bounty.active is set to false when the bounty is claimed"
+                "Location": "transfer function in Auction contract",
+                "Type": "smart contract vulnerability",
+                "Description": "Use safeTransfer instead of transfer.",
+                "Repair": "Use safeTransfer or check the return value if length of returned data is 0"
+            },
+            {
+                "Location": "Auction.sol#withdrawBounty()",
+                "Type": "Mishandling bounty state",
+                "Description": "Mishandling bounty state could potentially disrupt settleAuction() if bounty.active is not set to false when the bounty is claimed.",
+                "Repair": "Change 'Bounty memory bounty' to 'Bounty storage bounty'"
             },
             {
                 "Location": "Auction.sol#settleAuction()",
-                "Type": "Auction Bond Settlement Failure",
-                "Description": "Late auction bond could potentially not be able to be settled, causing funds loss to bonder due to a possible underflow error in the calculation of newRatio.",
+                "Type": "Late auction bond settlement failure",
+                "Description": "Auction bond could potentially not being able to be settled, cause funds loss to bonder",
                 "Repair": "Calculate and require newRatio > 0 in bondForRebalance(), or limit the max value of decrement and make sure newRatio always > 0 in settleAuction()"
             }
         ]
@@ -76,50 +76,56 @@
             {
                 "Location": "mintTo() and burn() functions in Basket.sol",
                 "Type": "Reentrancy",
-                "Description": "The functions mintTo() and burn() make external calls prior to updating the state, allowing for reentrancy attacks.",
+                "Description": "The functions make external calls prior to updating the state, allowing attackers to mint free basket tokens and reenter the function to mint more tokens than deposited.",
                 "Repair": "Move external calls after state updates in accordance with the check-effect-interact pattern"
             },
             {
-                "Location": "settleAuction() function in Basket.sol",
-                "Type": "Reentrancy",
-                "Description": "The settleAuction() function calls withdrawBounty() before setting auctionOngoing = false, thereby allowing reentrancy. A malicious publisher can bypass the index timelock mechanism and publish new index which the basket's users won't have time to respond to.",
-                "Repair": "Move basketAsERC20.transfer() and withdrawBounty() to the end of the function, conforming with Checks Effects Interactions pattern"
+                "Location": "validateWeights function in Basket contract",
+                "Type": "smart contract vulnerability",
+                "Description": "Zero weighted baskets are allowed to steal funds.",
+                "Repair": "Change validateWeights to check for 0 length token"
             },
             {
-                "Location": "Basket smart contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "User can mint miniscule amount of shares, later withdraw miniscule more than deposited",
-                "Repair": "Add a check to pullUnderlying function to deny mint request if the user is trying to mint an amount so small that no tokens could be pulled from him"
+                "Location": "handleFees function in Basket.sol",
+                "Type": "Integer underflow",
+                "Description": "If licenseFee is greater than BASE, line 118 in Basket.sol will always underflow and revert, causing no functions that contain handleFees() to pass.",
+                "Repair": "Add require statements to check that licenseFee is not greater than BASE"
             },
             {
-                "Location": "Basket smart contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "licenseFee can be greater than BASE",
-                "Repair": "Add a require statement to changeLicenseFee and proposeBasketLicense functions to ensure that licenseFee is not greater than BASE"
+                "Location": "pullUnderlying function in Basket.sol",
+                "Type": "Minting vulnerability",
+                "Description": "If a user is minting a small amount of shares, the calculated amount of tokens to pull from the user can be less than 1, and therefore no tokens will be pulled. However, the shares would still be minted, allowing the user to end up with more tokens than they started with.",
+                "Repair": "Add a check to pullUnderlying to require that tokenAmount is greater than 0"
             },
             {
                 "Location": "Basket.sol#auctionBurn()",
-                "Type": "Failed Auction Funds Freeze",
-                "Description": "A failed auction will freeze part of the funds due to the proportional underlying tokens being frozen in the contract when the bond of a failed auction is burned without updating the ibRatio.",
-                "Repair": "Update the auctionBurn() function to include updating the ibRatio after burning the auction bond"
+                "Type": "Failed auction freezing funds",
+                "Description": "A failed auction will freeze part of the funds because the auctionBurn() function will _burn() the auction bond without updating the ibRatio. Once the bond of a failed auction is burned, the proportional underlying tokens won't be able to be withdrawn, in other words, being frozen in the contract.",
+                "Repair": "Update ibRatio when burning auction bond"
             },
             {
                 "Location": "Basket.sol#handleFees()",
-                "Type": "Fee Calculation Error",
-                "Description": "More fees are charged than intended due to a mistake in the calculation of feePct in handleFees().",
-                "Repair": "Replace 'BASE feePct' in the denominator with 'BASE'"
+                "Type": "Disruption of minting and burning",
+                "Description": "handleFees() could potentially cause disruption of minting and burning if feePct is greater than BASE, which can happen when timeDiff * licenseFee is greater than ONE_YEAR.",
+                "Repair": "Limit the max value of feePct"
             },
             {
                 "Location": "Basket.sol#handleFees()",
-                "Type": "Division by Zero",
-                "Description": "The contract becomes unusable if everybody burns their shares due to a division by 0 error in handleFees().",
-                "Repair": "Add a check to handleFees() to return if totalSupply is 0"
+                "Type": "Division by zero",
+                "Description": "Basket becomes unusable if everybody burns their shares because the contract calculates the new ibRatio by dividing by totalSupply. This can be 0 leading to a division by 0.",
+                "Repair": "Add a check to handleFees() if totalSupply= 0, you can just return, no need to calculate new ibRatio / fees. Reset ibRatio to BASE at this point."
             },
             {
                 "Location": "Basket.sol#L224-L228",
                 "Type": "Unsafe approve",
-                "Description": "Unsafe approve would halt the auction and burn the bond. Some token contracts do not return any value. Some token contracts revert the transaction when the allowance is not zero. This leads to the auctionBonder loss of his bond and the basket and the auction becomes suspended.",
+                "Description": "Unsafe approve would halt the auction and burn the bond",
                 "Repair": "Use safeApprove instead and set the allowance to 0 before calling it"
+            },
+            {
+                "Location": "Basket.sol line 118",
+                "Type": "Incorrect fee calculation",
+                "Description": "Fee calculation is potentially incorrect",
+                "Repair": "Replace BASE feePct in the denominator with BASE"
             }
         ]
     },
@@ -131,62 +137,33 @@
         "VulnerabilityDesc": [
             {
                 "Location": "Factory contract",
-                "Type": "Owner can steal all Basket funds during auction",
-                "Description": "The owner of Factory contract can modify the values of auctionMultiplier and auctionDecrement at any time. During an auction, these values are used to calculate newRatio and thereby tokensNeeded: specifically, it's easy to set the factory parameters so that tokensNeeded = 0 (or close to zero) for every token.",
-                "Repair": "Add a Timelock to these Factory functions or not modify them if an auction is ongoing"
+                "Type": "Owner privilege escalation",
+                "Description": "The owner of Factory contract can modify the values of auctionMultiplier and auctionDecrement at any time, allowing them to steal all Basket funds during an auction.",
+                "Repair": "Add a timelock to Factory functions or add checks in the setters to avoid specific edge cases"
             },
             {
                 "Location": "createBasket function in Factory.sol",
-                "Type": "Smart Contract Vulnerability",
-                "Description": "Fee on transfer tokens can lead to incorrect approval.",
+                "Type": "Incorrect approval",
+                "Description": "The function safeTransferFrom may not transfer exactly bProposal.weights[i] amount of tokens, for tokens with a fee on transfer. This means that the safeApprove call in the next line would be approving more tokens than what was received, leading to accounting issues.",
                 "Repair": "Find the balance of the current contract before and after the transferFrom to see how much tokens were received, and approve only what was received"
             },
             {
-                "Location": "Factory smart contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "Lack of checks in Factory::setBondPercentDiv allow owner to prevent bonding in Auction::bondForRebalance()",
-                "Repair": "Add a check to setBondPercentDiv function to ensure that bondPercentDiv is not set to 0"
+                "Location": "setAuctionMultiplier function in Factory.sol",
+                "Type": "Admin privilege",
+                "Description": "Setting auctionMultiplier to zero by factory owner would stop the auction settling, function would always revert, causing a safe math error and newRatio to revert.",
+                "Repair": "Add a check to ensure that the auctionMultiplier is not set to zero"
             },
             {
-                "Location": "Factory smart contract",
-                "Type": "Smart contract vulnerability",
-                "Description": "onlyOwner Role Can Unintentionally Influence settleAuction()",
-                "Repair": "Add a timelock delay to all functions affecting protocol execution or set state variables for any external calls made to Factory.sol in bondForRebalance() function to ensure that settleAuction() is called according to expected results"
+                "Location": "setBondPercentDiv function in Factory.sol",
+                "Type": "Lack of checks",
+                "Description": "setBondPercentDiv has no checks for min and max, allowing the owner to prevent bonding by setting the bondPercentDiv to 0.",
+                "Repair": "Add require statements to check that newBondPercentDiv is within a certain range"
             },
             {
                 "Location": "Factory.sol#setAuctionDecrement()",
-                "Type": "Lack of Checks",
-                "Description": "setAuctionDecrement() doesn't check for a min nor a max amount, which can cause the function settleAuction() in Auction.sol to revert and block auctions from being settled.",
-                "Repair": "Add checks to setAuctionDecrement() to ensure that the newAuctionDecrement value is within a certain range"
-            }
-        ]
-    },
-    {
-        "Code": "pragma solidity =0.8.7;\n\nimport \"hardhat/console.sol\";\n\nimport { SafeERC20 } from \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\nimport { IERC20 } from \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport { Ownable } from \"@openzeppelin/contracts/access/Ownable.sol\";\nimport { Clones } from \"@openzeppelin/contracts/proxy/Clones.sol\";\nimport \"./interfaces/IAuction.sol\";\nimport \"./interfaces/IBasket.sol\";\nimport \"./interfaces/IFactory.sol\";\n\ncontract Factory is IFactory, Ownable {\n    using SafeERC20 for IERC20;\n\n    uint256 private constant BASE = 1e18;\n\n    constructor (IAuction _auctionImpl, IBasket _basketImpl) {\n        auctionImpl = _auctionImpl;\n        basketImpl = _basketImpl;\n        ownerSplit = 0;\n    }\n\n    Proposal[] private _proposals;\n\n    IAuction public override auctionImpl;\n    IBasket public override basketImpl;\n\n    uint256 public override minLicenseFee = 1e15; // 1e15 0.1%\n    uint256 public override auctionDecrement = 10000;\n    uint256 public override auctionMultiplier = 2;\n    uint256 public override bondPercentDiv = 400;\n    uint256 public override ownerSplit;\n\n    function proposal(uint256 proposalId) external override view returns (Proposal memory) {\n        return _proposals[proposalId];\n    }\n\n    function setMinLicenseFee(uint256 newMinLicenseFee) public override onlyOwner {\n        minLicenseFee = newMinLicenseFee;\n    }\n\n    function setAuctionDecrement(uint256 newAuctionDecrement) public override onlyOwner {\n        auctionDecrement = newAuctionDecrement;\n    }\n\n    function setAuctionMultiplier(uint256 newAuctionMultiplier) public override onlyOwner {\n        auctionMultiplier = newAuctionMultiplier;\n    }\n\n    function setBondPercentDiv(uint256 newBondPercentDiv) public override onlyOwner {\n        bondPercentDiv = newBondPercentDiv;\n    }\n\n    function setOwnerSplit(uint256 newOwnerSplit) public override onlyOwner {\n        require(newOwnerSplit <= 2e17); // 20%\n\n        ownerSplit = newOwnerSplit;\n    }\n\n    function getProposalWeights(uint256 id) external override view returns (address[] memory, uint256[] memory) {\n        return (_proposals[id].tokens, _proposals[id].weights);\n    }\n\n    function proposeBasketLicense(\n        uint256 licenseFee, \n        string memory tokenName, \n        string memory tokenSymbol, \n        address[] memory tokens,\n        uint256[] memory weights\n    ) public override returns (uint256 id) {\n        basketImpl.validateWeights(tokens, weights);\n\n        require(licenseFee >= minLicenseFee);\n\n        // create proposal object\n        Proposal memory proposal = Proposal({\n            licenseFee: licenseFee,\n            tokenName: tokenName,\n            tokenSymbol: tokenSymbol,\n            proposer: address(msg.sender),\n            tokens: tokens,\n            weights: weights,\n            basket: address(0)\n        });\n\n        emit BasketLicenseProposed(msg.sender, tokenName);\n        _proposals.push(proposal);\n\n        return _proposals.length - 1;\n    }\n\n    function createBasket(uint256 idNumber) external override returns (IBasket) {\n        Proposal memory bProposal = _proposals[idNumber];\n        require(bProposal.basket == address(0));\n\n        IAuction newAuction = IAuction(Clones.clone(address(auctionImpl)));\n        IBasket newBasket = IBasket(Clones.clone(address(basketImpl)));\n\n        newAuction.initialize(address(newBasket), address(this));\n        newBasket.initialize(bProposal, newAuction);\n\n        for (uint256 i = 0; i < bProposal.weights.length; i++) {\n            IERC20 token = IERC20(bProposal.tokens[i]);\n            token.safeTransferFrom(msg.sender, address(this), bProposal.weights[i]);\n            token.safeApprove(address(newBasket), bProposal.weights[i]);\n        }\n\n        newBasket.mintTo(BASE, msg.sender);\n\n        _proposals[idNumber].basket = address(newBasket);\n\n        emit BasketCreated(address(newBasket));\n\n        return newBasket;\n    }\n}\n\n\npragma solidity =0.8.7;\n\nimport { SafeERC20 } from \"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol\";\nimport { IERC20 } from \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\nimport { ERC20Upgradeable } from \"@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol\";\nimport { Ownable } from \"@openzeppelin/contracts/access/Ownable.sol\";\nimport './interfaces/IAuction.sol';\nimport \"./interfaces/IBasket.sol\";\nimport \"./interfaces/IFactory.sol\";\nimport \"hardhat/console.sol\";\n\ncontract Basket is IBasket, ERC20Upgradeable {\n    using SafeERC20 for IERC20;\n\n    uint256 public constant TIMELOCK_DURATION = 4 * 60 * 24; // 1 day\n    uint256 public constant ONE_YEAR = 365.25 days;\n    uint256 private constant BASE = 1e18;\n\n    address public publisher;\n    uint256 public licenseFee;\n\n    IFactory public override factory;\n    IAuction public override auction;\n\n    uint256 public override ibRatio;\n\n    PendingPublisher public pendingPublisher;\n    PendingLicenseFee public pendingLicenseFee;\n    PendingWeights public pendingWeights;\n\n    address[] public tokens;\n    uint256[] public weights;\n\n    uint256 public override lastFee;\n\n    function initialize(IFactory.Proposal memory proposal, IAuction auction_) public override {\n        publisher = proposal.proposer;\n        licenseFee = proposal.licenseFee;\n        factory = IFactory(msg.sender);\n        auction = auction_;\n        ibRatio = BASE;\n        tokens = proposal.tokens;\n        weights = proposal.weights;\n        approveUnderlying(address(auction));\n\n        __ERC20_init(proposal.tokenName, proposal.tokenSymbol);\n    }\n\n    function getPendingWeights() external override view returns (address[] memory, uint256[] memory) {\n        return (pendingWeights.tokens, pendingWeights.weights);\n    }\n\n    function validateWeights(address[] memory _tokens, uint256[] memory _weights) public override pure {\n        require(_tokens.length == _weights.length);\n        uint256 length = _tokens.length;\n        address[] memory tokenList = new address[](length);\n\n        // check uniqueness of tokens and not token(0)\n\n        for (uint i = 0; i < length; i++) {\n            require(_tokens[i] != address(0));\n            require(_weights[i] > 0);\n\n            for (uint256 x = 0; x < tokenList.length; x++) {\n                require(_tokens[i] != tokenList[x]);\n            }\n\n            tokenList[i] = _tokens[i];\n        }\n    }\n\n    function mint(uint256 amount) public override {\n        mintTo(amount, msg.sender);\n    }\n\n    function mintTo(uint256 amount, address to) public override {\n        require(auction.auctionOngoing() == false);\n        require(amount > 0);\n\n        handleFees();\n\n        pullUnderlying(amount, msg.sender);\n\n        _mint(to, amount);\n\n        emit Minted(to, amount);\n    }\n\n    function burn(uint256 amount) public override {\n        require(auction.auctionOngoing() == false);\n        require(amount > 0);\n        require(balanceOf(msg.sender) >= amount);\n\n        handleFees();\n\n        pushUnderlying(amount, msg.sender);\n        _burn(msg.sender, amount);\n        \n        emit Burned(msg.sender, amount);\n    }\n\n    function auctionBurn(uint256 amount) onlyAuction external override {\n        handleFees();\n\n        _burn(msg.sender, amount);\n\n        emit Burned(msg.sender, amount);\n    }\n\n    function handleFees() private {\n        if (lastFee == 0) {\n            lastFee = block.timestamp;\n        } else {\n            uint256 startSupply = totalSupply();\n\n            uint256 timeDiff = (block.timestamp - lastFee);\n            uint256 feePct = timeDiff * licenseFee / ONE_YEAR;\n            uint256 fee = startSupply * feePct / (BASE - feePct);\n\n            _mint(publisher, fee * (BASE - factory.ownerSplit()) / BASE);\n            _mint(Ownable(address(factory)).owner(), fee * factory.ownerSplit() / BASE);\n            lastFee = block.timestamp;\n\n            uint256 newIbRatio = ibRatio * startSupply / totalSupply();\n            ibRatio = newIbRatio;\n\n            emit NewIBRatio(ibRatio);\n        }\n    }\n\n    // changes publisher\n    // timelocked\n    function changePublisher(address newPublisher) onlyPublisher public override {\n        require(newPublisher != address(0));\n\n        if (pendingPublisher.publisher != address(0)) {\n            require(pendingPublisher.publisher == newPublisher);\n            require(block.number >= pendingPublisher.block + TIMELOCK_DURATION);\n            publisher = pendingPublisher.publisher;\n\n            pendingPublisher.publisher = address(0);\n\n            emit ChangedPublisher(publisher);\n        } else {\n            pendingPublisher.publisher = newPublisher;\n            pendingPublisher.block = block.number;\n        }\n    }\n\n    //changes licenseFee\n    // timelocked\n    function changeLicenseFee(uint256 newLicenseFee) onlyPublisher public override {\n        require(newLicenseFee >= factory.minLicenseFee() && newLicenseFee != licenseFee);\n        if (pendingLicenseFee.licenseFee != 0) {\n            require(pendingLicenseFee.licenseFee == newLicenseFee);\n            require(block.number >= pendingLicenseFee.block + TIMELOCK_DURATION);\n            licenseFee = pendingLicenseFee.licenseFee;\n\n            pendingLicenseFee.licenseFee = 0;\n\n            emit ChangedLicenseFee(licenseFee);\n        } else {\n            pendingLicenseFee.licenseFee = newLicenseFee;\n            pendingLicenseFee.block = block.number;\n        }\n    }\n\n    // publish new index\n    // timelocked\n    function publishNewIndex(address[] memory _tokens, uint256[] memory _weights) onlyPublisher public override {\n        validateWeights(_tokens, _weights);\n\n        if (pendingWeights.pending) {\n            require(block.number >= pendingWeights.block + TIMELOCK_DURATION);\n            if (auction.auctionOngoing() == false) {\n                auction.startAuction();\n\n                emit PublishedNewIndex(publisher);\n            } else if (auction.hasBonded()) {\n\n            } else {\n                auction.killAuction();\n\n                pendingWeights.tokens = _tokens;\n                pendingWeights.weights = _weights;\n                pendingWeights.block = block.number;\n            }\n        } else {\n            pendingWeights.pending = true;\n            pendingWeights.tokens = _tokens;\n            pendingWeights.weights = _weights;\n            pendingWeights.block = block.number;\n        }\n    }\n\n    function setNewWeights() onlyAuction external override {\n        tokens = pendingWeights.tokens;\n        weights = pendingWeights.weights;\n        pendingWeights.pending = false;\n\n        approveUnderlying(address(auction));\n\n        emit WeightsSet();\n    }\n\n    // delete pending index\n    function deleteNewIndex() public override {\n        require(msg.sender == publisher || msg.sender == address(auction));\n        require(auction.auctionOngoing() == false);\n\n        pendingWeights.pending = false;\n\n        emit DeletedNewIndex(publisher);\n    }\n\n    function updateIBRatio(uint256 newRatio) onlyAuction external override returns (uint256) {\n        ibRatio = newRatio;\n\n        emit NewIBRatio(ibRatio);\n\n        return ibRatio;\n    }\n\n    function approveUnderlying(address spender) private {\n        for (uint256 i = 0; i < weights.length; i++) {\n            IERC20(tokens[i]).approve(spender, type(uint256).max);\n        }\n    }\n\n    function pushUnderlying(uint256 amount, address to) private {\n        for (uint256 i = 0; i < weights.length; i++) {\n            uint256 tokenAmount = amount * weights[i] * ibRatio / BASE / BASE;\n            IERC20(tokens[i]).safeTransfer(to, tokenAmount);\n        }\n    }\n\n    function pullUnderlying(uint256 amount, address from) private {\n        for (uint256 i = 0; i < weights.length; i++) {\n            uint256 tokenAmount = amount * weights[i] * ibRatio / BASE / BASE;\n            IERC20(tokens[i]).safeTransferFrom(from, address(this), tokenAmount);\n        }\n    }\n\n    modifier onlyAuction() {\n        require(msg.sender == address(auction));\n        _;\n    }\n\n    modifier onlyPublisher() {\n        require(msg.sender == address(publisher));\n        _;\n    }\n}\n\n",
-        "CodeNames": [
-            "Factory.sol",
-            "Basket.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "Factory contract and Basket contract",
-                "Type": "Zero weighted baskets are allowed to steal funds",
-                "Description": "Publisher is allowed to create a basket with zero token and weight. This can lead to user fund stealing.",
-                "Repair": "Change validateWeights to check for 0 length token"
-            }
-        ]
-    },
-    {
-        "Code": "",
-        "CodeNames": [
-            ""
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "settleAuction function",
-                "Type": "Re-entrancy",
-                "Description": "The settleAuction function allows the auction bonder to transfer all funds out of the basket to themselves. The attacker can pass in any inputTokens, even malicious ones they created. This allows them to re-enter the settleAuction multiple times for the same auction. Calling this function at the correct time, the attacker can drain more funds each time, eventually draining the entire basket.",
-                "Repair": "Add re-entrancy checks (for example, OpenZeppelin's 'locks') to the settleAuction function. Requiring the list of input tokens to match the output can also be useful to avoid any other shenanigans. Setting the time difference (bondTimestamp, auctionStart) to be 0 would also negate the ability to further manipulate the ibRatio."
+                "Type": "Unintentional influence",
+                "Description": "The onlyOwner role can unintentionally frontrun a settleAuction() transaction by making changes to auctionDecrement and auctionMultiplier, potentially causing the auction bonder to overcompensate during a rebalance. Additionally, there is no way for an auction bonder to recover their tokens in the event this does happen.",
+                "Repair": "Add a timelock delay to all functions affecting protocol execution or add checks in setAuctionDecrement()"
             }
         ]
     }

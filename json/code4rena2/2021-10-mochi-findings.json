@@ -6,22 +6,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "ReferralFeePoolV0.sol#L28-L48",
-                "Type": "MEV searcher vulnerability",
-                "Description": "The 'claimRewardAsMochi' function in 'ReferralFeePoolV0' ignores slippage, making it vulnerable to MEV searchers who can swap assets with no slippage control and cause users to be sandwiched.",
-                "Repair": "Add 'minReceivedAmount' as a parameter to 'claimRewardAsMochi' function and have the front-end calculate the min amount with the current price"
+                "Location": "ReferralFeePoolV0.claimRewardAsMochi()",
+                "Type": "MEV vulnerability",
+                "Description": "The function ignores slippage, making it vulnerable to MEV searchers.",
+                "Repair": "Add a 'minReceivedAmount' parameter to the function and have the front-end calculate the minimum amount based on current price"
             },
             {
-                "Location": "claimRewardAsMochi() function in ReferralFeePoolV0.sol",
-                "Type": "reward draining",
-                "Description": "Function 'claimRewardAsMochi' in 'ReferralFeePoolV0.sol' did not reduce user reward balance, allowing referrer to claim the same reward repeatedly and thus draining the fee pool.",
-                "Repair": "Add the following lines: rewards -= reward[msg.sender]; reward[msg.sender] = 0;"
-            },
-            {
-                "Location": "ReferralFeePoolV0.sol#claimRewardAsMochi() function",
-                "Type": "Array Out of Bounds Exception",
-                "Description": "In ReferralFeePoolV0.sol#claimRewardAsMochi(), path is defined as an array of length 2 while it should be length 3. As a result, at L33, an out-of-bound exception will be thrown and revert the transaction.",
-                "Repair": "Define path as an array of length 3 instead of 2"
+                "Location": "claimRewardAsMochi function in ReferralFeePoolV0.sol",
+                "Type": "Referrer can drain ReferralFeePoolV0",
+                "Description": "Function claimRewardAsMochi in ReferralFeePoolV0.sol did not reduce user reward balance, allowing referrer to claim the same reward repeatedly and thus draining the fee pool.",
+                "Repair": "Add the following lines rewards -= reward[msg.sender]; reward[msg.sender] = 0;"
             }
         ]
     },
@@ -32,66 +26,40 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MochiVault.mint",
-                "Type": "CDP overwrite vulnerability",
-                "Description": "Changing the 'engine.nft' address in 'MochiVault' can allow overwriting existing collateralized debt positions (CDPs), leading to incorrect tracking of debt and bad debt.",
+                "Location": "MochiVault.mint()",
+                "Type": "Contract address change vulnerability",
+                "Description": "Changing the engine.nft address can overwrite existing collateralized debt positions.",
                 "Repair": "Disallow setting a new NFT address or ensure that the new NFT's IDs start at the old NFT's IDs"
             },
             {
-                "Location": "MochiVault.sol L242-L249",
-                "Type": "Incorrect debt tracking vulnerability",
-                "Description": "The contract's debt in 'MochiVault' is inconsistent with the total sum of all users' debt, leading to bias that increases over time and can break the vault at the end.",
-                "Repair": "Ensure that 'increasingDebt' is used consistently and accurately tracks the contract's debt"
+                "Location": "MochiVault.debtIndex()",
+                "Type": "Inaccurate accounting vulnerability",
+                "Description": "The contract's debt is inconsistent with the total sum of all users' debt.",
+                "Repair": "Use 'increasingDebt' consistently in all calculations"
+            },
+            {
+                "Location": "deposit function in MochiVault.sol",
+                "Type": "Anyone can extend withdraw wait period by depositing zero collateral",
+                "Description": "A malicious user can call the deposit function with amount = 0, which would reset the amount of time the owner has to wait before they can withdraw their collateral from their position.",
+                "Repair": "Add require(amount > 0, \"zero\") at the start of the function, as depositing zero collateral does not seem to be a necessary use case to support. It may also be worthwhile to consider only allowing the owner of a position to deposit collateral."
+            },
+            {
+                "Location": "deposit function in MochiVault.sol",
+                "Type": "Griefing attack to block withdraws",
+                "Description": "Every time you deposit some assets in the vault (via deposit() of MochiVault.sol) then lastDeposit[_id] is set to block.timestamp. The modifier wait() checks this value and makes sure you cannot withdraw for delay() blocks. The default value for delay() is 3 minutes. Knowing this delay you can do a griefing attack.",
+                "Repair": "Create a mechanism where you only block the withdraw of recently deposited funds"
             },
             {
                 "Location": "MochiVault.sol",
-                "Type": "inconsistent variable calculation",
-                "Description": "The value of the global variable 'debts' in the contract 'MochiVault.sol' is calculated in an inconsistent way.",
-                "Repair": "Replace 'debts += _amount;' with 'debts += totalDebt'"
+                "Type": "Borrowing max cf",
+                "Description": "Borrow function in MochiVault will borrow to max cf when trying to borrow cf instead of revert with 'cf' as specified in the supplied test.",
+                "Repair": "Revert if 'details[_id].debt' + '_amount' > 'maxMinted' with 'cf'"
             },
             {
-                "Location": "deposit() function in MochiVault.sol",
-                "Type": "wait period extension",
-                "Description": "A malicious user can call this function with amount = 0, which would reset the amount of time the owner has to wait before they can withdraw their collateral from their position.",
-                "Repair": "Add 'require(amount > 0, 'zero')' at the start of the function"
-            },
-            {
-                "Location": "deposit() function in MochiVault.sol",
-                "Type": "griefing attack",
-                "Description": "Every time you deposit some assets in the vault, then 'lastDeposit[_id]' is set to 'block.timestamp'. The modifier 'wait()' checks this value and makes sure you cannot withdraw for 'delay()' blocks. Knowing this delay you can do a griefing attack.",
-                "Repair": "Update deposit function to allow only NFT owner to deposit"
-            },
-            {
-                "Location": "triggerLiquidation() function in MochiVault.sol",
-                "Type": "Escape liquidation by creating a dust amount position",
-                "Description": "A malicious user can create a dust amount position and trigger the liquidation by themselves, potentially escaping liquidation.",
-                "Repair": "Make liquidated positions unable to be used for depositing and borrowing again"
-            },
-            {
-                "Location": "MochiVault.borrow function",
-                "Type": "Unexpected Behavior",
-                "Description": "Borrow function in MochiVault will borrow to max cf when trying to borrow cf instead of revert with 'cf' as specified in the supplied test. The difference in behavior may cause user to borrow at dangerous collateral level, and receive less than the amount requested.",
-                "Repair": "Revert with 'cf' as specified in the supplied test when trying to borrow cf instead of borrowing to max cf"
-            },
-            {
-                "Location": "MochiVault.accrueDebt function",
-                "Type": "Inaccurate Debt Accrual",
-                "Description": "The total debt of a system depends on who performs the accruals which should ideally not be the case.",
-                "Repair": "Don't use the discounts or track the weighted average discount across all users that is subtracted from the increased total debt each time"
-            }
-        ]
-    },
-    {
-        "Code": "// SPDX-License-Identifier: AGPL-3.0\n\npragma solidity ^0.8.0;\n\nimport \"./vault/MochiVaultFactory.sol\";\nimport \"./assets/usdm.sol\";\nimport \"./interfaces/IMochiEngine.sol\";\n\ncontract MochiEngine is IMochiEngine {\n    // immutable values\n    IMochiVaultFactory public immutable override vaultFactory;\n    // mutable values\n    IMochi public override mochi;\n    IVMochi public override vMochi;\n    address public override governance;\n    address public override treasury;\n    address public override operationWallet;\n    IUSDM public override usdm;\n    IMinter public override minter;\n    ICSSRRouter public override cssr;\n    IMochiProfile public override mochiProfile;\n    IDiscountProfile public override discountProfile;\n    ILiquidator public override liquidator;\n    IFeePool public override feePool;\n    IReferralFeePool public override referralFeePool;\n    IMochiNFT public override nft;\n\n    constructor(address _governance) {\n        governance = _governance;\n        vaultFactory = IMochiVaultFactory(new MochiVaultFactory(address(this)));\n        operationWallet = msg.sender;\n    }\n\n    modifier onlyGov() {\n        require(msg.sender == governance, \"!gov\");\n        _;\n    }\n\n    function changeMochi(address _mochi) external onlyGov {\n        mochi = IMochi(_mochi);\n    }\n\n    function changeVMochi(address _vmochi) external onlyGov {\n        vMochi = IVMochi(_vmochi);\n    }\n\n    function changeUSDM(address _usdm) external onlyGov {\n        usdm = IUSDM(_usdm);\n    }\n\n    function changeMinter(address _minter) external onlyGov {\n        minter = IMinter(_minter);\n    }\n\n    function changeGovernance(address _governance) external onlyGov {\n        governance = _governance;\n    }\n\n    function changeTreasury(address _treasury) external onlyGov {\n        treasury = _treasury;\n    }\n\n    function changeOperationWallet(address _operation) external onlyGov {\n        operationWallet = _operation;\n    }\n\n    function changeCSSR(address _cssr) external onlyGov {\n        cssr = ICSSRRouter(_cssr);\n    }\n\n    function changeProfile(address _profile) external onlyGov {\n        mochiProfile = IMochiProfile(_profile);\n    }\n\n    function changeDiscountProfile(address _profile) external onlyGov {\n        discountProfile = IDiscountProfile(_profile);\n    }\n\n    function changeLiquidator(address _liquidator) external onlyGov {\n        liquidator = ILiquidator(_liquidator);\n    }\n\n    function changeFeePool(address _feePool) external onlyGov {\n        feePool = IFeePool(_feePool);\n    }\n\n    function changeReferralFeePool(address _referralFeePool) external onlyGov {\n        referralFeePool = IReferralFeePool(_referralFeePool);\n    }\n\n    function changeNFT(address _nft) external onlyGov {\n        nft = IMochiNFT(_nft);\n    }\n}\n\n\n",
-        "CodeNames": [
-            "MochiEngine.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "MochiEngine.sol#L91-L93",
-                "Type": "NFT contract change vulnerability",
-                "Description": "The 'MochiEngine' allows the operator to change the NFT contract, which can cause all vaults to point to a different NFT address, making it impossible for users to access their positions and breaking the entire protocol.",
-                "Repair": "Remove the function that allows changing the NFT contract"
+                "Location": "MochiVault.accrueDebt",
+                "Type": "Path-dependant and inaccurate debt accrual",
+                "Description": "Debt accrual is path-dependant and inaccurate.",
+                "Repair": "Don't use the discounts or track the weighted average discount across all users that is subtracted from the increased total debt each time, i.e., reduce it by the discount of all users (instead of current caller only) when accruing to correctly track the debt."
             }
         ]
     },
@@ -102,10 +70,44 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MochiVaultFactory.sol#L26-L37",
-                "Type": "Unrestricted function call vulnerability",
-                "Description": "The 'vaultFactory' in 'MochiVaultFactory' has no permission control, allowing anyone to create a vault and potentially cause the protocol to recognize the random vault as a valid one.",
-                "Repair": "Add a check that only allows the 'engine' to trigger the 'deployVault' function"
+                "Location": "MochiVaultFactory.deployVault()",
+                "Type": "Permission control vulnerability",
+                "Description": "Anyone can create a vault without permission control.",
+                "Repair": "Add a permission check to the function"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: AGPL-3.0\n\npragma solidity ^0.8.0;\n\nimport \"./vault/MochiVaultFactory.sol\";\nimport \"./assets/usdm.sol\";\nimport \"./interfaces/IMochiEngine.sol\";\n\ncontract MochiEngine is IMochiEngine {\n    // immutable values\n    IMochiVaultFactory public immutable override vaultFactory;\n    // mutable values\n    IMochi public override mochi;\n    IVMochi public override vMochi;\n    address public override governance;\n    address public override treasury;\n    address public override operationWallet;\n    IUSDM public override usdm;\n    IMinter public override minter;\n    ICSSRRouter public override cssr;\n    IMochiProfile public override mochiProfile;\n    IDiscountProfile public override discountProfile;\n    ILiquidator public override liquidator;\n    IFeePool public override feePool;\n    IReferralFeePool public override referralFeePool;\n    IMochiNFT public override nft;\n\n    constructor(address _governance) {\n        governance = _governance;\n        vaultFactory = IMochiVaultFactory(new MochiVaultFactory(address(this)));\n        operationWallet = msg.sender;\n    }\n\n    modifier onlyGov() {\n        require(msg.sender == governance, \"!gov\");\n        _;\n    }\n\n    function changeMochi(address _mochi) external onlyGov {\n        mochi = IMochi(_mochi);\n    }\n\n    function changeVMochi(address _vmochi) external onlyGov {\n        vMochi = IVMochi(_vmochi);\n    }\n\n    function changeUSDM(address _usdm) external onlyGov {\n        usdm = IUSDM(_usdm);\n    }\n\n    function changeMinter(address _minter) external onlyGov {\n        minter = IMinter(_minter);\n    }\n\n    function changeGovernance(address _governance) external onlyGov {\n        governance = _governance;\n    }\n\n    function changeTreasury(address _treasury) external onlyGov {\n        treasury = _treasury;\n    }\n\n    function changeOperationWallet(address _operation) external onlyGov {\n        operationWallet = _operation;\n    }\n\n    function changeCSSR(address _cssr) external onlyGov {\n        cssr = ICSSRRouter(_cssr);\n    }\n\n    function changeProfile(address _profile) external onlyGov {\n        mochiProfile = IMochiProfile(_profile);\n    }\n\n    function changeDiscountProfile(address _profile) external onlyGov {\n        discountProfile = IDiscountProfile(_profile);\n    }\n\n    function changeLiquidator(address _liquidator) external onlyGov {\n        liquidator = ILiquidator(_liquidator);\n    }\n\n    function changeFeePool(address _feePool) external onlyGov {\n        feePool = IFeePool(_feePool);\n    }\n\n    function changeReferralFeePool(address _referralFeePool) external onlyGov {\n        referralFeePool = IReferralFeePool(_referralFeePool);\n    }\n\n    function changeNFT(address _nft) external onlyGov {\n        nft = IMochiNFT(_nft);\n    }\n}\n\n\n",
+        "CodeNames": [
+            "MochiEngine.sol"
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "MochiEngine.setNFT()",
+                "Type": "Contract-breaking vulnerability",
+                "Description": "Changing the NFT contract breaks the entire protocol.",
+                "Repair": "Remove the function"
+            }
+        ]
+    },
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "MochiTreasury.veCRVlock()",
+                "Type": "Sandwich attack vulnerability",
+                "Description": "The function is vulnerable to sandwich attacks.",
+                "Repair": "Add an 'onlyOwner' modifier to the function"
+            },
+            {
+                "Location": "triggerLiquidation() function in MochiLiquidator.sol",
+                "Type": "A malicious user can potentially escape liquidation by creating a dust amount position and trigger the liquidation by themself",
+                "Description": "In the current implementation, a liquidated position can be used for depositing and borrowing again. However, if there is a liquidation auction ongoing, even if the position is now liquidatable, the call of triggerLiquidation() will still fail.",
+                "Repair": "Consider making liquidated positions unable to be used (for depositing and borrowing) again."
             }
         ]
     },
@@ -116,10 +118,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "VestedRewardPool.sol#L36-L46, VestedRewardPool.sol#L54-L64",
-                "Type": "Frontrunning vulnerability",
-                "Description": "The 'vest()' and 'lock()' functions in 'VestedRewardPool' do not utilize 'safeTransferFrom()', making it possible for attackers to frontrun a call and steal a recipient's vested tokens.",
-                "Repair": "Create a single externally facing function which calls 'safeTransferFrom()', 'vest()', and 'lock()' in a single transaction"
+                "Location": "VestedRewardPool.vest() and VestedRewardPool.lock()",
+                "Type": "Token theft vulnerability",
+                "Description": "The functions do not utilize safeTransferFrom() and are vulnerable to frontrunning attacks.",
+                "Repair": "Create a single externally facing function which calls safeTransferFrom(), vest(), and lock() in a single transaction"
             }
         ]
     },
@@ -130,48 +132,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "MochiTreasuryV0.sol#L73-L94",
-                "Type": "Sandwich attack vulnerability",
-                "Description": "The 'veCRVlock' function in 'MochiTreasury' is permissionless, allowing attackers to launch a sandwich attack with flashloan to steal the funds in the treasury.",
-                "Repair": "Add 'onlyOwner' modifier to the 'veCRVlock' function"
-            },
-            {
                 "Location": "MochiTreasuryV0.sol",
-                "Type": "unusable contract",
-                "Description": "'MochiTreasuryV0.sol' interacts with Curve's voting escrow contract to lock tokens for 90 days, where it can be later withdrawn by the governance role. However, 'VotingEscrow.vy' does not allow contracts to call certain functions.",
-                "Repair": "Update the contract to potentially use another escrow service that enables 'msg.sender' to be a contract or replace the escrow functionality with an internal contract which holds 'usdm' tokens instead"
+                "Type": "MochiTreasuryV0.sol Is Unusable In Its Current State",
+                "Description": "MochiTreasuryV0.sol interacts with Curve's voting escrow contract to lock tokens for 90 days, where it can be later withdrawn by the governance role. However, VotingEscrow.vy does not allow contracts to call the create_lock(), increase_amount() and increase_unlock_time() functions.",
+                "Repair": "Update this contract to potentially use another escrow service that enables msg.sender to be a contract. Alternatively, this escrow functionality can be replaced with an internal contract which holds usdm tokens instead, removing the need to convert half of the tokens to Curve tokens."
             },
             {
-                "Location": "MochiTreasuryV0.withdrawLock() function",
-                "Type": "Unexpected Behavior",
+                "Location": "MochiTreasuryV0.withdrawLock()",
+                "Type": "Callable when locking has been toggled",
                 "Description": "withdrawLock() does not prevent users from calling this function when locking has been toggled. As a result, withdraws may be made unexpectedly.",
-                "Repair": "Add require(lockCrv, '!lock') to withdrawLock() to ensure this function is not called unexpectedly"
-            }
-        ]
-    },
-    {
-        "Code": "// SPDX-License-Identifier: AGPL-3.0\n\npragma solidity ^0.8.0;\n\nimport \"@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol\";\nimport \"../interfaces/IFeePool.sol\";\nimport \"../interfaces/IUSDM.sol\";\nimport \"../interfaces/IMochiEngine.sol\";\n\ncontract FeePoolV0 is IFeePool {\n    IMochiEngine public immutable engine;\n\n    IUniswapV2Router02 public immutable uniswapRouter;\n\n    address public crvVoterRewardPool;\n\n    uint256 public treasuryRatio;\n\n    uint256 public vMochiRatio;\n\n    uint256 public mochiShare;\n\n    uint256 public treasuryShare;\n\n    constructor(address _engine, address _uniswap) {\n        engine = IMochiEngine(_engine);\n        uniswapRouter = IUniswapV2Router02(_uniswap);\n        treasuryRatio = 20e16;\n        vMochiRatio = 80e16;\n    }\n\n    function updateReserve() external override {\n        uint256 newReserve = engine.usdm().balanceOf(address(this)) -\n            mochiShare -\n            treasuryShare;\n        treasuryShare += (newReserve * treasuryRatio) / 1e18;\n        mochiShare = engine.usdm().balanceOf(address(this)) - treasuryShare;\n    }\n\n    function changecrvVoterRewardPool(address _pool) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        crvVoterRewardPool = _pool;\n    }\n\n    function changeTreasuryRatio(uint256 _ratio) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        treasuryRatio = _ratio;\n    }\n\n    function changevMochiRatio(uint256 _ratio) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        vMochiRatio = _ratio;\n    }\n\n    // this will open up arb oppertunity for Mochi\n    // so we will not reward the caller, caller can benefit from flashbot\n    // should decide which market we should use UniV2?V3? BalancerV2?\n    function distributeMochi() external {\n        // buy Mochi with mochiShare\n        _buyMochi();\n        _shareMochi();\n    }\n\n    function _buyMochi() internal {\n        IUSDM usdm = engine.usdm();\n        address[] memory path = new address[](2);\n        path[0] = address(usdm);\n        path[1] = address(engine.mochi());\n        usdm.approve(address(uniswapRouter), mochiShare);\n        uniswapRouter.swapExactTokensForTokens(\n            mochiShare,\n            1,\n            path,\n            address(this),\n            type(uint256).max\n        );\n    }\n\n    function _shareMochi() internal {\n        IMochi mochi = engine.mochi();\n        uint256 mochiBalance = mochi.balanceOf(address(this));\n        // send Mochi to vMochi Vault\n        mochi.transfer(\n            address(engine.vMochi()),\n            (mochiBalance * vMochiRatio) / 1e18\n        );\n        // send Mochi to veCRV Holders\n        mochi.transfer(\n            crvVoterRewardPool,\n            (mochiBalance * (1e18 - vMochiRatio)) / 1e18\n        );\n        // flush mochiShare\n        mochiShare = 0;\n        treasuryShare = 0;\n    }\n\n    function sendToTreasury() external {\n        engine.usdm().transfer(engine.treasury(), treasuryShare);\n        treasuryShare = 0;\n    }\n}\n\n\n",
-        "CodeNames": [
-            "FeePoolV0.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "distributeMochi() function in FeePoolV0.sol",
-                "Type": "sandwich attack",
-                "Description": "An attacker can launch a sandwich attack with flashloan to steal the funds.",
-                "Repair": "Calculate a min return based on TWAP and check the slippage"
-            },
-            {
-                "Location": "FeePoolV0.sol L94",
-                "Type": "TreasuryShare overwritten",
-                "Description": "When distributeMochi() is called to distribute mochi tokens to veCRV holders, both mochiShare and treasuryShare are flushed from the contract when there are still usdm tokens in the contract.",
-                "Repair": "Remove the line where treasuryShare is flushed"
-            },
-            {
-                "Location": "FeePoolV0.sol#distributeMochi() function",
-                "Type": "Unexpected Behavior",
-                "Description": "distributeMochi() will unexpectedly flush treasuryShare, causing the protocol fee cannot be properly accounted for and collected.",
-                "Repair": "Change the code to flush mochiShare instead of treasuryShare"
+                "Repair": "Add require(lockCrv, \"!lock\"); to withdrawLock() to ensure this function is not called unexpectedly. Alternatively if this is intended behaviour, it should be rather checked that the lock has not been toggled, otherwise users could maliciously relock tokens."
             }
         ]
     },
@@ -183,9 +153,9 @@
         "VulnerabilityDesc": [
             {
                 "Location": "BeaconProxyDeployer.deploy() function in BeaconProxyDeployer.sol",
-                "Type": "improper validation",
-                "Description": "The function does not revert properly if there is a failed contract deployment or revert from the 'create2' opcode as it does not properly check the returned address for bytecode.",
-                "Repair": "Update 'iszero(result)' to 'iszero(extcodesize(result))'"
+                "Type": "Improper Validation Of create2 Return Value",
+                "Description": "The function does not revert properly if there is a failed contract deployment or revert from the create2 opcode as it does not properly check the returned address for bytecode.",
+                "Repair": "Update iszero(result) to iszero(extcodesize(result)) in the line mentioned above."
             }
         ]
     },
@@ -196,24 +166,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "transfer() and transferFrom() calls in DutchAuctionLiquidator.sol",
-                "Type": "unchecked transfer calls",
-                "Description": "ERC20 'transfer' and 'transferFrom' calls normally return 'true' on a successful transfer.",
-                "Repair": "Use 'cheapTransfer' and 'cheapTransferFrom' functions from the mochifi cheapERC20 library"
-            }
-        ]
-    },
-    {
-        "Code": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.0;\n\nimport \"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\";\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\nimport \"@mochifi/library/contracts/Float.sol\";\nimport \"../interfaces/IGovernanceOwned.sol\";\nimport \"../interfaces/ICSSRAdapter.sol\";\n\ncontract ChainlinkAdapterEth is ICSSRAdapter {\n    IGovernanceOwned public immutable owned;\n\n    mapping(address => AggregatorV3Interface) public feed;\n\n    modifier onlyGov() {\n        require(msg.sender == owned.governance(), \"!gov\");\n        _;\n    }\n\n    constructor(address _owned) {\n        owned = IGovernanceOwned(_owned);\n    }\n\n    function update(address _asset, bytes calldata _data)\n        external\n        override\n        returns (float memory)\n    {\n        return getPrice(_asset);\n    }\n\n    function setFeed(address[] calldata _assets, address[] calldata _feeds) external onlyGov {\n        for(uint256 i = 0; i<_assets.length; i++) {\n            feed[_assets[i]] = AggregatorV3Interface(_feeds[i]);\n        }\n    }\n\n    function support(address _asset) external view override returns (bool) {\n        return address(feed[_asset]) != address(0);\n    }\n\n    function getPrice(address _asset)\n        public\n        view\n        override\n        returns (float memory)\n    {\n        (, int256 price, , , ) = feed[_asset].latestRoundData();\n        uint256 decimalSum = feed[_asset].decimals() +\n            IERC20Metadata(_asset).decimals();\n        if (decimalSum > 18) {\n            return\n                float({\n                    numerator: uint256(price),\n                    denominator: 10**(decimalSum - 18)\n                });\n        } else {\n            return\n                float({\n                    numerator: uint256(price) * 10**(18 - decimalSum),\n                    denominator: 1\n                });\n        }\n    }\n\n    function getLiquidity(address _asset)\n        external\n        view\n        override\n        returns (uint256)\n    {\n        revert(\"chainlink adapter does not support liquidity\");\n    }\n}\n\n\n",
-        "CodeNames": [
-            "ChainlinkAdapter.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "ChainlinkAdapter.sol L49",
-                "Type": "Chainlink stale data",
-                "Description": "If there is a problem with Chainlink starting a new round and finding consensus on the new value for the oracle, consumers of this contract may continue using outdated stale or incorrect data.",
-                "Repair": "Add checks to ensure the latestRoundData() is not stale or incorrect"
+                "Location": "DutchAuctionLiquidator and other contracts",
+                "Type": "Unchecked ERC20 transfer calls",
+                "Description": "ERC20 transfer and transferFrom calls normally return true on a successful transfer. In DutchAuctionLiquidator the call asset.transfer(msg.sender, _collateral); is made. asset refers to whichever ERC20 asset is used for the vault of that auction. If asset is an ERC20 token which does not comply with the EIP-20 standard it might return false on a failed transaction rather than revert.",
+                "Repair": "Use cheapTransfer and cheapTransferFrom functions which check for a return value."
             }
         ]
     },
@@ -225,15 +181,15 @@
         "VulnerabilityDesc": [
             {
                 "Location": "registerAsset() function in MochiProfileV0.sol",
-                "Type": "Overwriting assetClass value",
-                "Description": "Assuming the liquidity for the asset is sufficient, registerAsset() will reset the _assetClass of an already registered asset to AssetClass.Sigma, leading to the entire vault behaving differently.",
-                "Repair": "Add a check to ensure the asset being registered does not already exist"
+                "Type": "registerAsset() can overwrite _assetClass value",
+                "Description": "Everyone can call the function registerAsset() of MochiProfileV0.sol. Assuming the liquidity for the asset is sufficient, registerAsset() will reset the _assetClass of an already registered asset to AssetClass.Sigma.",
+                "Repair": "Add require(_assetClass[_asset] ==0,\"Already exists\"); in function registerAsset()"
             },
             {
-                "Location": "MochiProfileV0 contract, liquidationFactor function",
-                "Type": "Collateral/Liquidation Factor Mismatch",
-                "Description": "The liquidation factor for the Sigma type is less than the collateral factor, which means that taking the maximum loan can immediately lead to liquidations without a safety buffer.",
-                "Repair": "Increase the liquidation factor or decrease the collateral factor for the Sigma type to ensure a safety buffer between them"
+                "Location": "MochiProfileV0",
+                "Type": "Liquidation factor less than collateral factor for Sigma type",
+                "Description": "The liquidation factor is less than the collateral factor for the Sigma type in MochiProfileV0.",
+                "Repair": "The max collateral factor for the Sigma type should be higher than its liquidation factor."
             }
         ]
     },
@@ -245,24 +201,53 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "triggerLiquidation() function in DutchAuctionLiquidator.sol and liquidate() function in MochiVault.sol",
-                "Type": "Liquidation not working with non-zero discounts",
-                "Description": "Any discount profile that actually discounts the debt of the position will result in all liquidations erroring out due to an underflow, since liquidate() function will error due to an underflow.",
-                "Repair": "Change 'details[_id].debt -= _usdm;' to 'details[_id].debt = 0;' in the liquidate() function"
+                "Location": "MochiVault.sol, DutchAuctionLiquidator.sol",
+                "Type": "Liquidation underflow",
+                "Description": "Any discount profile that actually discounts the debt of the position will result in all liquidations erroring out due to this underflow.",
+                "Repair": "Change 'details[_id].debt -= _usdm;' to 'details[_id].debt = 0;' in MochiVault.sol"
             }
         ]
     },
     {
-        "Code": "",
+        "Code": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.0;\n\nimport \"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\";\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\nimport \"@mochifi/library/contracts/Float.sol\";\nimport \"../interfaces/IGovernanceOwned.sol\";\nimport \"../interfaces/ICSSRAdapter.sol\";\n\ncontract ChainlinkAdapterEth is ICSSRAdapter {\n    IGovernanceOwned public immutable owned;\n\n    mapping(address => AggregatorV3Interface) public feed;\n\n    modifier onlyGov() {\n        require(msg.sender == owned.governance(), \"!gov\");\n        _;\n    }\n\n    constructor(address _owned) {\n        owned = IGovernanceOwned(_owned);\n    }\n\n    function update(address _asset, bytes calldata _data)\n        external\n        override\n        returns (float memory)\n    {\n        return getPrice(_asset);\n    }\n\n    function setFeed(address[] calldata _assets, address[] calldata _feeds) external onlyGov {\n        for(uint256 i = 0; i<_assets.length; i++) {\n            feed[_assets[i]] = AggregatorV3Interface(_feeds[i]);\n        }\n    }\n\n    function support(address _asset) external view override returns (bool) {\n        return address(feed[_asset]) != address(0);\n    }\n\n    function getPrice(address _asset)\n        public\n        view\n        override\n        returns (float memory)\n    {\n        (, int256 price, , , ) = feed[_asset].latestRoundData();\n        uint256 decimalSum = feed[_asset].decimals() +\n            IERC20Metadata(_asset).decimals();\n        if (decimalSum > 18) {\n            return\n                float({\n                    numerator: uint256(price),\n                    denominator: 10**(decimalSum - 18)\n                });\n        } else {\n            return\n                float({\n                    numerator: uint256(price) * 10**(18 - decimalSum),\n                    denominator: 1\n                });\n        }\n    }\n\n    function getLiquidity(address _asset)\n        external\n        view\n        override\n        returns (uint256)\n    {\n        revert(\"chainlink adapter does not support liquidity\");\n    }\n}\n\n\n",
         "CodeNames": [
-            ""
+            "ChainlinkAdapter.sol"
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "UniswapV2/SushiwapLPAdapter.update function",
-                "Type": "Infinite Recursion",
-                "Description": "The update function retrieves the underlying from the LP token pair (_asset) but then calls router.update(_asset, _proof) which is the LP token itself again. This will end up with the router calling this function again recursively.",
-                "Repair": "Call router.update(underlying, _proof) instead of router.update(_asset, _proof)"
+                "Location": "ChainlinkAdapter.sol",
+                "Type": "Stale or incorrect data",
+                "Description": "If there is a problem with Chainlink starting a new round and finding consensus on the new value for the oracle, consumers of this contract may continue using outdated stale or incorrect data.",
+                "Repair": "Add checks to ensure latestRoundData() returns valid data"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: AGPL-3.0\n\npragma solidity ^0.8.0;\n\nimport \"@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol\";\nimport \"../interfaces/IFeePool.sol\";\nimport \"../interfaces/IUSDM.sol\";\nimport \"../interfaces/IMochiEngine.sol\";\n\ncontract FeePoolV0 is IFeePool {\n    IMochiEngine public immutable engine;\n\n    IUniswapV2Router02 public immutable uniswapRouter;\n\n    address public crvVoterRewardPool;\n\n    uint256 public treasuryRatio;\n\n    uint256 public vMochiRatio;\n\n    uint256 public mochiShare;\n\n    uint256 public treasuryShare;\n\n    constructor(address _engine, address _uniswap) {\n        engine = IMochiEngine(_engine);\n        uniswapRouter = IUniswapV2Router02(_uniswap);\n        treasuryRatio = 20e16;\n        vMochiRatio = 80e16;\n    }\n\n    function updateReserve() external override {\n        uint256 newReserve = engine.usdm().balanceOf(address(this)) -\n            mochiShare -\n            treasuryShare;\n        treasuryShare += (newReserve * treasuryRatio) / 1e18;\n        mochiShare = engine.usdm().balanceOf(address(this)) - treasuryShare;\n    }\n\n    function changecrvVoterRewardPool(address _pool) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        crvVoterRewardPool = _pool;\n    }\n\n    function changeTreasuryRatio(uint256 _ratio) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        treasuryRatio = _ratio;\n    }\n\n    function changevMochiRatio(uint256 _ratio) external {\n        require(msg.sender == engine.governance(), \"!gov\");\n        vMochiRatio = _ratio;\n    }\n\n    // this will open up arb oppertunity for Mochi\n    // so we will not reward the caller, caller can benefit from flashbot\n    // should decide which market we should use UniV2?V3? BalancerV2?\n    function distributeMochi() external {\n        // buy Mochi with mochiShare\n        _buyMochi();\n        _shareMochi();\n    }\n\n    function _buyMochi() internal {\n        IUSDM usdm = engine.usdm();\n        address[] memory path = new address[](2);\n        path[0] = address(usdm);\n        path[1] = address(engine.mochi());\n        usdm.approve(address(uniswapRouter), mochiShare);\n        uniswapRouter.swapExactTokensForTokens(\n            mochiShare,\n            1,\n            path,\n            address(this),\n            type(uint256).max\n        );\n    }\n\n    function _shareMochi() internal {\n        IMochi mochi = engine.mochi();\n        uint256 mochiBalance = mochi.balanceOf(address(this));\n        // send Mochi to vMochi Vault\n        mochi.transfer(\n            address(engine.vMochi()),\n            (mochiBalance * vMochiRatio) / 1e18\n        );\n        // send Mochi to veCRV Holders\n        mochi.transfer(\n            crvVoterRewardPool,\n            (mochiBalance * (1e18 - vMochiRatio)) / 1e18\n        );\n        // flush mochiShare\n        mochiShare = 0;\n        treasuryShare = 0;\n    }\n\n    function sendToTreasury() external {\n        engine.usdm().transfer(engine.treasury(), treasuryShare);\n        treasuryShare = 0;\n    }\n}\n\n\n",
+        "CodeNames": [
+            "FeePoolV0.sol"
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "FeePoolV0.sol",
+                "Type": "Treasury share overwritten",
+                "Description": "When distributeMochi() is called to distribute mochi tokens to veCRV holders, both mochiShare and treasuryShare is flushed from the contract when there are still usdm tokens in the contract.",
+                "Repair": "Remove the line where 'treasuryShare' is flushed in distributeMochi() function"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.0;\n\nimport \"@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol\";\nimport {UniswapV2Library} from \"@mochifi/library/contracts/UniswapV2Library.sol\";\nimport \"../interfaces/ICSSRAdapter.sol\";\nimport \"../interfaces/ICSSRRouter.sol\";\nimport \"../interfaces/IUniswapV2CSSR.sol\";\ncontract UniswapV2LPAdapter is ICSSRAdapter {\n    using Float for float;\n\n    ICSSRRouter public immutable router;\n    IUniswapV2CSSR public immutable cssr;\n    address public immutable weth;\n    address public immutable factory;\n    //using uint256 since we don't need 224 for this\n    uint256 public constant Q112 = 2**112;\n\n    constructor(address _weth, address _factory, address _router, address _cssr) {\n        weth = _weth;\n        router = ICSSRRouter(_router);\n        cssr = IUniswapV2CSSR(_cssr);\n        factory = _factory;\n    }\n\n    function support(address _asset) external view override returns(bool) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        address calculatedAddress = UniswapV2Library.pairFor(factory, underlying, weth);\n        return _asset == calculatedAddress;\n    }\n\n    function update(address _asset, bytes memory _proof) external override returns(float memory price) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        router.update(_asset, _proof);\n        return _getPrice(IUniswapV2Pair(_asset), underlying);\n    }\n\n    function getUnderlyingAsset(IUniswapV2Pair _pair) public view returns(address underlyingAsset) {\n        if (_pair.token0() == weth) {\n            underlyingAsset = _pair.token1();\n        } else if (_pair.token1() == weth) {\n            underlyingAsset = _pair.token0();\n        } else {\n            revert(\"!eth paired\");\n        }\n    }\n\n    function getPrice(address _asset) external view override returns(float memory price){\n        IUniswapV2Pair pair = IUniswapV2Pair(_asset);\n        address underlying = getUnderlyingAsset(pair);\n        return _getPrice(pair, underlying);\n    }\n\n    function _getPrice(IUniswapV2Pair _pair, address _underlying) internal view returns(float memory price) {\n        uint256 eAvg = cssr.getExchangeRatio(_underlying, weth);\n        (uint112 _reserve0, uint112 _reserve1,) = _pair.getReserves();\n        uint256 aPool; // current asset pool\n        uint256 ePool; // current weth pool\n        if (_pair.token0() == _underlying) {\n            aPool = uint(_reserve0);\n            ePool = uint(_reserve1);\n        } else {\n            aPool = uint(_reserve1);\n            ePool = uint(_reserve0);\n        }\n\n        uint256 eCurr = ePool * Q112 / aPool; // current price of 1 token in weth\n        uint256 ePoolCalc; // calculated weth pool\n\n        if (eCurr < eAvg) {\n            // flashloan buying weth\n            uint256 sqrtd = ePool * (\n                (ePool * 9)\n                +(aPool * 3988000 * eAvg / Q112)\n            );\n            uint256 eChange = (sqrt(sqrtd) - (ePool * 1997)) / 2000;\n            ePoolCalc = ePool + eChange;\n        } else {\n            // flashloan selling weth\n            uint256 a = aPool * eAvg;\n            uint256 b = a * 9 / Q112;\n            uint256 c = ePool * 3988000;\n            uint256 sqRoot = sqrt( (a / Q112) * (b + c));\n            uint256 d = a * 3 / Q112;\n            uint256 eChange = ePool - ((d + sqRoot) / 2000);\n            ePoolCalc = ePool - eChange;\n        }\n\n        uint256 num = ePoolCalc * 2;\n        uint256 priceInEth;\n        if (num > Q112) {\n            priceInEth = (num / _pair.totalSupply()) * Q112;\n        } else {\n            priceInEth = num * Q112 / _pair.totalSupply();\n        }\n\n        return float({numerator:priceInEth, denominator: Q112}).mul(router.getPrice(weth));\n    }\n\n    function getLiquidity(address _asset) external view override returns(uint256) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        return router.getLiquidity(underlying);\n    }\n\n    function sqrt(uint x) internal pure returns (uint y) {\n        if (x > 3) {\n            uint z = x / 2 + 1;\n            y = x;\n            while (z < y) {\n                y = z;\n                z = (x / z + z) / 2;\n            }\n        } else if (x != 0) {\n            y = 1;\n        }\n    }\n}\n\n\n// SPDX-License-Identifier: MIT\n\npragma solidity ^0.8.0;\n\nimport \"@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol\";\nimport { SushiswapV2Library } from \"@mochifi/library/contracts/SushiswapV2Library.sol\";\nimport \"../interfaces/ICSSRAdapter.sol\";\nimport \"../interfaces/ICSSRRouter.sol\";\nimport \"../interfaces/IUniswapV2CSSR.sol\";\ncontract SushiswapV2LPAdapter is ICSSRAdapter {\n    using Float for float;\n\n    ICSSRRouter public immutable router;\n    IUniswapV2CSSR public immutable cssr;\n    address public immutable weth;\n    address public immutable factory;\n    //using uint256 since we don't need 224 for this\n    uint256 public constant Q112 = 2**112;\n\n    constructor(address _weth, address _factory, address _router, address _cssr) {\n        weth = _weth;\n        router = ICSSRRouter(_router);\n        cssr = IUniswapV2CSSR(_cssr);\n        factory = _factory;\n    }\n\n    function support(address _asset) external view override returns(bool) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        address calculatedAddress = SushiswapV2Library.pairFor(factory, underlying, weth);\n        return _asset == calculatedAddress;\n    }\n\n    function update(address _asset, bytes memory _proof) external override returns(float memory price) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        router.update(_asset, _proof);\n        return _getPrice(IUniswapV2Pair(_asset), underlying);\n    }\n\n    function getUnderlyingAsset(IUniswapV2Pair _pair) public view returns(address underlyingAsset) {\n        if (_pair.token0() == weth) {\n            underlyingAsset = _pair.token1();\n        } else if (_pair.token1() == weth) {\n            underlyingAsset = _pair.token0();\n        } else {\n            revert(\"!eth paired\");\n        }\n    }\n\n    function getPrice(address _asset) external view override returns(float memory price){\n        IUniswapV2Pair pair = IUniswapV2Pair(_asset);\n        address underlying = getUnderlyingAsset(pair);\n        return _getPrice(pair, underlying);\n    }\n\n    function _getPrice(IUniswapV2Pair _pair, address _underlying) internal view returns(float memory price) {\n        uint256 eAvg = cssr.getExchangeRatio(_underlying, weth);\n        (uint112 _reserve0, uint112 _reserve1,) = _pair.getReserves();\n        uint256 aPool; // current asset pool\n        uint256 ePool; // current weth pool\n        if (_pair.token0() == _underlying) {\n            aPool = uint(_reserve0);\n            ePool = uint(_reserve1);\n        } else {\n            aPool = uint(_reserve1);\n            ePool = uint(_reserve0);\n        }\n\n        uint256 eCurr = ePool * Q112 / aPool; // current price of 1 token in weth\n        uint256 ePoolCalc; // calculated weth pool\n\n        if (eCurr < eAvg) {\n            // flashloan buying weth\n            uint256 sqrtd = ePool * (\n                (ePool * 9)\n                +(aPool * 3988000 * eAvg / Q112)\n            );\n            uint256 eChange = (sqrt(sqrtd) - (ePool * 1997)) / 2000;\n            ePoolCalc = ePool + eChange;\n        } else {\n            // flashloan selling weth\n            uint256 a = aPool * eAvg;\n            uint256 b = a * 9 / Q112;\n            uint256 c = ePool * 3988000;\n            uint256 sqRoot = sqrt( (a / Q112) * (b + c));\n            uint256 d = a * 3 / Q112;\n            uint256 eChange = ePool - ((d + sqRoot) / 2000);\n            ePoolCalc = ePool - eChange;\n        }\n\n        uint256 num = ePoolCalc * 2;\n        uint256 priceInEth;\n        if (num > Q112) {\n            priceInEth = (num / _pair.totalSupply()) * Q112;\n        } else {\n            priceInEth = num * Q112 / _pair.totalSupply();\n        }\n\n        return float({numerator:priceInEth, denominator: Q112}).mul(router.getPrice(weth));\n    }\n\n    function getLiquidity(address _asset) external view override returns(uint256) {\n        address underlying = getUnderlyingAsset(IUniswapV2Pair(_asset));\n        return router.getLiquidity(underlying);\n    }\n\n    function sqrt(uint x) internal pure returns (uint y) {\n        if (x > 3) {\n            uint z = x / 2 + 1;\n            y = x;\n            while (z < y) {\n                y = z;\n                z = (x / z + z) / 2;\n            }\n        } else if (x != 0) {\n            y = 1;\n        }\n    }\n}\n\n\n",
+        "CodeNames": [
+            "UniswapV2LPAdapter.sol",
+            "SushiswapV2LPAdapter.sol"
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "UniswapV2LPAdapter.sol, SushiswapV2LPAdapter.sol",
+                "Type": "Incorrect token update",
+                "Description": "The update function retrieves the underlying from the LP token pair (_asset) but then calls router.update(_asset, _proof) which is the LP token itself again.",
+                "Repair": "Call 'router.update(underlying, _proof)' instead of 'router.update(_asset, _proof)'"
             }
         ]
     },
@@ -273,10 +258,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "UniswapV2TokenAdapter.supports function",
-                "Type": "Unsupported Asset",
+                "Location": "UniswapV2TokenAdapter.supports",
+                "Type": "Unsupported Sushiswap-only assets",
                 "Description": "The UniswapV2TokenAdapter does not support Sushiswap-only assets.",
-                "Repair": "Compare the Sushiswap liquidity against the minimum liquidity threshold if the UniswapV2 liquidity is less than the minimum liquidity"
+                "Repair": "In aboveLiquidity, if the UniswapV2 liquidity is less than the minimum liquidity, instead of returning, compare the Sushiswap liquidity against this threshold."
             }
         ]
     }

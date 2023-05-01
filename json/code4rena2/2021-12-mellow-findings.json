@@ -28,7 +28,7 @@
             {
                 "Location": "Bad redirects can make it impossible to deposit & withdraw",
                 "Type": "Medium Severity",
-                "Description": "If the redirects array is misconfigured, it's possible that all amountsByVault are set to zero, leading to not being able to deposit to the pool anymore.",
+                "Description": "If the redirects array is misconfigured, it's possible that all amountsByVault are set to zero. There are many misconfigurations that can lead to not being able to deposit to the pool anymore.",
                 "Repair": "The redirects[i] = j matrix needs to be restricted. If i is redirected to j, j may not redirect itself. Check for this when setting the redirects array."
             },
             {
@@ -36,12 +36,6 @@
                 "Type": "Medium Severity",
                 "Description": "The UniV3Trader.swapExactOutput function with multi-hops is broken and cannot be used.",
                 "Repair": "Don't reverse the path byte-by-byte but element-by-element."
-            },
-            {
-                "Location": "LPIssuer.deposit",
-                "Type": "Front-Running",
-                "Description": "The LPIssuer.deposit first computes *balanced amounts* on the user's defined tokenAmounts. The idea is that LP tokens give the same percentage share of each vault tokens' tvl, therefore the provided amounts should be *balanced*, meaning, the depositAmount / tvl ratio should be equal for all vault tokens. But the strategist can front-run the user's deposit and rebalance the vault tokens, changing the tvl for each vault token which changes the rebalance. This front-run can happen accidentally whenever the strategist rebalances. Users can get rekt when depositing as the received LP amount is unpredictable and lead to a trade using a very different balanced token mix that they never intended.",
-                "Repair": "Add minimum return amount checks. Accept a function parameter that can be chosen by the user indicating their *expected LP amount* for their deposit tokenAmounts, then check that the actually minted LP token amount is above this parameter."
             }
         ]
     },
@@ -54,7 +48,7 @@
             {
                 "Location": "UniV3Vault.sol#collectEarnings() can be front run",
                 "Type": "High Severity",
-                "Description": "Unharvested yields are not included in tvl(), making it vulnerable to front-run attacks that steal pending yields.",
+                "Description": "In the current implementation, unharvested yields are not included in tvl(), making it vulnerable to front-run attacks that steal pending yields.",
                 "Repair": "Consider including fees in tvl()."
             }
         ]
@@ -69,7 +63,7 @@
                 "Location": "YearnVault.sol#pull()",
                 "Type": "Precision Loss",
                 "Description": "The actual token withdrew from yToken.withdraw() will most certainly be less than the tokenAmounts[i], due to precision loss in the calculation of yTokenAmount. As a result, IERC20(_vaultTokens[i]).safeTransfer(to, actualTokenAmounts[i]); in LpIssuer.sol#withdraw() will revert due to insufficient balance.",
-                "Repair": "Change to: tokenAmounts[i] = yToken.withdraw(yTokenAmount, to, maxLoss);"
+                "Repair": "Change the code to withdraw the actual token amount from the YearnVault contract instead of relying on the calculated token amount."
             }
         ]
     },
@@ -86,24 +80,16 @@
                 "Repair": "Call updateTvls at the beginning of withdraw function if the _subvault will cache tvl"
             },
             {
+                "Location": "LpIssuer.deposit()",
+                "Type": "Front-running",
+                "Description": "The LPIssuer.deposit first computes balanced amounts on the user's defined tokenAmounts. The idea is that LP tokens give the same percentage share of each vault tokens' tvl, therefore the provided amounts should be balanced, meaning, the depositAmount / tvl ratio should be equal for all vault tokens. But the strategist can front-run the user's deposit and rebalance the vault tokens, changing the tvl for each vault token which changes the rebalance. This front-run can happen accidentally whenever the strategist rebalances. Users can get rekt when depositing as the received LP amount is unpredictable and lead to a trade using a very different balanced token mix that they never intended.",
+                "Repair": "Add minimum return amount checks. Accept a function parameter that can be chosen by the user indicating their expected LP amount for their deposit tokenAmounts, then check that the actually minted LP token amount is above this parameter."
+            },
+            {
                 "Location": "LpIssuer.sol#_chargeFees()",
                 "Type": "Incorrect Formula",
                 "Description": "A certain amount of lp tokens (shares of the vault) will be minted to the strategyPerformanceTreasury as performanceFee, the amount is calculated based on the minLpPriceFactor. However, the current formula for toMint is wrong, which issues more than 100% of the current totalSupply of the lp token to the strategyPerformanceTreasury each time. Causing users to lose 50% to 100% of their funds after a few times.",
-                "Repair": "Change to: uint256 toMint = (baseSupply * (minLpPriceFactor * performanceFee) / CommonLibrary.DENOMINATOR) / CommonLibrary.DENOMINATOR;"
-            }
-        ]
-    },
-    {
-        "Code": "// SPDX-License-Identifier: BSL-1.1\npragma solidity =0.8.9;\n\nimport \"@openzeppelin/contracts/utils/introspection/ERC165.sol\";\nimport \"../interfaces/IProtocolGovernance.sol\";\nimport \"./interfaces/ITrader.sol\";\nimport \"./interfaces/IChiefTrader.sol\";\nimport \"./libraries/TraderExceptionsLibrary.sol\";\n\n/// @notice Main contract that allows trading of ERC20 tokens on different Dexes\n/// @dev This contract contains several subtraders that can be used for trading ERC20 tokens.\n/// Examples of subtraders are UniswapV3, UniswapV2, SushiSwap, Curve, etc.\ncontract ChiefTrader is ERC165, IChiefTrader, ITrader {\n    address public immutable protocolGovernance;\n    address[] internal _traders;\n    mapping(address => bool) public addedTraders;\n\n    constructor(address _protocolGovernance) {\n        protocolGovernance = _protocolGovernance;\n    }\n\n    /// @inheritdoc IChiefTrader\n    function tradersCount() external view returns (uint256) {\n        return _traders.length;\n    }\n\n    function getTrader(uint256 _index) external view returns (address) {\n        return _traders[_index];\n    }\n\n    function traders() external view returns (address[] memory) {\n        return _traders;\n    }\n\n    /// @inheritdoc IChiefTrader\n    function addTrader(address traderAddress) external {\n        _requireProtocolAdmin();\n        require(traderAddress != address(this), TraderExceptionsLibrary.RECURRENCE_EXCEPTION);\n        require(!addedTraders[traderAddress], TraderExceptionsLibrary.TRADER_ALREADY_REGISTERED_EXCEPTION);\n        require(ERC165(traderAddress).supportsInterface(type(ITrader).interfaceId));\n        require(!ERC165(traderAddress).supportsInterface(type(IChiefTrader).interfaceId));\n        _traders.push(traderAddress);\n        addedTraders[traderAddress] = true;\n        emit AddedTrader(_traders.length - 1, traderAddress);\n    }\n\n    /// @inheritdoc ITrader\n    function swapExactInput(\n        uint256 traderId,\n        uint256 amount,\n        address,\n        PathItem[] calldata path,\n        bytes calldata options\n    ) external returns (uint256) {\n        require(traderId < _traders.length, TraderExceptionsLibrary.TRADER_NOT_FOUND_EXCEPTION);\n        _requireAllowedTokens(path);\n        address traderAddress = _traders[traderId];\n        address recipient = msg.sender;\n        return ITrader(traderAddress).swapExactInput(0, amount, recipient, path, options);\n    }\n\n    /// @inheritdoc ITrader\n    function swapExactOutput(\n        uint256 traderId,\n        uint256 amount,\n        address,\n        PathItem[] calldata path,\n        bytes calldata options\n    ) external returns (uint256) {\n        require(traderId < _traders.length, TraderExceptionsLibrary.TRADER_NOT_FOUND_EXCEPTION);\n        _requireAllowedTokens(path);\n        address traderAddress = _traders[traderId];\n        address recipient = msg.sender;\n        return ITrader(traderAddress).swapExactOutput(0, amount, recipient, path, options);\n    }\n\n    function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {\n        return (interfaceId == this.supportsInterface.selector ||\n            interfaceId == type(ITrader).interfaceId ||\n            interfaceId == type(IChiefTrader).interfaceId);\n    }\n\n    function _requireAllowedTokens(PathItem[] memory path) internal view {\n        IProtocolGovernance pg = IProtocolGovernance(protocolGovernance);\n        for (uint256 i = 1; i < path.length; ++i)\n            require(\n                pg.isAllowedToken(path[i].token0) && pg.isAllowedToken(path[i].token1),\n                TraderExceptionsLibrary.TOKEN_NOT_ALLOWED_EXCEPTION\n            );\n        if (path.length > 0)\n            require(pg.isAllowedToken(path[0].token1), TraderExceptionsLibrary.TOKEN_NOT_ALLOWED_EXCEPTION);\n    }\n\n    function _requireProtocolAdmin() internal view {\n        require(\n            IProtocolGovernance(protocolGovernance).isAdmin(msg.sender),\n            TraderExceptionsLibrary.PROTOCOL_ADMIN_REQUIRED_EXCEPTION\n        );\n    }\n\n    event AddedTrader(uint256 indexed traderId, address traderAddress);\n}\n\n\n",
-        "CodeNames": [
-            "ChiefTrader.sol"
-        ],
-        "VulnerabilityDesc": [
-            {
-                "Location": "ChiefTrader.sol#swapExactInput() and swapExactOutput()",
-                "Type": "Wrong implementation",
-                "Description": "The inputToken is not approved to the traderAddress, causing the transfer to revert.",
-                "Repair": "Approve the inputToken to the subtrader and transfer from the caller before calling ITrader.swapExactInput() and ITrader.swapExactOutput(). Or maybe just remove support of swapExactInput() and swapExactOutput() in ChiefTrader."
+                "Repair": "Change the formula to calculate toMint to (baseSupply * (minLpPriceFactor * performanceFee) / CommonLibrary.DENOMINATOR) / CommonLibrary.DENOMINATOR"
             }
         ]
     },
@@ -114,10 +100,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "ProtocolGovernance.removeFromTokenWhitelist",
-                "Type": "Admin control",
-                "Description": "Admin can repeatedly call removeFromTokenWhitelist and set _numberOfValidTokens to zero.",
-                "Repair": "Decrease _numberOfValidTokens only if the token was previously allowed."
+                "Location": "ProtocolGovernance.removeFromTokenWhitelist function",
+                "Type": "Decrease in _numberOfValidTokens by admin",
+                "Description": "The admin can repeatedly call the removeFromTokenWhitelist function and decrease _numberOfValidTokens to zero, even if the token was never allowed before. This leads to an incorrect tokenWhitelist.",
+                "Repair": "Decrease _numberOfValidTokens only if the token was previously allowed"
             }
         ]
     }

@@ -7,14 +7,20 @@
         "VulnerabilityDesc": [
             {
                 "Location": "_reduceDebtWithoutBurn function",
-                "Type": "grieving attack",
-                "Description": "An attacker can prevent users from interacting with some of the protocol functions by failing their transactions, causing an underflow error and preventing them from paying their debt fully.",
-                "Repair": "Add a condition to the function _reduceDebtWithoutBurn to check if the amount is greater than the debt. If it is, set the amount to the debt."
+                "Type": "Grieving attack",
+                "Description": "An attacker can prevent users from interacting with some of the protocol functions by failing their transactions. Specifically, the attacker can apply a grieving attack by repaying only a small amount of the user's debt in advance, causing an underflow error and preventing the user from fully repaying their debt.",
+                "Repair": "Add a condition to check if the amount is greater than the debt before reducing the debt"
             },
             {
                 "Location": "removeCollateral, startLiquidationAuction, and purchaseLiquidationAuctionNFT functions",
                 "Type": "Reentrancy Attack",
-                "Description": "The attacker can steal funds by applying a reentrancy attack on removeCollateral, startLiquidationAuction, and purchaseLiquidationAuctionNFT functions. The vulnerability allows the attacker to ignore the debt and withdraw all other NFTs for free. The repair method is to add a reentrancy guard to the involved functions.",
+                "Description": "An attacker can steal funds by applying reentrancy attack on removeCollateral, startLiquidationAuction, and purchaseLiquidationAuctionNFT functions. The vulnerability is caused by the lack of checks-effects-interactions pattern and mutex locks to prevent multiple calls to the same function from different contracts.",
+                "Repair": "Implement checks-effects-interactions pattern to prevent reentrancy attacks. Use mutex locks to prevent multiple calls to the same function from different contracts. Use withdrawal pattern to transfer funds after all state changes have been made."
+            },
+            {
+                "Location": "removeCollateral, startLiquidationAuction, and purchaseLiquidationAuctionNFT functions",
+                "Type": "Reentrancy Attack",
+                "Description": "The attacker can steal funds by applying a reentrancy attack on the mentioned functions. The vulnerability allows the attacker to ignore the debt and withdraw all other NFTs for free. The suggested fix is to add a reentrancy guard to the involved functions.",
                 "Repair": "Add a reentrancy guard to the involved functions"
             },
             {
@@ -26,56 +32,50 @@
             {
                 "Location": "PaprController.sol",
                 "Type": "Unsafe last collateral check",
-                "Description": "There is a function purchaseLiquidationAuctionNFT() to allow liquidators to purchase NFTs on auction. The protocol checks if the current NFT is the last collateral using the collateralValueCached. But it might be possible for Reservoir Oracle to return zero (for whatever reason) and in that case collateralValueCached will be zero even when the _vaultInfo[auction.nftOwner][auction.auctionAssetContract].count!=0. This might lead to incorrect liquidation.",
+                "Description": "There is a function purchaseLiquidationAuctionNFT() to allow liquidators to purchase NFTs on auction. The protocol checks if the current NFT is the last collateral using the collateralValueCached. But it might be possible for Reservoir Oracle to return zero (for whatever reason) and in that case collateralValueCached will be zero even when the _vaultInfo[auction.nftOwner][auction.auctionAssetContract].count!=0. This can lead to incorrect liquidation.",
                 "Repair": "Change the line 273 as below. bool isLastCollateral = _vaultInfo[auction.nftOwner][auction.auctionAssetContract].count == 0;"
             },
             {
-                "Location": "function _reduceDebt()",
-                "Type": "Misuse of state variable",
-                "Description": "The proceeds from the collateral auctions will not be used to fill the debt shortfall, but be transferred directly to the borrower.",
-                "Repair": "Check whether there is another auction ongoing before writing off a bad debt. Increase the shortfall amount and burn it when the auction proceeds are not enough to cover the debt."
-            },
-            {
-                "Location": "function onERC721Received(address from, address, uint256 _id, bytes calldata data)",
-                "Type": "Wrong NFT deposit location",
-                "Description": "When an NFT is sent by an approved address or an operator, it'll be deposited to the vault of the approved address or operator instead of the actual owner's vault.",
-                "Repair": "Change the first argument of onERC721Received function to the actual owner address (from) instead of the caller address (_msgSender())"
-            },
-            {
                 "Location": "function purchaseLiquidationAuctionNFT()",
-                "Type": "User fund loss",
-                "Description": "When the auctioned NFT is user's last collateral, contract takes penalty from all of the transferred papr and not just the extra, causing users to lose funds.",
-                "Repair": "Change the value of maxDebtCached to 0 when isLastCollateral is true"
-            },
-            {
-                "Location": "Papr Controller contract",
-                "Type": "Incorrect usage of safeTransferFrom",
+                "Type": "Incorrect usage of safeTransferFrom traps fees",
                 "Description": "The Papr Controller never gives approval for ERC20 transfers, calls to safeTransferFrom on the Papr token will revert with insufficient approval. This will trap proceeds from auctions in the contract and prevent the owner/ DAO from collecting fees.",
                 "Repair": "Replace the call to safeTransferFrom with a call to transfer(to, amount)"
             },
             {
-                "Location": "Papr Controller contract",
-                "Type": "Users may be liquidated right after taking maximal debt",
-                "Description": "Since there's no gap between the maximal LTV and the liquidation LTV, user positions may be liquidated as soon as maximal debt is taken, without leaving room for collateral and Papr token prices fluctuations. Users have no chance to add more collateral or reduce debt before being liquidated. This may eventually create more uncovered and bad debt for the protocol.",
-                "Repair": "Consider adding a liquidation LTV that's bigger than the maximal borrow LTV; positions can only be liquidated after reaching the liquidation LTV. Alternatively, consider liquidating positions only after their debt has increased the maximal one"
+                "Location": "function purchaseLiquidationAuctionNFT()",
+                "Type": "User fund loss",
+                "Description": "In some cases (when the auctioned NFT is user's last collateral), the contract takes penalty from all of the transferred papr and not just the extra, causing users to lose funds.",
+                "Repair": "Change the value of maxDebtCached to 0 when isLastCollateral is true"
             },
             {
                 "Location": "PaprController.sol",
-                "Type": "Disabled collateral can still be used to mint debt",
-                "Description": "The code only checks if the collateral is allowed when adding collateral but does not have the same check when minting debt, allowing users to use disabled collateral to mint debt.",
-                "Repair": "Add a check to ensure that when the collateral is disabled, it should not be used to mint debt."
+                "Type": "Users may be liquidated right after taking maximal debt",
+                "Description": "Users have no chance to add more collateral or reduce debt before being liquidated. This may eventually create more uncovered and bad debt for the protocol.",
+                "Repair": "Consider adding a liquidation LTV that's bigger than the maximal borrow LTV; positions can only be liquidated after reaching the liquidation LTV. This will create a room for price fluctuations and let users increase their collateral or decrease debt before being liquidating. Alternatively, consider liquidating positions only after their debt has increased the maximal one."
+            },
+            {
+                "Location": "PaprController.sol",
+                "Type": "Collateral NFT deposited to a wrong address, when transferred directly to PaprController",
+                "Description": "When an NFT is sent by an approved address or an operator, it'll be deposited to the vault of the approved address or operator.",
+                "Repair": "Change the order of arguments in the onERC721Received function to correctly identify the token owner."
+            },
+            {
+                "Location": "PaprController.sol",
+                "Type": "Disabled NFT collateral used to mint debt",
+                "Description": "The code only checks if the collateral is allowed when adding collateral, but does not have the same check when minting debt, allowing users to use disabled collateral to mint debt.",
+                "Repair": "Add a check to ensure that disabled collateral cannot be used to mint debt"
             },
             {
                 "Location": "PaprController.sol, UniswapHelpers.sol",
-                "Type": "Double payment vulnerability",
-                "Description": "The swapped papr token are sent to account but burnt from msg.sender, causing msg.sender to pay double the amount they intended to pay.",
-                "Repair": "Change the recipient of the swapped papr token from account to msg.sender so that they can be burnt from msg.sender."
+                "Type": "Double payment of debt",
+                "Description": "The swapped papr token are sent to account but the papr token are burnt from msg.sender, causing msg.sender to pay double the amount of debt.",
+                "Repair": "Change the recipient of the swapped papr token to msg.sender instead of account"
             },
             {
                 "Location": "PaprController contract, buyAndReduceDebt function",
                 "Type": "Incorrect fee collection",
-                "Description": "The PaprController contract collects swap fees from the contract itself instead of the caller, resulting in a revert when the function is called with a fee. This can also be used to transfer out any underlying tokens sent to the contract mistakenly.",
-                "Repair": "Modify the buyAndReduceDebt function to use transferFrom instead of transfer when collecting the swap fee from the caller. Update the testBuyAndReduceDebtReducesDebt test to include setting the fee parameter."
+                "Description": "The PaprController contract collects swap fees from itself instead of the user, which can result in a revert if the contract does not hold any underlying tokens. Additionally, the function can be used to transfer out any underlying tokens sent to the contract mistakenly.",
+                "Repair": "Modify the buyAndReduceDebt function to use transferFrom instead of transfer when collecting the swap fee"
             }
         ]
     }

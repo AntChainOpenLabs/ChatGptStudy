@@ -21,7 +21,7 @@
                 "Location": "randomIndex",
                 "Type": "Predictable minting of a specific token ID",
                 "Description": "randomIndex' is not random.",
-                "Repair": "Use counters instead of generating random IDs"
+                "Repair": "Recommend not generating random IDs and instead using counters"
             },
             {
                 "Location": "tokenByIndex function",
@@ -37,9 +37,9 @@
             },
             {
                 "Location": "tokenByIndex function",
-                "Type": "Function treats last index as invalid",
+                "Type": "TokenByIndex treats last index as invalid",
                 "Description": "Function tokenByIndex treats last index as invalid.",
-                "Repair": "Change require(index > 0 && index <= TOKEN_LIMIT) to require(index >= 0 && index <= TOKEN_LIMIT)"
+                "Repair": "Change require(index > 0 && index < TOKEN_LIMIT) to require(index > 0 && index <= TOKEN_LIMIT)"
             },
             {
                 "Location": "withdraw function",

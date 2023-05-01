@@ -8,26 +8,26 @@
             {
                 "Location": "CNft.sol#L204",
                 "Type": "ERC1155 safeTransferFrom deviation",
-                "Description": "The function safeTransferFrom is a standard interface in ERC1155, and its expected to succeed if all the parameters are valid, and revert on error, which is not the case here so its a deviation.",
-                "Repair": "Call function safeBatchTransferFrom instead of revert"
+                "Description": "The safeTransferFrom function in CNft.sol deviates from the expected behavior of the ERC1155 standard interface, which can break composability and standard behavior.",
+                "Repair": "Use safeBatchTransferFrom instead of safeTransferFrom with 1 item in the array"
             },
             {
                 "Location": "Comptroller.sol",
                 "Type": "Manipulation of COMP distributions",
-                "Description": "The updateCompSupplyIndex() and distributeSupplierComp() functions are used by Compound to track distributions owed to users for supplying funds to the protocol. Bunker protocol is a fork of compound with NFT integration, however, part of the original functionality appears to have been mistakenly commented out.",
-                "Repair": "Comment all behaviour associated with token distributions if token distributions are not meant to be supported. Otherwise, it is worthwhile uncommenting all occurrences of the updateCompSupplyIndex() and distributeSupplierComp() functions."
+                "Description": "The updateCompSupplyIndex() and distributeSupplierComp() functions in Comptroller.sol are mistakenly commented out, allowing suppliers to manipulate their yield by repeatedly supplying and removing tokens, breaking all yield distributions.",
+                "Repair": "Comment all behavior associated with token distributions if token distributions are not meant to be supported, or uncomment all occurrences of the updateCompSupplyIndex() and distributeSupplierComp() functions"
             },
             {
                 "Location": "PriceOracleImplementation.sol#L29-L30",
-                "Type": "Deprecated Chainlink API usage",
-                "Description": "According to Chainlink's documentation, the latestAnswer function is deprecated.",
-                "Repair": "Use the latestRoundData function to get the price instead. Add checks on the return data with proper revert messages if the price is stale or the round is uncomplete"
+                "Type": "Use of deprecated Chainlink API",
+                "Description": "The latestAnswer function in PriceOracleImplementation.sol uses a deprecated Chainlink API that may suddenly stop working, and can return stale data.",
+                "Repair": "Use latestRoundData function instead of latestAnswer function"
             },
             {
                 "Location": "CEther.sol#L167",
                 "Type": "Use of deprecated transfer() function",
-                "Description": "The use of the deprecated transfer() function for an address will inevitably make the transaction fail.",
-                "Repair": "Use call() instead of transfer(), but be sure to implement CEI patterns in CEther and add a global state lock on the comptroller"
+                "Description": "The use of the deprecated transfer() function in CEther.sol can cause transactions to fail if the claimer smart contract does not implement a payable function, implements a payable fallback that uses more than 2300 gas units, or implements a payable fallback function that needs less than 2300 gas units but is called through proxy, raising the call's gas usage above 2300.",
+                "Repair": "Use call() instead of transfer(), implement CEI patterns in CEther, and add a global state lock on the comptroller"
             }
         ]
     }

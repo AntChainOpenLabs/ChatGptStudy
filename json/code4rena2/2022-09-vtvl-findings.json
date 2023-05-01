@@ -12,58 +12,58 @@
                 "Repair": "Disallow such kind of variable balance token"
             },
             {
+                "Location": "VTVLVesting.sol#L174",
+                "Type": "Tokens with lower number of decimals can result in postponed linear vesting for user",
+                "Description": "Unexpected postponing of vesting can result in waiting times for users to receive their must-be-vested tokens.",
+                "Repair": "Enforce the contract to work with only 18 decimal tokens with a require statement in the constructor"
+            },
+            {
                 "Location": "VTVLVesting.sol#L446-L451",
                 "Type": "Two address tokens can be withdrawn by the admin even if they are vested",
                 "Description": "The admin can withdraw the vested funds and break the system, because the balance of the contract can be less than the vested amount.",
                 "Repair": "Replace the address check with a balance check record the vesting token balance of the contract before and after the transfer and assert that they are equal"
             },
             {
-                "Location": "VTVLVesting.sol#L174",
-                "Type": "Tokens with lower number of decimals can result in postponed linear vesting for user",
-                "Description": "Unexpected postponing of vesting can result in waiting times for users to receive their must-be-vested tokens.",
-                "Repair": "Implement the rounding checking in the frontend UI and prompt user of potential delay caused by rounding / truncation"
-            },
-            {
-                "Location": "VTVLVesting.sol",
-                "Type": "Smart contract vulnerability",
+                "Location": "VTVLVesting.sol#L418-L437",
+                "Type": "Not able to create claim",
                 "Description": "If admin revoked any recipient\u2019s claim, admin can not create claim for the same recipient because startTimestamp is not updated to initial value on revoke claim.",
                 "Repair": "Update startTimestamp to 0 on revokeClaim()."
             },
             {
+                "Location": "VTVLVesting.sol#L224, VTVLVesting.sol#L245, VTVLVesting.sol#L302, VTVLVesting.sol#L317",
+                "Type": "Possible DoS on vestingRecipients due to lack of disposal mechanism",
+                "Description": "When the smart contracts start to be used, the variable in storage vestingRecipients will start to be filled with addresses, as there is no mechanism to eliminate elements, this will cause the allVestingRecipients() function to generate a DoS yes has many addressess.",
+                "Repair": "In the withdraw() function you could remove the element from vestingRecipients that no longer has vesting."
+            },
+            {
                 "Location": "VTVLVesting.sol",
-                "Type": "Denial of Service (DoS)",
-                "Description": "Possible DoS on vestingRecipients due to lack of disposal mechanism.",
-                "Repair": "In the withdraw() function, remove the element from vestingRecipients that no longer has vesting."
-            },
-            {
-                "Location": "VTVLVesting.sol:_createClaimUnchecked function",
-                "Type": "Validation",
-                "Description": "The _releaseIntervalSecs is not validated comparing to user's _linearVestAmount and _startTimestamp/_endTimestamp, which may create unfair distributions amongst the users during withdrawals due to being higher/lower than it should be.",
-                "Repair": "Add validation for _releaseIntervalSecs comparing to _linearVestAmount and _startTimestamp/_endTimestamp"
-            },
-            {
-                "Location": "VTVLVesting.sol:_createClaimUnchecked function",
-                "Type": "Validation",
-                "Description": "There is no check whether _startTimestamp and _endTimestamp is greater than block.timestamp at VTVLVesting.sol _createClaimUnchecked function, which allows administrators to accidentally create vesting schedule that starts and ends in the past without noticing it.",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "Vesting Schedule Start and End Time can be Set in the Past.",
                 "Repair": "Add require check that force _startTimestamp to be greater than block.timestamp"
             },
             {
-                "Location": "withdrawAdmin function in VTVLVesting.sol",
-                "Type": "Reentrancy",
-                "Description": "An admin can steal all tokens locked in the VTVLVesting contract while having active locks due to the reentrancy vulnerability in the vested token.",
-                "Repair": "Add ReentrancyGuard's nonReentrant to the withdrawAdmin function"
+                "Location": "VTVLVesting.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "_releaseIntervalSecs is not validated.",
+                "Repair": "Validate _releaseIntervalSecs comparing to user's _linearVestAmount and _startTimestamp _endTimestamp."
+            },
+            {
+                "Location": "VTVLVesting.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "Reentrancy may allow an admin to steal funds.",
+                "Repair": "Add ReentrancyGuard's nonReentrant to the withdrawAdmin function."
+            },
+            {
+                "Location": "_baseVestedAmount() function in VTVLVesting.sol",
+                "Type": "Incorrect Calculation",
+                "Description": "The _baseVestedAmount() function calculates vested amount for some (claim, timestamp) pair. It is wrapped by several functions, like vestedAmount, which is used in withdraw() to calculate how much a user can retrieve from their claim. The vulnerability is due to the inadequate size of uint112 for the calculation of linearVestAmount, which can cause overflow and permanent freeze of vested tokens. The repair method is to perform the intermediate calculation of linearVestAmount using the uint256 type.",
+                "Repair": "Perform the intermediate calculation of linearVestAmount using the uint256 type."
             },
             {
                 "Location": "_baseVestedAmount() and vestedAmount() functions in VTVLVesting.sol",
                 "Type": "Incorrect Historical Values",
-                "Description": "The historical data is inaccurate and can distort the distribution of resources, leading to a security risk.",
-                "Repair": "For active claims, only consider vestAmt. For inactive claims, return the lowest of vestAmt and _claim.amountWithdrawn."
-            },
-            {
-                "Location": "VTVLVesting.sol#L176",
-                "Type": "Integer Overflow",
-                "Description": "The _baseVestedAmount() function calculates vested amount for some (claim, timestamp) pair. It is wrapped by several functions, like vestedAmount, which is used in withdraw() to calculate how much a user can retrieve from their claim. Therefore, it is critical that this function will calculate correctly for users to receive their funds. The max value for uint112 is 5192296858534827628530496329220096. This means the maximum number of tokens that are safe to vest for one year is 16,464,665 tokens. Projects that are not forewarned about this size limit are likely to suffer from freeze of funds of employees, which will require very patchy manual revocation and restructuring of the vesting to not overflow.",
-                "Repair": "Perform the intermediate calculation of linearVestAmount using the uint256 type."
+                "Description": "The _baseVestedAmount() and vestedAmount() functions in VTVLVesting.sol return incorrect historical values due to the fact that _claim.amountWithdrawn is always the amount withdrawn to date, whereas vestAmt takes account of time, _referenceTs. This creates a security risk for VTVL and can result in an undesirable distribution of resources. The repair method is to only consider vestAmt for inactive claims and return the lowest of vestAmt and _claim.amountWithdrawn.",
+                "Repair": "For active claims, there is no reason to consider _claim.amountWithdrawn, as it will always have been below or equal to vestAmt at any point in time. So only consider vestAmt for inactive claims. For them, return the lowest of vestAmt and  _claim.amountWithdrawn. This will keep the values monotonic with time without distorting the historical values."
             }
         ]
     },
@@ -74,10 +74,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Location": "VariableSupplyERC20Token.sol",
-                "Type": "Smart contract vulnerability",
-                "Description": "Supply cap of VariableSupplyERC20Token is not properly enforced.",
-                "Repair": "Treat 2^256 - 1 as infinity instead of 0."
+                "Location": "VariableSupplyERC20Token.sol#L36-L46",
+                "Type": "Supply cap of  VariableSupplyERC20Token  is not properly enforced",
+                "Description": "The admin of the token is not constrained to minting maxSupply_, they can mint any number of tokens.",
+                "Repair": "Treat 2  256 1 as infinity instead of 0"
             }
         ]
     }

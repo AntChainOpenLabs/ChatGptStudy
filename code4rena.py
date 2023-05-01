@@ -33,7 +33,7 @@ have_code = 0
 
 
 def report(dir_path):
-    print("{} start report, dir_path: {}".format(threading.currentThread().getName(), dir_path))
+    # print("{} start report, dir_path: {}".format(threading.currentThread().getName(), dir_path))
     code_paths = read_code_path(dir_path)
 
     if not os.path.exists(dir_path + "-findings"):  # 如果不存在报告目录
@@ -1060,7 +1060,7 @@ if __name__ == "__main__":
     for thread in threads:
         # 使用start()启动线程
         thread.start()
-        time.sleep(5)
+        # time.sleep(5)
     # 使用join()函数等待结束
     for thread in threads:
         # print("wait for {} finishing".format(thread.getName()))
@@ -1079,5 +1079,5 @@ if __name__ == "__main__":
     # 测试
     # report(test_path)
     # 重跑error的代码
-    # report("..\\SolBugReports\\code4rena\\2022-06-connext")
+    # report("..\\SolBugReports\\code4rena\\2021-04-basedloans")
 

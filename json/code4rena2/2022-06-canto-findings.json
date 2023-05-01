@@ -13,147 +13,147 @@
             },
             {
                 "Location": "CNote.sol",
-                "Type": "Transferring underlying token to contract",
+                "Type": "Transferring underlying token to CNote contract",
                 "Description": "The contract expects the balance of the underlying token to == 0 at all points when calling the contract functions by requiring getCashPrior() == 0, which checks token.balanceOf(address(this)) where token is the underlying asset.",
                 "Repair": "Instead of checking the underlying token balance via balanceOf(address(this)) the contract could hold an internal balance of the token, mitigating the impact of tokens being forcefully transferred to the contract."
             },
             {
                 "Location": "CNote._setAccountantContract()",
-                "Type": "Setting address to zero",
+                "Type": "Accountant address can be set to zero",
                 "Description": "In CNote._setAccountantContract(), the require() check only works when address(_accountant) != address(0) , leading to the ability to set _accountant state variable to the zero address, as well as setting admin to zero address.",
-                "Repair": "Instead of a if (address(_accountant) != address(0)) statement, an additional require check to ensure accountant_ parameter is not 0 address can be used in addition to the require check for caller is admin."
+                "Repair": "An additional require check to ensure accountant_ parameter is not 0 address can be used in addition to the require check for caller is admin."
             },
             {
-                "Location": "ERC20 contract, line 33",
+                "Location": "ERC20.sol",
                 "Type": "TotalSupply is broken",
-                "Description": "The _totalSupply variable is not initialized to 0, leading to an inaccurate total supply.",
-                "Repair": "Remove the _initialSupply parameter from the constructor"
+                "Description": "_totalSupply is not initialized to 0, leading to an inaccurate total supply, which could easily break integrations, computations of market cap, etc.",
+                "Repair": "Remove _initialSupply."
             },
             {
-                "Location": "CNote contract, line 129",
-                "Type": "Incorrect amount taken",
-                "Description": "User is asked to send repayAmount instead of repayAmountFinal, which can lead to loss of user funds.",
-                "Repair": "Revise line 129 to use repayAmountFinal instead of repayAmount"
-            },
-            {
-                "Location": "CNote contract, doTransferOut function and Comptroller contract, exitMarket function",
-                "Type": "Reentrancy vulnerability",
+                "Location": "CNote updates the accounts after sending the funds, allowing for reentrancy",
+                "Type": "reentrancy",
                 "Description": "Updating the records after external interactions allows for funds draining by reentrancy.",
                 "Repair": "Move accounting update before funds are sent out"
             },
             {
-                "Location": "lending-market/Note.sol _setAccountantAddress()",
-                "Type": "Incorrect access control",
-                "Description": "Due to a flaw in logic, via a front-run, anyone can become the accountant and mint all the totalSupply to themselves.",
-                "Repair": "Add a check to ensure that only the admin can call the function when accountant is already set"
+                "Location": "CNote.sol#L129",
+                "Type": "incorrect amount taken",
+                "Description": "User is asked to send repayAmount instead of repayAmountFinal, leading to loss of user funds.",
+                "Repair": "Revise CNote.sol#L129 to use repayAmountFinal instead of repayAmount"
             },
             {
-                "Location": "lending-market/Note.sol _mint_to_Accountant()",
-                "Type": "Incorrect initialization",
-                "Description": "When the Note contract is initialized, _initialSupply is set to 0, and the _mint_to_Accountant() function checks whether the accountant has received the correct amount of tokens. But, it compares the accountant's balance with the _initialSupply. That value is always 0. So the require statement will always fail.",
-                "Repair": "Change the require statement to check whether the accountant has received the correct amount of tokens"
-            },
-            {
-                "Location": "Cnote.sol _setAccountantContract()",
-                "Type": "Frontrunnable initializer",
-                "Description": "The function _setAccountantContract() completely lacks any access control, so an attacker can monitor the mempool and frontrun the transaction in order to become both accountant and admin.",
-                "Repair": "Add a guard that regulates access control and do not set the admin too"
-            },
-            {
-                "Location": "WETH.sol approve(address owner, address spender)",
-                "Type": "Stealing tokens",
-                "Description": "The approve function allows an attacker to approve themselves to spend another user's tokens. Attacker can then use transferFrom(address src, address dst, uint wad) function to send tokens to themselves.",
+                "Location": "WETH.sol#L85",
+                "Type": "stealing wrapped manifest",
+                "Description": "Allows anyone to steal all wrapped manifest from the WETH.sol contract.",
                 "Repair": "Remove the approve(address owner, address spender) function"
             },
             {
-                "Location": "WETH.sol totalSupply()",
-                "Type": "Incorrect totalSupply computation",
-                "Description": "The WETH contract computes the totalSupply() using the balance of the contract itself stored in the balanceOf mapping, when instead it should be using the native balance function. This way, totalSupply() always returns zero as the WETH contract itself has no way of calling deposit to itself and increase its own balance.",
-                "Repair": "Change the function to use the native balance function instead of the balance of the contract itself stored in the balanceOf mapping"
+                "Location": "_setAccountantContract() function in CNote.sol",
+                "Type": "frontrunnable initializer",
+                "Description": "An attacker can monitor the mempool and frontrun the transaction in order to become both accountant and admin.",
+                "Repair": "Add access control to the function"
             },
             {
-                "Location": "lending-market/Note.sol _mint_to_Accountant()",
-                "Type": "Integer overflow",
-                "Description": "If _initialSupply != 0, _totalSupply will overflow when the _mint_to_Accountant function executes _mint(msg.sender, type(uint).max). Deploying Note with a non-zero initialSupply will cause a revert.",
-                "Repair": "Deploy Note with a zero initialSupply or change the function to mint a smaller amount of tokens"
+                "Location": "AccountantDelegate.sol#L29",
+                "Type": "initialization error",
+                "Description": "The function checks whether the accountant has received the correct amount of tokens, but compares the accountant's balance with the _initialSupply, which is always 0.",
+                "Repair": "Change the require statement to check balanceOf(msg.sender) against totalSupply()"
+            },
+            {
+                "Location": "lending-market/Note.sol",
+                "Type": "Wrong implementation of access control",
+                "Description": "The _mint_to_Accountant() function calls _setAccountantAddress() when accountant == address(0), which will always be the case when _mint_to_Accountant() is called for the first time. And _setAccountantAddress() only checks if msg.sender == admin when accountant != address(0) which will always be false, therefore the access control is not working.",
+                "Repair": "Check if msg.sender is authorized to call _setAccountantAddress() regardless of whether accountant is already set or not"
+            },
+            {
+                "Location": "WETH.sol",
+                "Type": "Computes the wrong totalSupply()",
+                "Description": "This contract computes the totalSupply() using the balance of the contract itself stored in the balanceOf mapping, when instead it should be using the native balance function. This way, totalSupply() always returns zero as the WETH contract itself has no way of calling deposit to itself and increase its own balance.",
+                "Repair": "Compute totalSupply() using the native balance function instead of the balance of the contract itself stored in the balanceOf mapping"
             },
             {
                 "Location": "BaseV1-core.sol",
-                "Type": "Price oracle manipulation",
-                "Description": "An attacker can pump the token in a liquidity pair for one entire block, and the oracle will capture the manipulated price as the current TWAP implementation may only cover 1 block if timed correctly.",
-                "Repair": "Calculate TWAP average of _reserve0 and _reserve1 in the _update function by using cumulative reserve difference from last update to now which has a duration of periodSize = 1800 minutes. When querying for current price, return _reserve0 and _reserve1."
+                "Type": "Oracle may be attacked",
+                "Description": "Attacker may use huge amount of their fund to pump the token in a liquidity pair for one entire block. The oracle will capture the manipulated price as current TWAP implementation may only cover 1 block if timed correctly.",
+                "Repair": "Calculate TWAP average of _reserve0 and _reserve1 in the _update function by using cumulative reserve difference from last update to now which has a duration of periodSize = 1800 minutes. And when querying for current price you can just return _reserve0 and _reserve1"
             },
             {
-                "Location": "Proposal-Store.sol",
-                "Type": "Unauthorized proposal creation",
-                "Description": "Anyone can add proposals to the contract directly via AddProposal() function, and Unigov proposals can be queued and executed by anyone in GovernorBravoDelegate contract.",
-                "Repair": "Add authorization checks for AddProposal, allowing only the governance module to update."
+                "Location": "Note.sol",
+                "Type": "Note: When _initialSupply != 0, the _mint_to_Accountant function will fail",
+                "Description": "In Note contract, if _initialSupply != 0, _totalSupply will overflow when the _mint_to_Accountant function executes _mint(msg.sender, type(uint).max).",
+                "Repair": "Check if _totalSupply + amount overflows before calling _mint(msg.sender, type(uint).max) in _mint_to_Accountant function"
             },
             {
-                "Location": "UniswapV2Pair.sol",
-                "Type": "LP token manipulation",
-                "Description": "Token reserves per lp token can be manipulated due to the lack of MINIMUM_LIQUIDITY when minting the first liquidity with migrator. An attacker can artificially create a scenario where the user who adds small amounts of liquidity will receive less amount of lp tokens due to precision loss.",
-                "Repair": "Consider removing the migrator, or introduce the MINIMUM_LIQUIDITY minted and permanently lock in address(0) upon the first mint."
+                "Location": "zeroswap/UniswapV2Pair.sol",
+                "Type": "Manipulation of token reserves",
+                "Description": "Token reserves per lp token can be manipulated due to lack of MINIMUM_LIQUIDITY when minting the first liquidity with migrator.",
+                "Repair": "Consider removing the migrator"
             },
             {
-                "Location": "Comptroller contract",
-                "Type": "Hardcoded address",
-                "Description": "The Comptroller contract uses a hardcoded address for the WETH contract which is not the correct one. Because of that, it will be impossible to claim COMP rewards.",
-                "Repair": "Parse the WETH contract's address to the Comptroller through the constructor or another function instead of being hardcoded"
-            },
-            {
-                "Location": "Comptroller contract",
+                "Location": "Comptroller.sol",
                 "Type": "Overprivileged admin",
                 "Description": "Admin can _grantComp() to any address using any amount and drain the contract.",
                 "Repair": "Implement timelock for _grantComp(), implement hard coded recipient so funds cannot be arbitrarily sent to any address, implement a limit to the amount that can be granted"
             },
             {
-                "Location": "NoteInterest contract",
-                "Type": "Access control",
-                "Description": "The updateBaseRate() function is public and lacks access control, so anyone can set the critical variable baseRatePerYear once the block delta has surpassed the updateFrequency variable.",
+                "Location": "Comptroller.sol",
+                "Type": "Wrong address usage",
+                "Description": "The Comptroller uses the wrong address for the WETH contract.",
+                "Repair": "Parse the WETH contract's address to the Comptroller through the constructor or another function instead of being hardcoded"
+            },
+            {
+                "Location": "NoteInterest.sol",
+                "Type": "Lack of access control",
+                "Description": "Anyone can set the baseRatePerYear after the updateFrequency has passed.",
                 "Repair": "Add access control for only trusted parties"
             },
             {
                 "Location": "UniswapV2Library.sol",
                 "Type": "Wrong init code hash",
-                "Description": "The init code hash in UniswapV2Library.pairFor() should be updated since the code of UniswapV2Pair has been changed.",
+                "Description": "Wrong init code hash in UniswapV2Library.pairFor() will break UniswapV2Oracle, UniswapV2Router02, SushiRoll.",
                 "Repair": "Update the init code hash from hex'e18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303' to the value of UniswapV2Factory.pairCodeHash()"
             },
             {
+                "Location": "lending-market/NoteInterest.sol",
+                "Type": "Wrong implementation of getBorrowRate()",
+                "Description": "The current implementation returns a random rate based on the caller's address and baseRatePerYear.",
+                "Repair": "Implement a proper algorithm to calculate the borrow rate based on market conditions"
+            },
+            {
                 "Location": "GovernorBravoDelegate.sol",
-                "Type": "Incorrect function condition",
+                "Type": "Unable to check state() if proposalId == 0",
+                "Description": "There is no check to prevent queueing a proposalId with a value of 0 via the queue() function.",
+                "Repair": "Implement a check to prevent queueing a proposalId with a value of 0 via the queue() function"
+            },
+            {
+                "Location": "GovernorBravoDelegate.sol",
+                "Type": "Incorrect condition always bound to fail",
                 "Description": "The state function check GovernorBravoDelegate.sol#L115 will always fail since proposalId cannot lie in between initialProposalId and proposalCount due to an initialization in _initiate function.",
                 "Repair": "Remove initialProposalId = proposalCount; in the _initiate function"
             },
             {
-                "Location": "WETH.sol",
-                "Type": "Incorrect function output",
-                "Description": "WETH.allowance() returns wrong result.",
-                "Repair": "Change L104 to return _allowance[owner][spender];"
-            },
-            {
-                "Location": "AccountantDelegate contract, sweepInterest() function",
-                "Type": "destroying cnote tokens",
-                "Description": "The sweepInterest function of the AccountantDelegate contract transfers all cnote tokens in the contract to address 0, preventing the user from repaying the note tokens and causing incorrect interest calculation.",
-                "Repair": "Redeem the cnote tokens instead of destroying them"
-            },
-            {
-                "Location": "GovernorBravoDelegate contract, state() function",
-                "Type": "inability to check proposal state",
-                "Description": "The state() function cannot be called to view proposal state if proposalId == 0, and there is no check to prevent queueing a proposalId with a value of 0 via the queue() function.",
-                "Repair": "Add a check to prevent queueing a proposal with a value of 0 via the queue() function"
-            },
-            {
-                "Location": "NoteInterest contract, getBorrowRate() function",
-                "Type": "random borrow rate",
-                "Description": "The current implementation of getBorrowRate() returns a random rate based on the caller's address and baseRatePerYear, making some addresses pay much lower and some addresses pay much higher rates.",
-                "Repair": "Implement a proper algorithm to calculate the borrow rate"
-            },
-            {
-                "Location": "GovernorBravoDelegate contract, execute() and state() functions",
-                "Type": "inability to execute governance proposals",
-                "Description": "The executed property of a proposal is set to true when it's queued up, making it impossible to execute governance proposals through the GovernorBravoDelegate contract.",
+                "Location": "GovernorBravoDelegate.sol",
+                "Type": "It's not possible to execute governance proposals through the GovernorBravoDelegate contract",
+                "Description": "It's not possible to execute a proposal through the GovernorBravoDelegate contract because the executed property of it is set to true when it's queued up.",
                 "Repair": "Delete the line where executed is set to true"
+            },
+            {
+                "Location": "AccountantDelegate.sol",
+                "Type": "AccountantDelegate: sweepInterest function will destroy the cnote in the contract",
+                "Description": "In the sweepInterest function of the AccountantDelegate contract, all cnote tokens in the contract will be transferred to address 0.",
+                "Repair": "Redeem the cNote instead of destroying it in the sweepInterest function"
+            },
+            {
+                "Location": "GovernorBravoDelegate.sol",
+                "Type": "Only the state() of the latest proposal can be checked",
+                "Description": "The current implementation of the state() function will only return the state from the latest proposal.",
+                "Repair": "Change the state() function to proposalCount <= proposalId"
+            },
+            {
+                "Location": "WETH.sol",
+                "Type": "WETH.allowance() returns wrong result",
+                "Description": "In this function, the return keyword is missing and it will always output 0 in this case.",
+                "Repair": "Change L104 to return _allowance[owner][spender];"
             }
         ]
     }

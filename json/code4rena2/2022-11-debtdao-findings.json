@@ -20,8 +20,8 @@
             {
                 "Location": "receiveTokenOrETH function in LineLib.sol and multiple functions in LineOfCredit.sol",
                 "Type": "Locked ETH in protocol",
-                "Description": "Excessive ETH sent to the protocol is not refunded and is permanently locked in the contract, resulting in loss of funds. The vulnerability affects multiple scenarios and locks both the lender and borrower's ETH in LineOfCredit if overpaid. The vulnerability impacts EscrowedLine, LineOfCredit, SpigotedLine, and SecuredLine.",
-                "Repair": "Refund excessive ETH back to the sender in receiveTokenOrETH function if msg.value is greater than amount. Update internal accounting to include excessive ETH. Revert transaction if msg.value is not equal to amount in receiveTokenOrETH function."
+                "Description": "Excessive ETH is not refunded and is permanently locked in the protocol, impacting multiple scenarios for both borrowers and lenders. The bug resides in receiveTokenOrETH function when receiving ETH, where excessive ETH is added to the balance of LineOfCredit although only amount is used in internal accounting, resulting in locked ETH that cannot be withdrawn.",
+                "Repair": "Refund excessive ETH back to the sender or revert the transaction if the sent ETH is not equal to the required amount"
             },
             {
                 "Location": "SpigotLib.claimRevenue and SpigotLib._claimRevenue functions",
@@ -44,20 +44,20 @@
             {
                 "Location": "addCollateral(), _getCollateralValue(), increaseCredit(), depositAndClose(), depositAndRepay(), close()",
                 "Type": "Variable balance ERC20 support",
-                "Description": "Some ERC20 tokens may have tricky balances that change over time, causing inaccurate calculations of collateral value and potential loss of funds.",
+                "Description": "Some ERC20 tokens may have tricky balances that change over time, causing inaccurate calculations of collateral value and loss of funds.",
                 "Repair": "checking the before and after balance of token transfer, recording the relative shares of each user instead of specific amount, if necessary, call ERC20(token).balanceOf() to confirm the balance, disallow such kind of tokens"
             },
             {
                 "Location": "receiveTokenOrETH()",
                 "Type": "Mistakenly sent eth could be locked",
-                "Description": "If ETH and ERC20 are transferred at the same time, mistakenly sent ETH will be ignored and locked in the contract.",
+                "Description": "If ERC20 and eth are transferred at the same time, mistakenly sent eth will be ignored and locked in the contract.",
                 "Repair": "Add check for msg.value in the ERC20 part to ensure no eth is sent"
             },
             {
                 "Location": "addCredit(), increaseCredit(), mutualConsent(), _mutualConsent()",
                 "Type": "addCredit / increaseCredit cannot be called by lender first when token is ETH",
-                "Description": "When the lender performs the calls first and sends ETH along with the call, the call will not revert. It will instead set the consent for him, but the sent ETH is lost. Even when the lender thinks about this and does not provide any ETH on the first call, the borrower has to perform the second call. Of course, he will not provide the ETH with this call, but this will cause the transaction to revert. There is now no way for the borrower to also grant consent, but still let the lender perform the call.",
-                "Repair": "Implement an external function to grant consent, revert when ETH is sent along but the other party has not given their consent yet"
+                "Description": "When the lender performs the calls first and sends ETH along with the call, the call will not revert. It will instead set the consent for him, but the sent ETH is lost. Even when the lender thinks about this and does not provide any ETH on the first call, the borrower has to perform the second call. Of course, he will not provide the ETH with this call, but this will cause the transaction to revert. There is now no way for the borrower to also grant consent but still let the lender perform the call.",
+                "Repair": "Implement an external function to grant consent to avoid this scenario. Also consider reverting when ETH is sent along but the other party has not given their consent yet."
             },
             {
                 "Location": "LineLib.receiveTokenOrETH function",
@@ -73,7 +73,7 @@
             },
             {
                 "Location": "LineOfCredit contract",
-                "Type": "Borrowing Vulnerability",
+                "Type": "Borrowing vulnerability",
                 "Description": "Borrower can craft a borrow that cannot be liquidated, even by arbiter.",
                 "Repair": "Do not skip any elements when sorting new borrows into the ids queue"
             },
@@ -94,6 +94,18 @@
                 "Type": "Functionality",
                 "Description": "Repaying a line of credit with a higher than necessary claimed revenue amount will force the borrower into liquidation.",
                 "Repair": "Assert that amount is less or equal than credit.principal + credit.interestAccrued"
+            },
+            {
+                "Location": "LineOfCredit.sol close() function",
+                "Type": "Borrower can close a credit without repaying debt",
+                "Description": "A borrower can close a credit without repaying the debt to the lender. The lender will be left with a bad debt and the borrower will keep the borrowed amount and the collateral.",
+                "Repair": "Consider ensuring that a credit with the user-supplied ID exists before closing it"
+            },
+            {
+                "Location": "LineOfCredit.sol _close() function",
+                "Type": "Lender can reject closing a position",
+                "Description": "If the used credit token is native ETH, the lender can reject the closing of the credit by reverting the token transfer. This prevents the borrower from closing the credit line and has several consequences.",
+                "Repair": "Consider using a pull-based pattern to allow the lender to withdraw the funds instead of sending them back directly"
             }
         ]
     }

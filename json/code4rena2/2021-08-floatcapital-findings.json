@@ -8,20 +8,20 @@
             {
                 "Location": "Owner/admin only functions that change critical parameters",
                 "Type": "Missing events/timelocks",
-                "Description": "Missing events/timelocks do not promote transparency and if such changes immediately affect users\u2019 perception of fairness or trustworthiness, they could exit the protocol causing a reduction in liquidity which could negatively impact protocol TVL and reputation.",
+                "Description": "Missing events/timelocks for owner/admin only functions that change critical parameters",
                 "Repair": "Add events to all owner/admin functions that change critical parameters. Add timelocks to introduce time delays for critical parameter changes that significantly impact market/user incentives/security."
             },
             {
                 "Location": "stakerTokenShiftIndex_to_longShortMarketPriceSnapshotIndex_mapping and stakerTokenShiftIndex_to_accumulativeFloatIssuanceSnapshotIndex_mapping",
                 "Type": "Variables not indexed",
-                "Description": "The values of stakerTokenShiftIndex_to_longShortMarketPriceSnapshotIndex_mapping and stakerTokenShiftIndex_to_accumulativeFloatIssuanceSnapshotIndex_mapping can be overwritten by a different market, if batched_stakerNextTokenShiftIndex[market1]==batched_stakerNextTokenShiftIndex[market2].",
+                "Description": "2 variables not indexed by marketIndex",
                 "Repair": "Add an index with marketIndex to the variables: stakerTokenShiftIndex_to_longShortMarketPriceSnapshotIndex, stakerTokenShiftIndex_to_accumulativeFloatIssuanceSnapshotIndex"
             },
             {
                 "Location": "YieldManager's logic in L161-L170",
                 "Type": "Wrong Aave usage",
-                "Description": "Aave yield manager claims rewards with the payment token. According to aave's document, aToken should be provided. The aave rewards would be unclaimable.",
-                "Repair": "Change to address[] memory rewardsDepositedAssets = new address[(1)]; rewardsDepositedAssets[0] = address(aToken);"
+                "Description": "Wrong Aave usage of claimRewards",
+                "Repair": "Change to provide aToken instead of payment token"
             }
         ]
     },
@@ -34,26 +34,26 @@
             {
                 "Location": "_batchConfirmOutstandingPendingActions function of LongShort.sol",
                 "Type": "Copy paste error",
-                "Description": "The result is that the internal administration will be off and far too many tokens will be shifted tokens from SHORT to LONG.",
+                "Description": "Copy paste error in _batchConfirmOutstandingPendingActions",
                 "Repair": "Change the second instance of batched_amountSyntheticToken_toShiftAwayFrom_marketSide[marketIndex][true] = 0 to batched_amountSyntheticToken_toShiftAwayFrom_marketSide[marketIndex][false] = 0"
             },
             {
                 "Location": "getUsersConfirmedButNotSettledSynthBalance() function of LongShort.sol",
                 "Type": "Incorrect balance computed",
-                "Description": "This results in an incorrect balance being computed in the getUsersConfirmedButNotSettledSynthBalance() function.",
-                "Repair": "Update the function to use the correct price snapshot"
+                "Description": "Incorrect balance computed in getUsersConfirmedButNotSettledSynthBalance()",
+                "Repair": "Use the correct price snapshot to compute the balance"
             },
             {
                 "Location": "functions initializeMarket and _seedMarketInitially in LongShort.sol",
                 "Type": "Variable Initialization",
-                "Description": "The variable latestMarket is used instead of marketIndex in the functions initializeMarket and _seedMarketInitially, which can lead to improper initialization of previous markets if these functions are called separately from createNewSyntheticMarket. This vulnerability has been confirmed by the Float Capital team and has been fixed in a patch.",
+                "Description": "The latestMarket variable is initialized multiple times and the previous market(s) are not initialized properly.",
                 "Repair": "Replace latestMarket with marketIndex in the functions initializeMarket and _seedMarketInitially"
             },
             {
                 "Location": "function _updateSystemStateInternal in LongShort.sol",
                 "Type": "Market Stuck",
-                "Description": "If the price of a synthetic token remains constant, the market can get stuck because the marketUpdateIndex[marketIndex] will never increase, and the _executeOutstandingNextPrice functions will never be executed. The recommendation is to enhance the _updateSystemStateInternal function to execute the entire function after a certain period of time without price movements to prevent the market from getting stuck. The Float Capital team disputed this vulnerability, stating that their system is not designed for markets where continuous price updates do not occur, and that if the oracle keeps returning the same value, it is likely that something is broken and can be caught before it negatively impacts the system.",
-                "Repair": "Enhance _updateSystemStateInternal to execute the entire function after a certain period of time without price movements"
+                "Description": "If the price of a synthetic token stays constant, the marketUpdateIndex[marketIndex] will never increase and the market will effectively be stuck.",
+                "Repair": "Enhance _updateSystemStateInternal so that after a certain period of time without price movements, the entire function is executed (including the marketUpdateIndex[marketIndex] += 1;)"
             }
         ]
     },
@@ -66,14 +66,14 @@
             {
                 "Location": "shiftTokens function of Staker",
                 "Type": "Users could shift tokens with more than they have staked",
-                "Description": "A user could call the shiftTokens function multiple times before the next price update to shift the staker's token from one side to the other with more than he has staked.",
-                "Repair": "Add checks on userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom_long and userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom_short to ensure that the sum of the two variables does not exceed user's stake balance."
+                "Description": "Users could shift tokens on Staker with more than he has staked",
+                "Repair": "Add checks on userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom_long and userNextPrice_amountStakedSyntheticToken_toShiftAwayFrom_short to ensure that the sum of the two variables does not exceed user's stake balance"
             },
             {
-                "Location": "_calculateFloatPerSecond() function in Staker.sol",
+                "Location": "function _calculateFloatPerSecond in Staker.sol",
                 "Type": "Incorrect Calculation",
-                "Description": "The edge cases where full rewards go to either the long or short token returns 1e18 times too large values, resulting in an extremely large float token issuance rate, which would be disastrous.",
-                "Repair": "Return correct values in edge cases where rewards go fully to long and short token holders respectively"
+                "Description": "The edge cases where full rewards go to either the long or short token returns 1e18 times too large values.",
+                "Repair": "Return (k * longPrice, 0) and (0, k * shortPrice) in the cases where rewards should go fully to long and short token holders respectively"
             }
         ]
     }
