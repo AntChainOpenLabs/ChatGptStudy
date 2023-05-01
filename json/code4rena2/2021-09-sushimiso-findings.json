@@ -1,0 +1,34 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "function commitEth(address payable _beneficiary, bool readAndAgreedToMarketParticipationAgreement ) public payable nonReentrant  {",
+                "Type": "use of transfer() instead of call() to send eth",
+                "Description": "After istanbul hardfork, there is an increase in the gas cost of the SLOAD operation and therefore breaks some existing smart contracts. Any smart contract that uses transfer() or send() is taking a hard dependency on gas costs by forwarding a fixed amount of gas: 2300.",
+                "Repair": "use call() instead of transfer()"
+            },
+            {
+                "Location": "function withdrawTokens(address payable beneficiary) public   nonReentrant  {",
+                "Type": "Last person to withdraw his tokens might not be able to do this, in Crowdsale (edge case)",
+                "Description": "If marketStatus.commitmentsTotal == marketInfo.totalTokens -1, then the last person to withdraw his tokens cannot withdraw them and the revenues for the last token cannot be retrieved as finalize() cannot be called again.",
+                "Repair": "Add a check on auctionEnded() or status.finalized in the _addCommitment function"
+            },
+            {
+                "Location": "function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {",
+                "Type": "SushiToken transfers are broken due to wrong delegates accounting on transfers",
+                "Description": "The _beforeTokenTransfer function in SushiToken does not correctly shift the voting power due to the increase/decrease in tokens for the from and to accounts. It tries to shift the votes from the from account, instead of the _delegates[from] account. This can lead to transfers reverting.",
+                "Repair": "Change the _moveDelegates call to be from _delegates[from] instead"
+            },
+            {
+                "Location": "PostAuctionLauncher.sol#finalize()",
+                "Type": "Arbitrary Liquidity Addition",
+                "Description": "An attacker may control the LP price by creating the pool and then call finalize() to mint LP token with unfair price (pay huge amounts of tokens and get few amounts of LP token), and then remove the initial liquidity they acquired when creating the pool and take out huge amounts of tokens.",
+                "Repair": "To only support tokenPair created by PostAuctionLauncher or check for the token price before mint liquidity."
+            }
+        ]
+    }
+]

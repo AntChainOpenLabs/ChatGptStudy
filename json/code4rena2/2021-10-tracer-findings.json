@@ -1,0 +1,28 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "PoolCommiter.commit() function",
+                "Type": "Inconsistent state",
+                "Description": "Deposits don't work with fee-on transfer tokens",
+                "Repair": "Measure the asset change right before and after the asset-transferring routines"
+            },
+            {
+                "Location": "PoolCommitter._uncommit function",
+                "Type": "Sending tokens to the wrong user",
+                "Description": "uncommit sends tokens to the wrong user",
+                "Repair": "Instead of msg.sender, use _commit.owner"
+            },
+            {
+                "Location": "PoolKeeper.keeperReward computation",
+                "Type": "Mixed Units",
+                "Description": "The computation mixes WADs and Quads which leads to issues. The keeper rewards are off as the _keeperGas * _tipPercent is divided by 1e18 instead of 1e2.",
+                "Repair": "Make keeperTip() return a byte16 Quad value as a percentage where 100% = ABDKMathQuad.fromUInt(1) or divide by 100 as a quad instead of 1e18 as a quad because _tipPercent is not a WAD value, but simply a percentage where 1 = 1%"
+            }
+        ]
+    }
+]

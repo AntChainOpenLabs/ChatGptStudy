@@ -1,0 +1,22 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "_acceptNewTerms function in MapleLoanInternals.sol",
+                "Type": "Recreated contract exploit",
+                "Description": "An attacker can use CREATE2 to re-create a new malicious contract on the same address.",
+                "Repair": "Whitelist allowable Refinancer contracts to protect lenders"
+            },
+            {
+                "Location": "_sendFee function in MapleLoanInternals.sol",
+                "Type": "Lost tokens",
+                "Description": "If _sendFee returns bytes data, the abi.decode will return 0x20, resulting in lost tokens.",
+                "Repair": "Check returnData.length == 32 before decoding"
+            }
+        ]
+    }
+]

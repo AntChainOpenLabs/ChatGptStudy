@@ -1,0 +1,76 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "createPromotion function",
+                "Type": "Contract does not work with fee-on transfer tokens",
+                "Description": "ERC20 tokens that charge a fee for every transfer do not work correctly with the TwabRewards contract as the rewards calculation for a user is based on promotion.tokensPerEpoch. However, the actual amount of tokens the contract holds could be less than promotion.tokensPerEpoch * promotion.numberOfEpochs leading to not claimable rewards for users claiming later than others.",
+                "Repair": "Add code to disable fee-on transfer tokens in createPromotion function"
+            },
+            {
+                "Location": "createPromotion and claimRewards functions",
+                "Type": "Malicious tickets can lead to the loss of all tokens",
+                "Description": "An attacker can create a new malicious promotion with a malicious ticket smart contract address and the token address from the targeted promotion(s). The attacker can then call claimRewards() with its wallet address, the malicious promotion id, and a single epochId to claim rewards multiple times and retrieve all the tokens associated with the promotion.",
+                "Repair": "Add a whitelist of trusted tickets"
+            },
+            {
+                "Location": "createPromotion function",
+                "Type": "Backdated _startTimestamp can lead to loss of funds",
+                "Description": "If a user creates a new promotion with a _startTimestamp that is one year ago and promotion duration of six months, the promotion gets created and the user cannot claim the promotion if they did not have promotion tokens in the one-year-old promotion period. The promotion amount remains with the contract, and even the promotion creator cannot claim back their tokens since the promotion end date has already passed.",
+                "Repair": "Add a check to ensure _startTimestamp is after the current time in createPromotion function"
+            },
+            {
+                "Location": "claimRewards function",
+                "Type": "Rewards can be claimed multiple times",
+                "Description": "An attacker can claim a reward several times to retrieve all the tokens associated with the promotion by claiming the reward 256 * epochDuration seconds after the timestamp at which the promotion started. If _epochId is greater than 255, _isClaimedEpoch() always returns false, allowing an attacker to claim a reward several times.",
+                "Repair": "Change the type of _epochId to uint8 in _calculateRewardAmount(), _updateClaimedEpoch(), and _isClaimedEpoch() and change the type of _epochIds to uint8[] in claimRewards()"
+            },
+            {
+                "Location": "_calculateRewardAmount function in TwabRewards.sol",
+                "Type": "Unsafe uint64 casting may overflow",
+                "Description": "The _calculateRewardAmount function casts epoch timestamps from uint256 to uint64 and these may overflow.",
+                "Repair": "Use the OpenZeppelin SafeCast library to prevent unexpected overflows or make the uint256 variables of type uint64 and remove the casting of uint256 to the small uint64"
+            },
+            {
+                "Location": "ITwabRewards.sol",
+                "Type": "getRewardsAmount doesn't check epochs haven't been claimed",
+                "Description": "No check is done in the implementation of getRewardsAmount to ensure that epochs have not already been claimed.",
+                "Repair": "Add a similar check for previously claimed epochs as described in the report"
+            },
+            {
+                "Location": "TwabRewards.sol",
+                "Type": "Dust Token Balances Cannot Be Claimed By An admin Account",
+                "Description": "Users who have a small claim on rewards for various promotions, may not feasibly be able to claim these rewards as gas costs could outweigh the sum they receive in return.",
+                "Repair": "Allow an admin account to skim a promotion's tokens if it has been inactive for a certain length of time"
+            },
+            {
+                "Location": "TwabRewards.sol",
+                "Type": "Continue claiming rewards after numberOfEpochs are over",
+                "Description": "It is possible to continue claiming rewards after the reward period is over.",
+                "Repair": "In the function _calculateRewardAmount() add a check to ensure that the _epochId is within the range of the reward epochs"
+            },
+            {
+                "Location": "cancelPromotion() function",
+                "Type": "Deletion of Promotion and Locked Tokens",
+                "Description": "When a promotion is cancelled with cancelPromotion(), the promotion is completely deleted, which means no one can claim any rewards anymore, and all unclaimed tokens of previous epochs will stay locked in the contract.",
+                "Repair": "Lower the numberOfEpochs or set a state variable to allow users to claim their rewards"
+            },
+            {
+                "Location": "createPromotion() function",
+                "Type": "Lack of Input Validation",
+                "Description": "In the current implementation of createPromotion(), _epochDuration is allowed to be 0, which can result in users being unable to claim rewards and the promotion creator being unable to cancel it, leading to frozen funds in the contract.",
+                "Repair": "Add require(_epochDuration > 0) in createPromotion() function"
+            },
+            {
+                "Location": "cancelPromotion() function",
+                "Type": "Inability to Cancel Unstarted Promotions",
+                "Description": "For unstarted promotions, cancelPromotion() will revert, and users will not be able to claim rewards, leading to frozen funds in the contract.",
+                "Repair": "Check if _promotion.startTimestamp > block.timestamp and refund _promotion.tokensPerEpoch * _promotion.numberOfEpochs in cancelPromotion() function"
+            }
+        ]
+    }
+]

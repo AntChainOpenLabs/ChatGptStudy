@@ -1,0 +1,34 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "CNft.sol#L204",
+                "Type": "ERC1155 safeTransferFrom deviation",
+                "Description": "The function safeTransferFrom is a standard interface in ERC1155, and its expected to succeed if all the parameters are valid, and revert on error, which is not the case here so its a deviation.",
+                "Repair": "Call function safeBatchTransferFrom instead of revert"
+            },
+            {
+                "Location": "Comptroller.sol",
+                "Type": "Manipulation of COMP distributions",
+                "Description": "The updateCompSupplyIndex() and distributeSupplierComp() functions are used by Compound to track distributions owed to users for supplying funds to the protocol. Bunker protocol is a fork of compound with NFT integration, however, part of the original functionality appears to have been mistakenly commented out.",
+                "Repair": "Comment all behaviour associated with token distributions if token distributions are not meant to be supported. Otherwise, it is worthwhile uncommenting all occurrences of the updateCompSupplyIndex() and distributeSupplierComp() functions."
+            },
+            {
+                "Location": "PriceOracleImplementation.sol#L29-L30",
+                "Type": "Deprecated Chainlink API usage",
+                "Description": "According to Chainlink's documentation, the latestAnswer function is deprecated.",
+                "Repair": "Use the latestRoundData function to get the price instead. Add checks on the return data with proper revert messages if the price is stale or the round is uncomplete"
+            },
+            {
+                "Location": "CEther.sol#L167",
+                "Type": "Use of deprecated transfer() function",
+                "Description": "The use of the deprecated transfer() function for an address will inevitably make the transaction fail.",
+                "Repair": "Use call() instead of transfer(), but be sure to implement CEI patterns in CEther and add a global state lock on the comptroller"
+            }
+        ]
+    }
+]

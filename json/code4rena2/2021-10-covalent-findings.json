@@ -1,0 +1,22 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "[M-03], [M-01], [M-02], [H-01]",
+                "Type": "Smart Contract",
+                "Description": "The vulnerabilities include failing to receive commission rewards, losing reward tokens due to rounding down, incorrect implementation of updateGlobalExchangeRate, and usage of an incorrect version of Ownable library that can potentially malfunction all onlyOwner functions.",
+                "Repair": "Add additional checks and conditions to the code to prevent the vulnerabilities from being exploited"
+            },
+            {
+                "Location": "unstake function",
+                "Type": "Incorrect Calculation",
+                "Description": "The unstake function does not immediately update the exchange rates, resulting in more shares being burned than required and users losing rewards in the end.",
+                "Repair": "Move the updateGlobalExchangeRate() and updateValidator(v) calls to the beginning of the function."
+            }
+        ]
+    }
+]

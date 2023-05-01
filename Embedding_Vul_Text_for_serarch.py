@@ -127,7 +127,7 @@ def split_strings_from_subsection(
 
 # 将section生成csv文件
 def split_sections(sections, SAVE_PATH):
-    MAX_TOKENS = 1600
+    MAX_TOKENS = 4096
     pdf_strings = []
     for section in sections:
         pdf_strings.extend(split_strings_from_subsection(section, max_tokens=MAX_TOKENS))

@@ -1,0 +1,34 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "PoolTogether protocol",
+                "Type": "Miners Can Re-Roll the VRF Output to Game the Protocol",
+                "Description": "Miners are able to rewrite a chain's history if they dislike the VRF output used by the protocol.",
+                "Repair": "Add a confirmation time between when the actual VRF request was made and when it was later fulfilled on-chain"
+            },
+            {
+                "Location": "PrizePool.awardExternalERC721() function",
+                "Type": "Erroneously Emits Events",
+                "Description": "The AwardedExternalERC721 is emitted with the entire list of tokenIds, regardless of failure.",
+                "Repair": "Emit only successfully transferred tokenIds in the AwardedExternalERC721 event"
+            },
+            {
+                "Location": "PrizePool._depositTo() function",
+                "Type": "Deposits don't work with fee-on transfer tokens",
+                "Description": "The _depositTo() function will try to supply more _amount than was actually transferred.",
+                "Repair": "Do not use feeOnTransfer tokens in the protocol"
+            },
+            {
+                "Location": "DrawCalculator.sol contract",
+                "Type": "The formula of number of prizes for a degree is wrong",
+                "Description": "The formula of the number of prizes for a degree is wrong, causing the protocol to give out more prizes than designed.",
+                "Repair": "Change the formula of the number of prizes for a degree"
+            }
+        ]
+    }
+]

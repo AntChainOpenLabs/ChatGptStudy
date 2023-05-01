@@ -1,0 +1,100 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "_close() function in LineOfCredit.sol",
+                "Type": "Token Reentrancy Attack",
+                "Description": "The lender can draw out extra credit token from borrower's account when the credit token is ERC20 extensive with hook, such as ERC777 token. And the count state variable would also be underflowed, cause the line contract can't be 'REPAID', the borrower will never be able to get back the collateral.",
+                "Repair": "Add reentrancy protection on close() function"
+            },
+            {
+                "Location": "SpigotedLine.sol, SpigotedLineLib.sol",
+                "Type": "Malicious trading",
+                "Description": "Lender can trade claimToken in a malicious way to steal the borrower's money via claimAndRepay() in SpigotedLine by using malicious zeroExTradeData. The bug here is the zeroExTradeData is controlled by the lender and can be malicious and can manipulate the flow to bypass the check in line 85 to steal money of the borrower.",
+                "Repair": "Limit the functionality for the borrower to use or add additional checks to prevent malicious trading"
+            },
+            {
+                "Location": "receiveTokenOrETH function in LineLib.sol and multiple functions in LineOfCredit.sol",
+                "Type": "Locked ETH in protocol",
+                "Description": "Excessive ETH sent to the protocol is not refunded and is permanently locked in the contract, resulting in loss of funds. The vulnerability affects multiple scenarios and locks both the lender and borrower's ETH in LineOfCredit if overpaid. The vulnerability impacts EscrowedLine, LineOfCredit, SpigotedLine, and SecuredLine.",
+                "Repair": "Refund excessive ETH back to the sender in receiveTokenOrETH function if msg.value is greater than amount. Update internal accounting to include excessive ETH. Revert transaction if msg.value is not equal to amount in receiveTokenOrETH function."
+            },
+            {
+                "Location": "SpigotLib.claimRevenue and SpigotLib._claimRevenue functions",
+                "Type": "Non-existing revenue contract can be passed to claimRevenue to send all tokens to treasury",
+                "Description": "An attacker can just regularly call claimRevenue with this token and a non-existing revenue contract. All of the tokens that were sent to the spigot since the last call will be sent to the treasury and none to the escrow, i.e. a borrower can ensure that no revenue will be available for the lender, no matter what the configured split is.",
+                "Repair": "Check that a revenue contract was registered before, revert if it does not"
+            },
+            {
+                "Location": "Whitelisted functions in the Spigot contract",
+                "Type": "Whitelisted functions aren't scoped to revenue contracts and may lead to unnoticed calls due to selector clashing",
+                "Description": "A bad actor can try to use an innocent looking function that matches the selector of another function (in a second revenue contract) that has malicious intentions.",
+                "Repair": "Associate whitelisted functions to particular revenue contracts (for example, using a mapping(address = mapping(bytes4 = bool))) and validate that the selector for the call is enabled for that specific revenue contract in the operate function"
+            },
+            {
+                "Location": "_close(Credit memory credit, bytes32 id) function in LineOfCredit.sol",
+                "Type": "Reentrancy",
+                "Description": "A reentrancy bug in LineOfCredit.sol allows the lender to steal other lenders tokens if they are lending the same tokens type (loss of funds). Reentrancy is possible if the borrower is lending tokens that can change the control flow. Such tokens are based on ERC20 such as ERC777, ERC223 or other customized ERC20 tokens that alert the receiver of transactions.",
+                "Repair": "Send tokens only at the end of _close() or add a reentrancyGuard"
+            },
+            {
+                "Location": "addCollateral(), _getCollateralValue(), increaseCredit(), depositAndClose(), depositAndRepay(), close()",
+                "Type": "Variable balance ERC20 support",
+                "Description": "Some ERC20 tokens may have tricky balances that change over time, causing inaccurate calculations of collateral value and potential loss of funds.",
+                "Repair": "checking the before and after balance of token transfer, recording the relative shares of each user instead of specific amount, if necessary, call ERC20(token).balanceOf() to confirm the balance, disallow such kind of tokens"
+            },
+            {
+                "Location": "receiveTokenOrETH()",
+                "Type": "Mistakenly sent eth could be locked",
+                "Description": "If ETH and ERC20 are transferred at the same time, mistakenly sent ETH will be ignored and locked in the contract.",
+                "Repair": "Add check for msg.value in the ERC20 part to ensure no eth is sent"
+            },
+            {
+                "Location": "addCredit(), increaseCredit(), mutualConsent(), _mutualConsent()",
+                "Type": "addCredit / increaseCredit cannot be called by lender first when token is ETH",
+                "Description": "When the lender performs the calls first and sends ETH along with the call, the call will not revert. It will instead set the consent for him, but the sent ETH is lost. Even when the lender thinks about this and does not provide any ETH on the first call, the borrower has to perform the second call. Of course, he will not provide the ETH with this call, but this will cause the transaction to revert. There is now no way for the borrower to also grant consent, but still let the lender perform the call.",
+                "Repair": "Implement an external function to grant consent, revert when ETH is sent along but the other party has not given their consent yet"
+            },
+            {
+                "Location": "LineLib.receiveTokenOrETH function",
+                "Type": "Mistaken Payment",
+                "Description": "Borrower can mistakenly add own money to credit if credit is in ETH.",
+                "Repair": "Check if payment in ETH, then verify that the sender is msg.sender in addCredit function"
+            },
+            {
+                "Location": "LineLib.sol",
+                "Type": "Use of Solidity's transfer() function",
+                "Description": "Using Solidity's transfer() function has some notable shortcomings when the withdrawer is a smart contract, which can render ETH deposits impossible to withdraw.",
+                "Repair": "Use low-level call.value(amount) with the corresponding result check or use OpenZeppelin Address.sendValue"
+            },
+            {
+                "Location": "LineOfCredit contract",
+                "Type": "Borrowing Vulnerability",
+                "Description": "Borrower can craft a borrow that cannot be liquidated, even by arbiter.",
+                "Repair": "Do not skip any elements when sorting new borrows into the ids queue"
+            },
+            {
+                "Location": "LineOfCredit.declareInsolvent()",
+                "Type": "Functionality",
+                "Description": "The call to declareInsolvent() would revert when contract status reaches liquidation point after repayment of credit position 1.",
+                "Repair": "Review and amend the whileBorrowing() modifier"
+            },
+            {
+                "Location": "MutualConsent contract",
+                "Type": "Functionality",
+                "Description": "Mutual consent cannot be revoked and stays valid forever.",
+                "Repair": "Add a function to revoke consent for a function call, make consent valid only for a certain amount of time, or invalidate existing consents for a function when function is called with different arguments"
+            },
+            {
+                "Location": "SpigotedLine.useAndRepay function",
+                "Type": "Functionality",
+                "Description": "Repaying a line of credit with a higher than necessary claimed revenue amount will force the borrower into liquidation.",
+                "Repair": "Assert that amount is less or equal than credit.principal + credit.interestAccrued"
+            }
+        ]
+    }
+]

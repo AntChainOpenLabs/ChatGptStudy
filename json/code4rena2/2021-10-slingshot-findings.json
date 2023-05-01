@@ -1,0 +1,22 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "executeTrades() function",
+                "Type": "Incorrect balance calculation",
+                "Description": "When users swap to native token (ETH), the initialBalance should use the balance of wrappedNativeToken instead of native token balance, because finalBalance is the balance of wrappedNativeToken. In the current implementation, when the toToken is the native token, initialBalance will be the ether balance of executioner contract. Therefore, when the ether balance of executioner is not 0, finalOutputAmount will be wrong. The attacker can transfer a certain amount of ETH to the executioner contract and malfunction the protocol. Causing fund loss to users because finalOutputAmount is lower than the actual swapped amount, or DoS due to finalAmountMin cant be met.",
+                "Repair": "Update _getTokenBalance() function to return IERC20(wrappedNativeToken).balanceOf(address(executioner)); when token == nativeToken"
+            },
+            {
+                "Location": "executeTrades() function",
+                "Type": "Sending less tokens than expected",
+                "Description": "Slingshot's executeTrades checks that the trade result amount (to be sent to the user) is bigger than finalAmountMin, and *after that* sends the user the amount. But if the token charges fee on transfer, the final transfer to the user will decrease the amount the user is getting, maybe below finalAmountMin. Slingshot requires finalOutputAmount = finalAmountMin *before* sending the funds to the user. So if the token charges fees on transfer, the user will get less tokens than finalOutputAmount.",
+                "Repair": "Save the user's (not Executioner's) toToken balance in the beginning of executeTrades after _transferFromOrWrap(fromToken, _msgSender(), fromAmount), and also in the very end, after executioner.sendFunds(toToken, _msgSender(), finalOutputAmount) has been called. The subtraction of user's initial balance from ending balance should be bigger than finalAmountMin."
+            }
+        ]
+    }
+]

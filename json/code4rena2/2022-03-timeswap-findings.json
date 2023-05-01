@@ -1,0 +1,34 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "@timeswap-labs/timeswap-v1-core package",
+                "Type": "NPM Dependency confusion",
+                "Description": "An unclaimed npm package and scope can allow an attacker to upload malicious code under that unclaimed package, resulting in achieving remote code execution on developers/users' machine who depends on the timeswap repository to build it on local env.",
+                "Repair": "Claim the Scope name called 'timeswap-labs'"
+            },
+            {
+                "Location": "borrowGivenDebtETHCollateral function",
+                "Type": "Underflown variable",
+                "Description": "The 'excess' variable is underflown due to the wrong initialization of the variable, which can cause unexpected behaviors for users.",
+                "Repair": "Initialize 'excess' variable with 'maxCollateral'"
+            },
+            {
+                "Location": "pay() function",
+                "Type": "DOS attack",
+                "Description": "An attacker can keep doing a DOS attack on every user that repays his full debt by frontrunning to repay a single token for his debt, which can negatively impact the protocol availability.",
+                "Repair": "Move the DOS protection to 'TimeswapPair.pay()'"
+            },
+            {
+                "Location": "pay() function",
+                "Type": "Wrong timing of check",
+                "Description": "The wrong timing of check allows users to withdraw collateral without paying for the debt, which can result in stealing the collateral.",
+                "Repair": "Change the order of the code"
+            }
+        ]
+    }
+]

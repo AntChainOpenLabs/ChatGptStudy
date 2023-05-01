@@ -1,0 +1,154 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "HybridPool contract",
+                "Type": "Funds theft",
+                "Description": "An attacker can call the bento.harvest function during the callback function of a flash swap of the HybridPool to reduce the number of input tokens that he has to pay to the pool, as long as there is any unrealized profit in the strategy contract of the underlying asset.",
+                "Repair": "Consider not using bento.toAmount to track the reservers and balances, but use balanceOf instead (as done in the other two pools)."
+            },
+            {
+                "Location": "Constant product pool",
+                "Type": "Rounding errors",
+                "Description": "Some rare tokens have 0 decimals, and for these tokens, small losses of precision will be amplified by the lack of decimals.",
+                "Repair": "Rounding the final getAmountOut division upwards would fix this."
+            },
+            {
+                "Location": "TridenRouter contract",
+                "Type": "Back-running vulnerability",
+                "Description": "The _depositToBentoBox and _depositFromUserToBentoBox allow users to provide ETH to the router, which is later deposited to the bento contract for swapping other assets or providing liquidity. However, in these two functions, the input parameter does not represent the actual amount of ETH to deposit, and users have to calculate the actual amount and send it to the router, causing a back-run vulnerability if there are ETH left after the operation.",
+                "Repair": "Directly push the remaining ETH to the sender to prevent any ETH left in the router."
+            },
+            {
+                "Location": "IndexPool contract",
+                "Type": "Incorrect implementation",
+                "Description": "In the IndexPool contract, flashSwap does not work. The callback function is called prior to token transfer. The sender won't receive tokens in the callBack function.",
+                "Repair": "Flashswap is not implemented correctly. It may need a migration to redeploy all indexPools if the issue is found after main-net launch."
+            },
+            {
+                "Location": "TridentRouter contract",
+                "Type": "Incorrect use of ETH and WETH",
+                "Description": "The TridentRouter._depositToBentoBox function only uses the ETH in the contract if it's higher then the desired underlyingAmount (address(this).balance = underlyingAmount)). Otherwise, the ETH is ignored and the function uses WETH from the user.",
+                "Repair": "Each batch must use refundETH at the end. Furthermore, we recommend still depositing address(this).balance ETH into Bento and if it's less than underlyingAmount use WETH only for the remaining token difference."
+            },
+            {
+                "Location": "TridentRouter",
+                "Type": "Medium Severity",
+                "Description": "The base value bento.balanceOf(params.percentagePath[i].tokenIn, address(this)); is recomputed after each iteration instead of caching it before the loop.",
+                "Repair": "Cache the balanceShares value once before the second for loop starts"
+            },
+            {
+                "Location": "IndexPool",
+                "Type": "High Severity",
+                "Description": "It is possible to overflow the addition in the balance check (i.e., _balance(tokenIn) = amountIn + reserve) in the mint function by setting the amountIn to a large amount.",
+                "Repair": "Consider removing the uncheck statement to prevent integer overflows from happening"
+            },
+            {
+                "Location": "IndexPool",
+                "Type": "High Severity",
+                "Description": "The IndexPool.mint function performs an unsafe cast of ratio to the uint120 type.",
+                "Repair": "A SafeCast library must be used everywhere a typecast is done"
+            },
+            {
+                "Location": "HybridPool",
+                "Type": "High Severity",
+                "Description": "HybridPool uses the same _nonOptimalMintFee as constantProductPool; however, since two pools use different AMM curve, the ideal balance is not the same.",
+                "Repair": "Calculate the swapping fee based on the stable swap curve"
+            },
+            {
+                "Location": "IndexPool",
+                "Type": "High Severity",
+                "Description": "The IndexPool.mint function performs an unsafe cast of ratio to the uint120 type.",
+                "Repair": "Consider removing the uncheck statement to prevent integer overflows from happening"
+            },
+            {
+                "Location": "TridentRouter",
+                "Type": "Medium Severity",
+                "Description": "TridentRouter is easy to fail when trying to provide liquidity to an index pool.",
+                "Repair": "The router should calculate the optimal parameters for users"
+            },
+            {
+                "Location": "HybridPool's reserve is converted to 'amount' twice",
+                "Type": "High Severity",
+                "Description": "The HybridPool's reserves are stored as Bento 'amounts' (not Bento shares) in '_updateReserves' because '_balance()' converts the current share balance to amount balances. However, when retrieving the 'reserve0/1' storage fields in '_getReserves', they are converted to amounts a second time.",
+                "Repair": "Make sure that the reserves are in the correct amounts."
+            },
+            {
+                "Location": "TridentHelper.withdrawFromWETH always reverts",
+                "Type": "Medium Severity",
+                "Description": "The 'TridentHelper.withdrawFromWETH' (used in 'TridentRouter.unwrapWETH') function performs a low-level call to 'WETH.withdraw(amount)'. It then checks if the return 'data' length is more or equal to '32' bytes, however 'WETH.withdraw' returns 'void' and has a return value of '0'.",
+                "Repair": "Remove the 'data.length = 32' from the require and only check if 'success' is true."
+            },
+            {
+                "Location": "ConstantProductPool.burnSingle swap amount computations should use balance",
+                "Type": "High Severity",
+                "Description": "The 'ConstantProductPool.burnSingle' function is basically a 'burn' followed by a 'swap' and must therefore act the same way as calling these two functions sequentially. The token amounts to redeem ('amount0', 'amount1') are computed on the balance (not the reserve). However, the swap amount is then computed on the reserves and not the balance.",
+                "Repair": "Call '_getAmountOut' with the balances instead of the reserves: '_getAmountOut(amount0, balance0, amount0, balance1, amount1)'"
+            },
+            {
+                "Location": "IndexPool.mint The first liquidity provider is forced to supply assets in the same amount, which may cause a significant amount of fund loss",
+                "Type": "High Severity",
+                "Description": "When 'reserve == 0', 'amountIn' for all the tokens will be set to the same amount: 'ratio', regardless of the weights, decimals and market prices of the assets. The first liquidity provider may not be aware of this so that it may create an arbitrage opportunity for flashbots to take a significant portion of the value of The first liquidity provider's liquidity.",
+                "Repair": "Consider allowing the first liquidity provider to use custom 'amountIn' values for each token or always takes the MIN_BALANCE of each token."
+            },
+            {
+                "Location": "Approximations may finish with inaccurate values",
+                "Type": "Medium Severity",
+                "Description": "In 'HybridPool.sol', functions '_computeLiquidityFromAdjustedBalances', '_getY' and '_getYD' may finish before approximation converge, since it's limited by 'MAX_LOOP_LIMIT' iterations. In this situation the final estimated value will still be treated as correct, even though it could be relatively inaccurate.",
+                "Repair": "Consider reverting the transactions if this doesn't occur."
+            },
+            {
+                "Location": "absolute difference is not calculated properly when a > b in MathUtils",
+                "Type": "High Severity",
+                "Description": "The difference is computed incorrectly when 'a > b'. 'MathUtils.sol' L22. As it only used in 'within1' function, scope narrows down to where 'difference(a, b) <= 1;' is exploitable.",
+                "Repair": "Add 'else' condition to mitigate it."
+            },
+            {
+                "Location": "No bar fees for IndexPools?",
+                "Type": "Medium Severity",
+                "Description": "'IndexPool' doesn't collect fees for 'barFeeTo'. Since this Pool contains also a method 'updateBarFee()', probably this is an unintended behavior.",
+                "Repair": "Add a way to send 'barFees' to 'barFeeTo', same as the other pools."
+            },
+            {
+                "Location": "_computeSingleOutGivenPoolIn function of IndexPool",
+                "Type": "Incorrect usage of _pow",
+                "Description": "The misuse of the _pow function could cause an integer overflow in the _computeSingleOutGivenPoolIn function and thus prevent any function from calling it.",
+                "Repair": "Change the _pow function to the _compute function, which supports exponents in WAD"
+            },
+            {
+                "Location": "IndexPool's constructor function",
+                "Type": "INIT_POOL_SUPPLY is not fair",
+                "Description": "The value of the burned lp is decided by the first lp provider. If a pool is not initialized with optimal parameters, it would be a great number of tokens been burn.",
+                "Repair": "Handle INIT_POOL_SUPPLY in uniswap-v2's way. Determine an optimized parameter for the user would be a better UX design."
+            },
+            {
+                "Location": "HybridPool's flashSwap function",
+                "Type": "flashSwap sends entire fee to barFeeTo",
+                "Description": "Liquidity providers are not getting paid at all when this function is used.",
+                "Repair": "The flashSwap function should use the same fee mechanism as swap and only send barFee * fee / MAX_FEE to the barFeeTo."
+            },
+            {
+                "Location": "IndexPool's constructor function and mint function",
+                "Type": "IndexPool initial LP supply computation is wrong",
+                "Description": "It leads to issues where the second LP supplier has to pay less tokens to receive the exact same amount of LP tokens that the initial minter receives. They can steal from the initial LP provider by burning these tokens again.",
+                "Repair": "Do not mint the initial token supply to the zero address in the constructor. Do it like Uniswap/Balancer and let the first liquidity provider provide arbitrary token amounts, then mint the initial pool supply."
+            },
+            {
+                "Location": "IndexPool's _compute, _computeSingleOutGivenPoolIn, and _pow functions",
+                "Type": "Poor conversion from Balancer V1's corresponding functions",
+                "Description": "A number of functions suffer from the erroneous conversion of Balancer V1's implementation.",
+                "Repair": "Use the fixed implementation provided in the text."
+            },
+            {
+                "Location": "IndexPool contract",
+                "Type": "Integer Overflow/Underflow",
+                "Description": "In H-03, pow overflows when weightRatio > 10 due to the usage of Pow function which is prone to overflow. In H-15, incorrect multiplication in _computeSingleOutGivenPoolIn of IndexPool causes an integer underflow when calculating amountOut due to the usage of raw multiplication instead of _mul function.",
+                "Repair": "Use safe math functions like _mul instead of raw multiplication"
+            }
+        ]
+    }
+]

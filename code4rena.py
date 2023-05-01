@@ -1,3 +1,5 @@
+import threading
+
 import markdown
 import os
 import os.path
@@ -11,6 +13,7 @@ from pdf import *
 from Embedding_Vul_Text_for_serarch import *
 from Question_answering_using_embeddings import *
 
+LOCK = threading.RLock()
 
 # test_path = "..\\SolBugReports\\code4rena\\2021-08-gravitybridge"
 test_path = "..\\SolBugReports\\code4rena\\2021-04-basedloans"
@@ -20,11 +23,17 @@ code4rena_path = "..\\SolBugReports\\code4rena"
 download_pdf_path = "pdf\\code4rena"
 json_path = "json\\code4rena2"
 txt_path = "txt\\code4rena"
+csv_path = "csv\\code4rena"
+section_path ="section\\code4rena"
+count = 0  # 有效 report 个数
 high_count = 0
 mid_count = 0
+no_code = 0
+have_code = 0
 
 
 def report(dir_path):
+    print("{} start report, dir_path: {}".format(threading.currentThread().getName(), dir_path))
     code_paths = read_code_path(dir_path)
 
     if not os.path.exists(dir_path + "-findings"):  # 如果不存在报告目录
@@ -39,10 +48,7 @@ def report(dir_path):
     else:
         # read_pdf(pdf_path,code_paths)      #下载pdf模式
         pass
-    # result = parse_md_to_json(md_paths, code_paths)
-    # 写入JSON文件
-    # with open('output.json', 'w') as f:
-    #     json.dump(result, f,indent=4)
+
 
 
 # 根据md提取分段信息
@@ -50,17 +56,12 @@ def get_md_section(file_path, code_paths):
     start_time = time.time()  # 记录程序开始运行时间
     # code4rena_sections_file =  open("code4rena_sections.txt", "w+", encoding="utf-8")
 
-    final_json = []
-    json_name = json_path + "\\" + file_path.split("\\")[-3] + ".json"
-    # if os.path.exists(json_name):
-    #     return
+    file_name =  file_path.split("\\")[-3]
 
-    VulnerabilityDesc = {}
-    # SAVE_PATH = json_path + "\\" + "file_path.split("\\")[-3] "+ ".csv"
-    SAVE_PATH = json_path + "\\" + "test" + ".csv"
+    SAVE_PATH = csv_path + "\\" + file_name + ".csv"
+    section_SAVE_PATH = section_path +  "\\" + file_name + ".txt"
 
-
-    global high_count, mid_count
+    global high_count, mid_count , count
 
 
     with open(file_path, "r", encoding="utf-8") as f:
@@ -76,14 +77,20 @@ def get_md_section(file_path, code_paths):
                 if "# Medium Risk Findings" in content:
                     bugs = re.split('# Medium Risk Findings', bugs)
                     high = re.split('## \[', bugs[0])[1:]
-
-                    if "# Low Risk Findings" in content:
+                    if "# Low Risk and Non-Critical Issues" in content:
+                        mid += re.split('## \[', re.split("# Low Risk and Non-Critical Issues", bugs[1])[0])[1:]
+                    elif "# Low Risk Findings" in content:
                         mid += re.split('## \[', re.split("# Low Risk Findings", bugs[1])[0])[1:]
-
+                    elif "# Non-Critical Findings" in content:
+                        mid += re.split('## \[', re.split("# Non-Critical Findings", bugs[1])[0])[1:]
+                    elif "# Disclosures" in content:
+                        mid += re.split('## \[', re.split("# Disclosures", bugs[1])[0])[1:]
+                elif "# Low Risk and Non-Critical Issues" in content:
+                    bugs = re.split('# Low Risk and Non-Critical Issues', bugs)
+                    high = re.split('## \[', bugs[0])[1:]
                 elif "# Low Risk Findings" in content:
                     bugs = re.split('# Low Risk Findings', bugs)
                     high = re.split('## \[', bugs[0])[1:]
-
                 elif "# Non-Critical Findings" in content:
                     bugs = re.split('# Non-Critical Findings', bugs)
                     high = re.split('## \[', bugs[0])[1:]
@@ -94,7 +101,10 @@ def get_md_section(file_path, code_paths):
             elif "# Medium Risk Findings" in content:
                 # 取mid
                 bugs = re.split('# Medium Risk Findings', content)[1]
-                if "# Low Risk Findings" in content:
+                if "# Low Risk and Non-Critical Issues" in content:
+                    bugs = re.split('# Low Risk and Non-Critical Issues', bugs)
+                    mid = re.split('## \[', bugs[0])[1:]
+                elif "# Low Risk Findings" in content:
                     bugs = re.split('# Low Risk Findings', bugs)
                     mid = re.split('## \[', bugs[0])[1:]
                 elif "# Non-Critical Findings" in content:
@@ -103,15 +113,17 @@ def get_md_section(file_path, code_paths):
                 elif "# Disclosures" in content:
                     bugs = re.split('# Disclosures', bugs)
                     mid = re.split('## \[', bugs[0])[1:]
+
         except:
             print(file_path)
             return
         # 发送到gpt中解析
         high_mid = high + mid
-        high_count += len(high)
-        mid_count += len(mid)
 
-        # md_sections = []
+        high_count_now = 0  #当前文件中high漏洞的个数
+        mid_count_now = 0   #当前文件中mid漏洞的个数
+
+        md_sections = []
         for bug in high_mid:
             lines = bug.split("\n")
             head = lines[0].split("]")
@@ -119,10 +131,15 @@ def get_md_section(file_path, code_paths):
             head2 = head[1].replace("`", " ").replace("**", "")
 
             # ---------------------------------------------------------------------
-            if head1.startswith("H"):
+            if head1.startswith("[H"):
                 title = ["High Severity", head1, head2]
-            else:
+                high_count_now += 1
+            elif head1.startswith("[M"):
                 title = ["Medium Severity", head1, head2]
+                mid_count_now += 1
+            else:
+                continue      #非high 、mid不统计
+            # ---------------------------------------------------------------------
             # title = [head2]
             index = 1
             if lines[1].startswith("_Submitted by"):
@@ -132,80 +149,192 @@ def get_md_section(file_path, code_paths):
                 if line.startswith("#"):
                     continue
                 body += clear_md_line(line)
+            md_sections.append((title,body))
 
-            # 创建分词csv文件
-            split_sections([(title,body)], SAVE_PATH)
-
+    if len(md_sections) == 0:
+        # print()
+        # 加锁
+        # print("{} acquire lock 1, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        with open("no_bug.txt","a+",encoding="utf-8") as f:
+            f.write(file_name)
+            f.write("\n")
+        # 解锁
+        LOCK.release()
+        # print("{} release lock 1, file: {}".format(threading.currentThread().getName(), file_name))
+        return
+    else:
+        # 加锁
+        # print("{} acquire lock 2, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        high_count += high_count_now
+        mid_count += mid_count_now
+        count += 1
+        # 解锁
+        LOCK.release()
+        # print("{} release lock 2, file: {}".format(threading.currentThread().getName(), file_name))
+    try:
+        # 分段获得embedding的csv
+        if not os.path.exists(SAVE_PATH):
+            split_sections(md_sections, SAVE_PATH)
+            time.sleep(5)
+    except:
+        # 加锁
+        # print("{} acquire lock 3, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        with open("split_sections_error.txt", "a", encoding="utf-8") as err:
+            err.write(file_name)
+            err.write("\n")
+        # 解锁
+        LOCK.release()
+        # print("{} release lock 3, file: {}".format(threading.currentThread().getName(), file_name))
+    try:
+        # 获取gpt根据csv得到的漏洞json
+        if not os.path.exists(section_SAVE_PATH):
+            time.sleep(5)
             section = get_section_json(SAVE_PATH)
-            # ---------------------------------------------------------------------
-            #
+            with open(section_SAVE_PATH,"w",encoding="utf-8") as f:
+                f.write(section)
+        else: #如果存在gpt问答的数据
+            # return
+            pass
+    except Exception as e:
+        print(e)
+        print("\n")
+        # print("{} acquire lock 4, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        with open("get_gpt_answer_error.txt", "a+", encoding="utf-8") as err:
+            err.write(file_name)
+            err.write("\n")
+        LOCK.release()
+        # print("{} release lock 4, file: {}".format(threading.currentThread().getName(), file_name))
+        return
+    try:
+        # 通过gpt回答的json获取精简bug并匹配code
+        create_json(section_SAVE_PATH, file_name, code_paths)
+    except Exception as e:
+        print(e)
+        print("\n")
+        # print("{} acquire lock 7, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        with open("error.txt", "a+", encoding="utf-8") as err:
+            err.write(file_name)
+            err.write("\n")
+        LOCK.release()
+        # print("{} release lock 7, file: {}".format(threading.currentThread().getName(), file_name))
+        return
+
+    # print(section)
+
+
+    end_time = time.time()  # 记录程序结束运行时间
+    print('%s cost %f second' % (file_name,end_time - start_time))
+
+# 将section信息匹配code并创建json文件
+def create_json(section_SAVE_PATH,  file_name, code_paths):
+    global no_code, have_code
+
+    final_json = []
+    json_name = json_path + "\\" + file_name + ".json"
+    # if os.path.exists(json_name):
+    #     return
+
+    VulnerabilityDesc = {}
+    with open(section_SAVE_PATH,"r",encoding="utf-8") as f:
+        sections = f.read()
+    f.close()
+    # sections = sections.replace("\n\n", "\n").split("\n")
+    sections = re.findall('\{"Vulnerability Type":.*?"\}', sections)
+    #---------------------------------------------------------------------
+    for section in sections:
+        if not section.startswith("{"):
+            continue
+        try:
             item_json = json.loads(section)
-            bug_json = {
-                "Name": head1 + head2,
-                "Location": "",
-                "Type": "",
-                "Description": "",
-                "Repair": ""
-            }
-            bug_json["Type"] = item_json["Vulnerability Type"]
-            bug_json["Location"] = item_json["Vulnerability Location"].replace("`","")
-            bug_json["Repair"] = item_json["Repair Method"].replace("`","")
-            bug_json["Description"] = item_json["Vulnerability Information"].replace("`","")
+        except:
+            print(section)
+            return
+        bug_json = {
+            "Location": "",
+            "Type": "",
+            "Description": "",
+            "Repair": ""
+        }
+        bug_json["Type"] = item_json["Vulnerability Type"]
+        bug_json["Location"] = item_json["Vulnerability Location"].replace("`", "")
+        bug_json["Repair"] = item_json["Repair Method"].replace("`", "")
+        bug_json["Description"] = item_json["Vulnerability Information"].replace("`", "")
 
-            # final_json.append(bug_json)
+        # final_json.append(bug_json)
 
-            # ---------------------------------------------------------------------
-            # 处理code
-            functions = set()  # 通过驼峰命名匹配的函数
-            contracts = set()  # 出现合约名字
-            contracts2 = set() # 通过函数名匹配出现的合约
+        # ---------------------------------------------------------------------
+        # 处理code
+        functions = set()  # 通过驼峰命名匹配的函数
+        contracts = set()  # 出现合约名字
+        contracts2 = set()  # 通过函数名匹配出现的合约
+        # contracts_path = set()
 
-            for word in bug_json["Location"].split(" "):
-                if word in code_paths.keys():
-                    contracts.add(word)
-                elif word+".sol" in code_paths.keys():
-                    contracts.add(word+".sol")
-                elif  "." in word: #例如MarginRouter.crossSwapExactTokensForTokens的形式
-                    if " " not in word:
-                        temp = word.split(".")
-                        contract = temp[0] + ".sol"
-                        if contract in code_paths.keys(): #如果是合约的代码
-                            contracts.add(contract)
-                        continue
-                elif word.endswith(")"):
-                    functions.add(word.split("(")[0])
-                elif is_camel_case(word):
-                    if word[-1].isalpha():
-                        functions.add(word)
+        for word in bug_json["Location"].split(" "):
+            # 如果word是合约代码名
+            for key in code_paths.keys():
+                if word == key or key.split(".")[0] == word:
+                    contracts.add(key)
+                    continue
+            # 如果word是XXX/XXX/XX 的形式
+            if "/" in word: #例如anchor_airdrop_registry/src/contract.rs#L109
+                if "#" in word:
+                    temp = word.split("#")[0]
+                    temp2 = temp.strip("/")[-1]
+                    if temp2 in code_paths.keys():
+                        contracts.add(temp2)
+                        # paths = code_paths[temp2]
+                        # for path in paths:
+                        #     if path.endswith(temp):
+                        #         contracts_path.add(path) #将合约路径加入
+                        #         break
+            # 如果word是XXX.XXX的形式
+            elif "." in word:
+                if "#" in word:  #例如QuickAccManager.sol#send,
+                    temp = word.split("#")[0]
+                    if temp in code_paths.keys():
+                        contracts.add(temp)
+                elif " " not in word: # 例如MarginRouter.crossSwapExactTokensForTokens的形式
+                    temp = word.split(".")[0]
+                    for key in code_paths.keys():  # 如果是合约的代码
+                        if key.split(".")[0] == temp:
+                            contracts.add(key)
+                    continue
+            #如果word是XXX()函数的形式
+            elif word.endswith(")"): #例如safeApprove()
+                functions.add(word.split("(")[0])
+            #如果word是符合驼峰命名方式
+            elif is_camel_case(word):
+                if word[-1].isalpha():
+                    functions.add(word)
+                continue
+
+        for func in list(functions):
+            for code_name, code_path in code_paths.items():
+                try:
+                    with open(code_path, "r", encoding="utf-8") as cd:
+                        code_content = cd.read()
+                        if func in code_content:
+                            contracts2.add(code_name)
+                            break
+                except:
+                    # print(code_path)
                     continue
 
-            for func in list(functions):
-                for code_name, code_path in code_paths.items():
-                    try:
-                        with open(code_path, "r", encoding="utf-8") as cd:
-                            code_content = cd.read()
-                            if func in code_content:
-                                contracts2.add(code_name)
-                                break
-                    except:
-                        # print(code_path)
-                        continue
-
-            contracts  = list(set(list(contracts) + list(contracts2)))
-            contracts_name = "/".join(list(contracts))
-            if VulnerabilityDesc.__contains__(contracts_name):
-                VulnerabilityDesc[contracts_name].append(bug_json)
-            else:
-                VulnerabilityDesc[contracts_name] = [bug_json]
-
-
-    # # 将section以json格式存储到文件
-    # json_file = open(json_name, "w+", encoding="utf-8")
-    # json.dump(final_json, json_file, indent=4)
-    # json_file.close()
+        contracts = list(set(list(contracts) + list(contracts2)))
+        contracts_name = "/".join(list(contracts))
+        if VulnerabilityDesc.__contains__(contracts_name):
+            VulnerabilityDesc[contracts_name].append(bug_json)
+        else:
+            VulnerabilityDesc[contracts_name] = [bug_json]
 
     # 处理json数据
     json_file = open(json_name, "w")
+    have_code_flag = False
     for sol_names, bug_jsons in VulnerabilityDesc.items():
         j = {
             "Code": "",
@@ -218,24 +347,43 @@ def get_md_section(file_path, code_paths):
         for sol_name in sol_names:
             if sol_name not in code_paths.keys():
                 continue
-            sol_path = code_paths[sol_name]
+            sol_path = code_paths[sol_name][0]
             with open(sol_path, "r", encoding="utf-8") as sol:
                 codes += sol.read() + "\n\n"
         j["Code"] = codes
         j["CodeNames"] = sol_names
         j["VulnerabilityDesc"] = bug_jsons
+        # 记录 no bug json 数量
+        # 加锁
+        # print("{} acquire lock 5, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        if codes == "":
+            no_code += len(bug_jsons)
+        # 记录没有code的文件
+        else:
+            have_code += len(bug_jsons)
+            have_code_flag = True
+        # 解锁
+        LOCK.release()
+        # print("{} release lock 5, file: {}".format(threading.currentThread().getName(), file_name))
 
         # json.dump(j,json_file,indent=4)
         # json_file.write("\n")
         final_json.append(j)
     json.dump(final_json, json_file, indent=4)
-
     json_file.close()
+    if not have_code_flag : #记录没有code的文件
+        # 加锁
+        # print("{} acquire lock 6, file: {}".format(threading.currentThread().getName(), file_name))
+        LOCK.acquire()
+        with open("no_code_file.txt","a+",encoding="utf-8") as f:
+            f.write(file_name)
+            f.write("\n")
+        # 解锁
+        LOCK.release()
+        # print("{} release lock 6, file: {}".format(threading.currentThread().getName(), file_name))
 
-    end_time = time.time()  # 记录程序结束运行时间
-    print('cost %f second' % (end_time - start_time))
-
-
+    return
 
 
 # 根据md提取漏洞信息
@@ -701,16 +849,19 @@ def read_md_path(dir_path):
     return pdf_path,""
 
 
-#读取sol code的路径
+#读取code的路径 ,如sol，go，rs
 def read_code_path(dir_path):
     code_paths = {}
     # "filename":"filepath"
     for root, dirs, files in os.walk(dir_path):
         for file_name in files:
             # 拼接文件的完整路径
-            if file_name.endswith(".sol"):
+            if file_name.endswith(".sol") or file_name.endswith(".go") or file_name.endswith(".rs"):
                 file_path = os.path.join(root, file_name)
-                code_paths[file_name]=file_path
+                if code_paths.__contains__(file_name):
+                    code_paths[file_name].append(file_path)
+                else:
+                    code_paths[file_name] = [file_path]
     return code_paths
 
 
@@ -882,7 +1033,6 @@ def parse_md_to_json(md_paths, code_paths):
 
 
 
-
 if __name__ == "__main__":
     path = code4rena_path
     # dir_path = "../2021-02-slingshot"
@@ -890,31 +1040,44 @@ if __name__ == "__main__":
     sub_elements = os.listdir(path)
     dir_paths = []
     # 遍历子元素并打印目录
+    start_time = time.time()
+
     for element in sub_elements:
         if os.path.isdir(os.path.join(path, element)):
             if not element.endswith("-findings"):
                 dir_paths.append(os.path.join(path, element))
             # print(element)
-    count = 0
+
+    # threads 存储线程对象
+    threads = list()
     print("--------------------------------start")
     for dir_path in dir_paths:
         # print(dir_path)
-        report(dir_path)
-        if count %20 == 0 :
-            print("-------------------------" + str(count))
-        count+=1
+        threads.append(
+            # target 传递的是调用的函数, 当前调用的函数需要开启线程来处理, args为函数的参数, 需要传递一个元祖类型
+            threading.Thread(target=report, args=(dir_path,))
+        )
+    for thread in threads:
+        # 使用start()启动线程
+        thread.start()
+        time.sleep(5)
+    # 使用join()函数等待结束
+    for thread in threads:
+        # print("wait for {} finishing".format(thread.getName()))
+        thread.join()
+        # print("{} has already finished".format(thread.getName()))
     print("----------------------------------end")
     print("total report: " + str(count))
     print("high: " + str(high_count))
     print("mid: " + str(mid_count))
+    print("have_code: " + str(have_code))
+    print("no_code: " + str(no_code))
 
+    end_time = time.time()  # 记录程序结束运行时间
+    print('total cost %f second' % (end_time - start_time))
+
+    # 测试
     # report(test_path)
-
-    # pdf_sections = []
-    # with open("code4rena_sections.txt", "r", encoding="utf=8") as f:
-    #     data = json.load(f)
-    #     for item in data:
-    #         pdf_sections.append((item["title"],item["body"]))
-    #     print()
-    # print()
+    # 重跑error的代码
+    # report("..\\SolBugReports\\code4rena\\2022-06-connext")
 

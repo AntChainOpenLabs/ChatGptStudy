@@ -1,0 +1,100 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "BuyCrowdfund and CollectionBuyCrowdfund contracts",
+                "Type": "Funds Theft",
+                "Description": "An attacker can list an NFT they own and inflate to zero all users' contributions, keeping the NFT and all the money.",
+                "Repair": "Disable the option to have unlimited maximumPrice for BuyCrowdfund and CollectionBuyCrowdfund contracts"
+            },
+            {
+                "Location": "TokenDistributor.sol",
+                "Type": "Reentrancy",
+                "Description": "ERC777 tokensToSend hook can be exploited to drain contract.",
+                "Repair": "Do not allow reentrancy in these functions"
+            },
+            {
+                "Location": "Crowdfund.sol and TokenDistributor.sol",
+                "Type": "Collision Attack",
+                "Description": "Only part of keccak256() is used as hash, making it susceptible to collision attacks.",
+                "Repair": "Use the standard, 32-bytes, output of keccak256()"
+            },
+            {
+                "Location": "PartyDAO smart contract",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "The vulnerabilities include a majority attack that can steal NFT from the party, early contributors becoming the majority of crowdfund leading to rugging risks, and NFT owner being able to stuck crowdfund user funds.",
+                "Repair": "Add minimum cooldown between proposals, call distribute() at the end of FractionalizeProposal, add Crowdfund property called minimumPrice, remove the line lastBid_ = totalContributions;"
+            },
+            {
+                "Location": "AuctionCrowdfund finalize function, Crowdfund and BuyCrowdfundBase contracts",
+                "Type": "Logic",
+                "Description": "If the contract was bid on before the NFT was gifted to the contract, lastBid will not be totalContributions; Attacker can DOS private party by donating ETH then calling buy; Calling transferEth function can revert if receiver input corresponds to a contract that is unable to receive ETH through its receive or fallback function",
+                "Repair": "Check contract balance to determine if NFT was acquired for free, gate permission to call BuyCrowdfund.sol#buy, escrow ETH refund and/or governance NFT to be claimed by the contributor later if transfer fails"
+            },
+            {
+                "Location": "CrowdfundNFT._burn",
+                "Type": "Loss of Funds",
+                "Description": "If the crowdfund does not succeed, anyone can completely drain the contract by repeatedly calling burn with address(0).",
+                "Repair": "Do not allow an initial contribution when opts.initialContributor is not set."
+            },
+            {
+                "Location": "ArbitraryCallsProposal.sol and ListOnOpenseaProposal.sol",
+                "Type": "NFT Theft",
+                "Description": "The majority could use the following steps to steal the NFT.",
+                "Repair": "Block calls to opensea.validate() in Arbitrary call proposals."
+            },
+            {
+                "Location": "AuctionCrowdfund's bid()",
+                "Type": "Loss of Funds",
+                "Description": "Attacker can force AuctionCrowdfunds to bid their entire contribution up to maxBid.",
+                "Repair": "Allow some parties to restrict who can call buy() or bid() to hosts, which will mitigate this."
+            },
+            {
+                "Location": "Crowdfund.sol and PartyGovernance.sol",
+                "Type": "Rounding error",
+                "Description": "The current calculation can introduce significant rounding errors that impact the functionality of the protocol.",
+                "Repair": "Ensure that the individual votingPower sum to the total contribution instead of rounding down for every user except the splitRecipient"
+            },
+            {
+                "Location": "ListOnOpenseaProposal.sol and AuctionHouse.sol",
+                "Type": "Majority attack",
+                "Description": "A majority attack can easily bypass Zora auction stage and steal the NFT from the party.",
+                "Repair": "Pass a revertOnFail flag to _settleZoraAuction to revert in the case of a failed transfer for ListOnOpenseaProposal"
+            },
+            {
+                "Location": "_executeArbitraryCalls function in ArbitraryCallsProposal.sol",
+                "Type": "Excess eth not refunded",
+                "Description": "ArbitraryCallsProposal contract requires sender to provide eth(msg.value) for each call. If user has provided more eth than combined call.value then this excess eth is not refunded back to user.",
+                "Repair": "Refund the remaining ethAvailable back to the user at the end of _executeArbitraryCalls function"
+            },
+            {
+                "Location": "PartyGovernanceNFT contract, accept function",
+                "Type": "Double voting by transferring NFT in same block as proposal",
+                "Description": "PartyGovernanceNFT uses the voting power at the time of proposal when calling accept. A user can vote, transfer the NFT (and the voting power) to a different wallet, and then vote from this second wallet again during the same block that the proposal was created.",
+                "Repair": "Query the voting power at values.proposedTime 1 instead of using the voting power at the time of proposal when calling accept"
+            },
+            {
+                "Location": "Crowdfund.sol, _burn function and PartyGovernanceNFT.sol, mint function",
+                "Type": "Previously nominated delegate can reset the delegation",
+                "Description": "burn() allows for previously recorded delegate to set himself to be contributor's delegate even if another one was already chosen. This can be quite material as owner choice for the whole voting power is being reset this way to favor the old delegate.",
+                "Repair": "Do not change the delegate on mint if one is set already or track the most recent request via contribute()/delegateVotingPower() calls timestamps"
+            },
+            {
+                "Location": "AuctionCrowdfund contract",
+                "Type": "Smart Contract Logic",
+                "Description": "The maximumbid concept can easily be bypassed, and the bid function can be called by anyone, including the NFT seller, resulting in the auction always ending up with the maximumBid even when it could have stopped with a lower bid.",
+                "Repair": "Either remove maximumBid completely or restrict bid function to be callable only via crowdfund members"
+            },
+            {
+                "Location": "BuyCrowdfundBase.sol _buy() function",
+                "Type": "Smart Contract Logic",
+                "Description": "The settledPrice may exceed maximumPrice, resulting in the minimum proportion of participants expected to become smaller.",
+                "Repair": "Cap the callValue to maximumPrice"
+            }
+        ]
+    }
+]

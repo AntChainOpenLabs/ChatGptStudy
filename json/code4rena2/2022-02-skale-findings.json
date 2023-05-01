@@ -1,0 +1,88 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "MessageProxy.sol",
+                "Type": "Replay Attack",
+                "Description": "Transactions can be replayed when a connectedChain is removed and then reconnected.",
+                "Repair": "Instead of delete/reset the counter, consider leaving the counter as it is when removeConnectedChain, _addConnectedChain also should not reset the counter"
+            },
+            {
+                "Location": "TokenManagerERC20.sol",
+                "Type": "Use of transferFrom() instead of safeTransferFrom()",
+                "Description": "TokenManagerERC20.sol uses transferFrom() instead of safeTransferFrom().",
+                "Repair": "Use OpenZeppelin\u2019s SafeERC20 versions with the safeTransfer and safeTransferFrom functions that handle the return value check as well as non-standard-compliant tokens"
+            },
+            {
+                "Location": "DepositBoxERC20.sol, ERC20OnChain.sol, TokenManagerERC20.sol",
+                "Type": "Token Drain",
+                "Description": "transferredAmount on mainnet can be drained if a malicious account can mint more tokens on Schain.",
+                "Repair": "Disable minting function to be called directly in ERC20OnChain. Only allow minting when bridging tokens over. Switching from a role based system to an immutable Minter Address (the bridge contract) can be used as mitigation, alternatively sChain end users will have to monitor for these types of changes and act accordingly"
+            },
+            {
+                "Location": "TokenManagerERC20.sol",
+                "Type": "Token Transfer Vulnerability",
+                "Description": "When transferring tokens native on SKALE to Ethereum with TokenManagerERC20.exitToMainERC20(), the tokens on the schain will be frozen on TokenManagerERC20, but they will not receive tokens on Ethereum due to a vulnerability in the implementation of TokenManagerERC20 that allows a user to set mainnet as the target chain.",
+                "Repair": "Prevent moving schain native tokens to Ethereum MAINNET by adding require(chainHash != MAINNET_HASH)"
+            },
+            {
+                "Location": "getFunds() functions in DepositBoxEth.sol, DepositBoxERC20.sol, DepositBoxERC721.sol, and DepositBoxERC1155.sol",
+                "Type": "Rug pull",
+                "Description": "Schain owners can rug pull users' funds",
+                "Repair": "Add a long time lock for killing so users have plenty of time to get their funds out before a kill"
+            },
+            {
+                "Location": "setTokenURI() function in ERC721OnChain.sol",
+                "Type": "NFT URI spoofing",
+                "Description": "NFT owner can change token URI",
+                "Repair": "Disallow the owner of an NFT to change its token URI"
+            },
+            {
+                "Location": "transferToSchainERC20() function in TokenManagerERC20.sol",
+                "Type": "Token freeze",
+                "Description": "S2S Transfer from the origin schain to another schain with automatic deploy disabled can cause funds to be frozen",
+                "Repair": "Add a mapping storage to cache whether automaticDeploy is enabled on a certain schain, and only allow S2S transfer when automaticDeploy is enabled on the target schain. Introduce a 24 hrs timelock for disabling automaticDeploy."
+            },
+            {
+                "Location": "TokenManagerEth.sol",
+                "Type": "Centralisation risk",
+                "Description": "The DEFAULT_ADMIN_ROLE of TokenManagerEth.sol is able to modify the ERC20 token on the SChain to any arbitrary address.",
+                "Repair": "Remove the function setEthErc20Address() as ethErc20 is set in the initialize() function and does not need to be changed"
+            },
+            {
+                "Location": "DepositBoxERC20 contract",
+                "Type": "Incompatibility with rebasing/deflationary/inflationary tokens",
+                "Description": "The DepositBoxERC20 contract does not appear to support rebasing/deflationary/inflationary tokens whose balance changes during transfers or over time.",
+                "Repair": "Add support in contracts for such tokens before accepting user-supplied tokens"
+            },
+            {
+                "Location": "EthErc20.sol",
+                "Type": "Burning arbitrary amount of tokens",
+                "Description": "An address with BURNER_ROLE can burn an arbitrary amount of tokens from any address.",
+                "Repair": "Update forceBurn function for only owner can burn his tokens"
+            },
+            {
+                "Location": "CommunityPool.sol and MessageProxyForMainnet.sol",
+                "Type": "Gas pricing attack",
+                "Description": "The function refundGasByUser() can be exploited by the message sender to drain nodes and SChain owners of their balances when processing incoming messages.",
+                "Repair": "Use a gas price oracle rather than tx.gasprice or set a maximum gas price and have some incentives for the node submitting at a gas price below the maximum"
+            },
+            {
+                "Location": "postIncomingMessages function in MessageProxyForSchain contract",
+                "Type": "Reentrancy",
+                "Description": "The attacker can re-enter into the postIncomingMessages function and submit the same messages again, creating a replay attack.",
+                "Repair": "Add a messageInProgressLocker modifier to postIncomingMessages"
+            },
+            {
+                "Location": "removeConnectedChain function in MessageProxy contract",
+                "Type": "Loss of pending messages",
+                "Description": "If there are any unprocessed messages to be executed or processed, while removeConnectedChain is called, then they may be stuck from getting processed on the other end.",
+                "Repair": "Check if there are any pending or unprocessed messages while removeConnectedChain is called and revert in that case. Implement some functionality like pause just locally for the chain to be removed, before the actual removeConnectedChain is called."
+            }
+        ]
+    }
+]

@@ -1,0 +1,46 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "AaveV3YieldSource.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "A malicious owner or manager can steal all Aave rewards that are meant for PoolTogether users.",
+                "Repair": "Use a poolAddressesProviderRegistry-like contract to determine where the rewards should go, instead of letting an address be passed in"
+            },
+            {
+                "Location": "AaveV3YieldSource.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "There is a possibility that underlying smart contract did not transfer the exact amount entered.",
+                "Repair": "Update _depositAmount to contract balance increase"
+            },
+            {
+                "Location": "RewardsController.sol, AaveV3YieldSource.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "A malicious emissions manager can effectively siphon yield away from the AaveV3YieldSource contract and redirect it to them-self.",
+                "Repair": "Ensure the RewardsController contract is owned by PoolTogether's multisig"
+            },
+            {
+                "Location": "AaveV3YieldSource.sol",
+                "Type": "Smart Contract Vulnerability",
+                "Description": "User fund loss in supplyTokenTo() because of rounding.",
+                "Repair": "Only take the correct amount of user tokens"
+            },
+            {
+                "Location": "AaveV3YieldSource.sol",
+                "Type": "Price manipulation",
+                "Description": "A malicious early user/attacker can manipulate the vault's pricePerShare to take an unfair share of future users' deposits.",
+                "Repair": "Require a minimal amount of share tokens to be minted for the first minter, and send a portion of the initial mints as a reserve to the DAO address so that the pricePerShare can be more resistant to manipulation. Also, consider adding require(_shares > 0, 'AaveV3YS/shares-gt-zero') before _burn(msg.sender, _shares)"
+            },
+            {
+                "Location": "AaveV3YieldSource.sol",
+                "Type": "Incorrect share conversions",
+                "Description": "Yield source does not correctly calculate share conversions. Incorrect share conversions lead to incorrect pricing of assets and loss of principal.",
+                "Repair": "One share must always equal one token. Consider removing the conversion function and ensuring that the share token is always equal to the underlying asset token."
+            }
+        ]
+    }
+]

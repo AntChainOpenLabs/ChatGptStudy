@@ -1,0 +1,52 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "redeem() function in Zap.sol",
+                "Type": "Missing address check",
+                "Description": "The user can provide any possible ERC20 token in the redeem() function without the function reverting.",
+                "Repair": "Verify that the passed token address is either wBTC or renbtc"
+            },
+            {
+                "Location": "deposit() function in IbbtcVaultZap.sol",
+                "Type": "No slippage control",
+                "Description": "There is no slippage control on deposit of IbbtcVaultZap.sol, which exposes the user to a sandwich attack.",
+                "Repair": "Add a minOut parameter to the deposit function and implement a slippage check"
+            },
+            {
+                "Location": "setZapConfig() function in SettToRenIbbtcZap.sol",
+                "Type": "Missing token approval",
+                "Description": "When curvePool or token is updated, token is not approved to curvePool, which can malfunction the contract and break minting.",
+                "Repair": "Add a token approval check to the setZapConfig() function"
+            },
+            {
+                "Location": "deposit() function in IbbtcVaultZap.sol",
+                "Type": "Excessive require",
+                "Description": "The check for RENCRV_VAULT.blockLock is done at the very first, making transactions unrelated to RENCRV_VAULT fail unexpectedly if there is a prior transaction involved with RENCRV_VAULT in the same block.",
+                "Repair": "Check for blockLock only under specific conditions"
+            },
+            {
+                "Location": "redeem() function in Zap.sol",
+                "Type": "Improper implementation of slippage check",
+                "Description": "The outAmount of IbyvWbtc.withdraw() is not controlled by minOut, which can lead to users getting rekt.",
+                "Repair": "Implement a slippage check at the end of the function"
+            },
+            {
+                "Location": "setGuardian() function in IbbtcVaultZap.sol and SettToRenIbbtcZap.sol",
+                "Type": "Wrong implementation",
+                "Description": "governance = _guardian should be guardian = _guardian.",
+                "Repair": "Change governance to guardian"
+            },
+            {
+                "Location": "calcMint() function in Zap.sol",
+                "Type": "Calculation error",
+                "Description": "calcMint() always returns poolId=0 and idx=0, while the docstring specified it should return the most optimal route instead.",
+                "Repair": "Implement the missing functions for calcMint"
+            }
+        ]
+    }
+]

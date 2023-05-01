@@ -1,0 +1,16 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "permitAndMulticall() function in PermitAndMulticall.sol and TWABDelegator.sol contracts",
+                "Type": "Unauthorized fund transfer",
+                "Description": "An attacker may use the permitAndMulticall() function to steal funds or as a Denial of Service (DoS) attack if the _from address is not the message sender. If an attacker calls permitAndMulticall() before the _from user, they may use their signature and nonce combination, which could result in a DoS attack by continually front-running permitAndCall() using other users' signatures. The severity of the vulnerability was initially disputed, but it was ultimately labeled as a Medium Risk (2) vulnerability because funds are not directly at risk, but the attacker would enjoy better odds of winning.",
+                "Repair": "Update the _from field to be the msg.sender in permitAndMulticall() or alternatively do this in _permitAndMulticall() to save some gas."
+            }
+        ]
+    }
+]

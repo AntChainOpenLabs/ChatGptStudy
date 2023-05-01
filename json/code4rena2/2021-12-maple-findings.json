@@ -1,0 +1,28 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "MapleLoanInternals.sol L257-L273",
+                "Type": "Unsafe implementation",
+                "Description": "Unsafe implementation of  fundLoan()  allows attacker to steal collateral from an unfunded loan.",
+                "Repair": "Read treasuryFee, investorFee, mapleTreasury, poolDelegate from an authoritative source instead"
+            },
+            {
+                "Location": "MapleLoan.sol L86-L93",
+                "Type": "Lack of access control",
+                "Description": "makePayment()  Lack of access control allows malicious  lender  to retrieve a large portion of the funds earlier, making the borrower suffer fund loss.",
+                "Repair": "Enforce that a payment can only be made some window of time before it is due, to prevent anyone from prematurely paying it down"
+            },
+            {
+                "Location": "MapleLoan.sol L56-L63",
+                "Type": "Missing authorization",
+                "Description": "Anyone can call  closeLoan()  to close the loan.",
+                "Repair": "Add authorization check to ensure only the borrower can call closeLoan()"
+            }
+        ]
+    }
+]

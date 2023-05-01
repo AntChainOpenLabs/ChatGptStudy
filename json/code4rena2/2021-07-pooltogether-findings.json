@@ -1,0 +1,58 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "SwappableYieldSource.redeemToken function",
+                "Type": "ERC20 token transfer vulnerability",
+                "Description": "The transferFrom function checks if the contract approved itself for the redeemableBalance instead of skipping the allowance check in case the sender is the from address, which can make the transaction revert and the deposited funds will be unrecoverable for the user.",
+                "Repair": "Use _depositToken.safeTransfer(msg.sender, redeemableBalance) instead of ERC20.transferFrom(address(this), msg.sender, redeemableBalance)"
+            },
+            {
+                "Location": "SwappableYieldSource.transferFunds function",
+                "Type": "Asset valuation exploit",
+                "Description": "The transferFunds function fails to check that the deposit tokens are the same, which can allow a malicious owner or asset manager to exploit and pocket the difference in asset valuation.",
+                "Repair": "Removed transferFunds function and added a check for the same depositToken in _setYieldSource function"
+            },
+            {
+                "Location": "After swapping a yield source",
+                "Type": "Infinite approval vulnerability",
+                "Description": "After swapping a yield source, the old yield source still has infinite approval, which can be used in large attacks if the yield source isn't perfectly safe.",
+                "Repair": "Decrease approval after swapping the yield source"
+            },
+            {
+                "Location": "SwappableYieldSource contract ownership management",
+                "Type": "Critical ownership transfer/renounce vulnerability",
+                "Description": "The one-step process for critical ownership transfer/renounce is risky because it is irrecoverable from any mistakes, and can prevent the use of all the onlyOwner() functions forever, which includes the changing of various critical addresses and parameters.",
+                "Repair": "Override the inherited methods to null functions and use separate functions for a two-step address change, and consider adding a time-delay for sensitive actions"
+            },
+            {
+                "Location": "function swapYieldSource",
+                "Type": "Access control",
+                "Description": "The function allows the owner or asset manager to instantly rug all funds by swapping the yield source without proper access control.",
+                "Repair": "Implement access control to prevent unauthorized access to the function"
+            },
+            {
+                "Location": "function setYieldSource",
+                "Type": "Inconsistent state",
+                "Description": "The use of setYieldSource leaves the contract in a temporary inconsistent state because it changes the underlying yield source but doesn't (yet) transfer the underlying balances, while the shares stay the same.",
+                "Repair": "Remove the function setYieldSource or temporarily disable actions like supplyTokenTo, redeemToken and balanceOfToken after setYieldSource and until transferFunds has been done"
+            },
+            {
+                "Location": "function supplyTokenTo",
+                "Type": "Inconsistent balance",
+                "Description": "The supplyTokenTo function assumes that amount of _depositToken is transferred to itself after calling the safeTransferFrom function, which may not be true if the _depositToken is a transfer-on-fee token or a deflationary/rebasing token, causing the received amount to be less than the accounted amount.",
+                "Repair": "Get the actual received amount by calculating the difference of token balance before and after the transfer"
+            },
+            {
+                "Location": "function _approveMax",
+                "Type": "SafeApprove usage",
+                "Description": "The usage of safeApprove will always cause approveMax to revert, making it impossible to increase the allowance when it falls low.",
+                "Repair": "Use logic similar to SwappableYieldSource instead of using safeApprove()"
+            }
+        ]
+    }
+]

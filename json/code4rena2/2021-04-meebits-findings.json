@@ -6,53 +6,52 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Name": "[H-00] ERC-721 Enumerable Spec mismatch for index of  tokenByIndex()  function",
-                "Location": "tokenByIndex() function",
-                "Type": "ERC-721 Enumerable Spec mismatch",
-                "Description": "Index starts at 0 for token array, but the implementation here requires index to be greater than 0. This will prevent querying of tokens at index 0. This will impact compatibility with NFT platforms that expect full conformity with ERC-721 specification.",
-                "Repair": "Change to require(index == 0 || index < TOKEN_LIMIT);"
-            },
-            {
-                "Name": "[H-01] Signature malleability of EVM's  ecrecover  in  verify() ",
                 "Location": "EVM's ecrecover in verify()",
-                "Type": "Signature Malleability",
-                "Description": "Allows replay attacks, but mitigated by tracking accepted offers and canceling them",
-                "Repair": "Using OpenZeppelin's ECDSA library"
+                "Type": "Signature malleability",
+                "Description": "EVM's ecrecover is susceptible to signature malleability, which allows replay attacks.",
+                "Repair": "Use OpenZeppelin's ECDSA library"
             },
             {
-                "Name": "[H-02] Arbitrary Transfer of Unowned NFTs",
-                "Location": "tradeValid function",
-                "Type": "Arbitrary Transfer",
-                "Description": "It is possible to arbitrarily transfer any NFT that is not owned by any address due to the behavior of ecrecover when invoked with an invalid signature, which returns the zero-address. This can be exploited to transfer any NFT whose idToOwner is zero, including NFTs that have not been minted yet.",
+                "Location": "tradeValid function invoked by acceptTrade",
+                "Type": "Arbitrary Transfer of Unowned NFTs",
+                "Description": "It is possible to arbitrarily transfer any NFT that is not owned by any address.",
                 "Repair": "Add an additional check within verify that ensures the signer is not the zero-address"
             },
             {
-                "Name": "[H-05] NFT can be minted for free after sale ended",
-                "Location": "getPrice() function",
-                "Type": "Logic",
-                "Description": "NFT can be minted for free after sale ended",
-                "Repair": "Revert instead of returning 0"
-            },
-            {
-                "Name": "[M-00] Legacy Function Usage",
-                "Location": "withdraw function",
-                "Type": "Legacy Function Usage",
-                "Description": "the transfer invocation has a fixed gas stipend and can fail, especially beyond the Berlin fork, which increased the gas costs for first-time invocations of a transfer",
-                "Repair": "using a safe wrapper library, such as the OpenZeppelin Address library's sendValue function"
-            },
-            {
-                "Name": "[M-01]  randomIndex  is not truly random - possibility of predictably minting a specific token Id",
-                "Location": "randomIndex variable",
-                "Type": "Predictable Randomness",
-                "Description": "The randomIndex variable is not truly random, allowing attackers to predictably mint a specific token ID. While the indices variable is used to avoid collisions, there is still a possibility of minting a token with a specific ID. Refactoring to use counters instead of generating random IDs will make the code more predictable and easier to read, avoid ID clashes, and reduce the need to track minted tokens.",
+                "Location": "randomIndex",
+                "Type": "Predictable minting of a specific token ID",
+                "Description": "randomIndex' is not random.",
                 "Repair": "Use counters instead of generating random IDs"
             },
             {
-                "Name": "[M-02] instead of  call()  ,  transfer()  is used to withdraw the ether",
-                "Location": "Withdraw function",
-                "Type": "Reentrancy",
-                "Description": "Using transfer() to withdraw ETH can lead to reentrancy vulnerability if the recipient is a contract with a fallback function that consumes more than 2300 gas units or if it is called through a proxy. Using call() instead of transfer() can prevent this vulnerability.",
-                "Repair": "Use of call() instead of transfer()"
+                "Location": "tokenByIndex function",
+                "Type": "ERC-721 Enumerable Spec mismatch",
+                "Description": "Index starts at 0 for token array, but the implementation here requires index to be greater than 0.",
+                "Repair": "Accept 0 index by changing to require(index = 0 && index < TOKEN_LIMIT)"
+            },
+            {
+                "Location": "getPrice() function",
+                "Type": "NFT can be minted for free after sale ended",
+                "Description": "The getPrice() function returned 0 after the sale ended and NFT can be minted for free.",
+                "Repair": "If it's unexpected behavior, it is recommended to revert instead of returning 0"
+            },
+            {
+                "Location": "tokenByIndex function",
+                "Type": "Function treats last index as invalid",
+                "Description": "Function tokenByIndex treats last index as invalid.",
+                "Repair": "Change require(index > 0 && index <= TOKEN_LIMIT) to require(index >= 0 && index <= TOKEN_LIMIT)"
+            },
+            {
+                "Location": "withdraw function",
+                "Type": "Legacy Function Usage",
+                "Description": "The withdraw function utilizes the transfer invocation, which has a fixed gas stipend and can fail.",
+                "Repair": "Use a safe wrapper library, such as the OpenZeppelin Address library's sendValue function"
+            },
+            {
+                "Location": "withdraw function",
+                "Type": "Using transfer() to withdraw ether",
+                "Description": "To withdraw ETH, it uses transfer(), this transaction will fail inevitably in certain cases.",
+                "Repair": "Use call() to send ETH"
             }
         ]
     },
@@ -63,18 +62,10 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Name": "[H-03]  Beebots.TradeValid()  Will Erroneously Return True When Maker Is Set To  Address(0)  and  makerIds  Are Set To The  TokenIds  of Unminted Beebot NFTs",
                 "Location": "Beebots.TradeValid()",
-                "Type": "Incorrect validation logic",
-                "Description": "Beebots.TradeValid() will erroneously return true when maker is set to address(0) and makerIds are set to the tokenIds of unminted beebot NFTs. This is due to the fact that Beebots.verify() returns true no matter what signature is given when signer is set to address(0), and before an NFT has even been minted at all, it is assumed to have an owner of address(0) due to the idToOwner mapping being initialized to zero for all uninitialized slots.",
-                "Repair": "Add a check to ensure that signer is not address(0) in Beebots.verify() and add a check to disallow maker being address(0) in Beebots.tradeValid()"
-            },
-            {
-                "Name": "[H-04] function  tokenByIndex  treats last index as invalid",
-                "Location": "Function tokenByIndex",
-                "Type": "Boundary Condition Error",
-                "Description": "The last token (with index TOKEN_LIMIT) will not be valid due to the incorrect boundary condition.",
-                "Repair": "require(index > 0 && index <= TOKEN_LIMIT);"
+                "Type": "TradeValid() erroneously returning true",
+                "Description": "Beebots.TradeValid() will erroneously return true when maker is set to address(0) and makerIds are set to the tokenIds of unminted beebot NFTs.",
+                "Repair": "Add a check to Beebots.verify() and Beebots.tradeValid()"
             }
         ]
     }

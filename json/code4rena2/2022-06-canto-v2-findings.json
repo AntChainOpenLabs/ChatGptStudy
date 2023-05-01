@@ -1,0 +1,94 @@
+[
+    {
+        "Code": "",
+        "CodeNames": [
+            ""
+        ],
+        "VulnerabilityDesc": [
+            {
+                "Location": "ERC20.sol#L33",
+                "Type": "Incorrect initialization",
+                "Description": "The _totalSupply can be initialized to something different than 0, which would lead to an inaccurate total supply.",
+                "Repair": "Remove _initialSupply or set it to 0 in the constructor"
+            },
+            {
+                "Location": "CNote.sol#L33",
+                "Type": "Missing cap",
+                "Description": "The fact that there is no cap on the amount of Note that can be borrowed makes the Oracle Extractable Value unlimited.",
+                "Repair": "Add a cap on how many Notes can be borrowed or add an hourly borrowing limit"
+            },
+            {
+                "Location": "Comptroller.sol#L1381",
+                "Type": "Admin control",
+                "Description": "If the admin is set to WETH address mistakenly, the admin can break the protocol.",
+                "Repair": "Set WETH address through initializer or change it through governance"
+            },
+            {
+                "Location": "CNote.sol#L148",
+                "Type": "Denial of service",
+                "Description": "The doTransferOut method is susceptible to denial of service.",
+                "Repair": "Use balance differences instead of the 0 check"
+            },
+            {
+                "Location": "NoteInterest contract initialize() method",
+                "Type": "Multiple initialization",
+                "Description": "The initialize() method of the NoteInterest contract can be initialized multiple times, allowing the government to perform attacks such as altering the logic of the updateBaseRate method.",
+                "Repair": "Add a require to check that it was not already initialized"
+            },
+            {
+                "Location": "AccountantDelegate contract initialize() method",
+                "Type": "Missing zero address check",
+                "Description": "The require statement in the AccountantDelegate contract only checks if the state variables != address(0), which can cause initialize() to be called more than once.",
+                "Repair": "Check if the parameters != zero address or use OpenZeppelin initializable"
+            },
+            {
+                "Location": "BaseV1-periphery.sol and BaseV1-core.sol contracts",
+                "Type": "LP pair underlying price quote manipulation",
+                "Description": "The underlying price for LP pool pair can be manipulated, leading to the exploit of the pool by a malicious user.",
+                "Repair": "Follow the guide linked in the report to calculate the LP price correctly"
+            },
+            {
+                "Location": "BaseV1-core.sol contract",
+                "Type": "TWAP oracle manipulation",
+                "Description": "The periodSize is set to 0, allowing an attacker to easily flood the TWAP oracle and manipulate the price.",
+                "Repair": "Increase periodSize to be greater than 0, 1800 is typically standard"
+            },
+            {
+                "Location": "BaseV1-periphery.sol contract",
+                "Type": "Deadline not working",
+                "Description": "The ensure modifier is commented, so deadlines will not work when passing orders, breaking this functionality.",
+                "Repair": "Uncomment the ensure modifier"
+            },
+            {
+                "Location": "CErc20Delegator contract",
+                "Type": "Non-view function called with staticcall",
+                "Description": "The functions borrowRatePerBlock and supplyRatePerBlock will revert when the underlying functions try to update some states, causing them to fail when called after sufficient blocks are mined.",
+                "Repair": "Use delegateToImplementation instead of delegateToViewImplementation or implement view functions to query these rates in NoteInterest.sol and CToken.sol"
+            },
+            {
+                "Location": "BaseV1-periphery.sol",
+                "Type": "Inaccurate underlying asset price oracle",
+                "Description": "The underlying asset price oracle for cToken in BaseV1-periphery is inaccurate. The getUnderlyingPrice function returns 1 instead of 10**18 for cNOTE token price.",
+                "Repair": "Return 10**18 instead of 1 for cNOTE token price"
+            },
+            {
+                "Location": "AccountantDelegate.sol",
+                "Type": "Denial of service",
+                "Description": "The sweepInterest function in AccountantDelegate contract is susceptible to denial of service. If a third party sends a single token cnote to the address of treasury, the method will be denied.",
+                "Repair": "Use cNoteToSweep instead of amtToSweep in transfer function"
+            },
+            {
+                "Location": "NoteInterest.sol and CToken.sol",
+                "Type": "Incorrect borrow rate calculation",
+                "Description": "The getBorrowRate function in NoteInterest contract returns the borrow rate per year instead of per block. Using NoteInterest as an interest model will result in completely wrong values.",
+                "Repair": "Return baseRatePerBlock instead of baseRatePerYear"
+            },
+            {
+                "Location": "AccountantDelegate.sol",
+                "Type": "Incorrect number of cnote swept",
+                "Description": "The sweepInterest function in AccountantDelegate contract sweeps an incorrect number of cnote. The number of cnote sent to treasury should be cNoteToSweep instead of amtToSweep, as amtToSweep will normally be smaller than cNoteToSweep, which will cause the interest to be locked in the contract.",
+                "Repair": "Use cNoteToSweep instead of amtToSweep in transfer function"
+            }
+        ]
+    }
+]

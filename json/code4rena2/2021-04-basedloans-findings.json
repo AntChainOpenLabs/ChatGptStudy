@@ -6,18 +6,16 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Name": "[H-01] UniswapConfig getters return wrong token config if token config does not exist",
-                "Location": "UniswapConfig getters",
-                "Type": "Incorrect Non-Existence Check",
-                "Description": "When encountering a non-existent token config, it will always return the token config of the first index (index 0) which is a valid token config for a completely different token. This leads to wrong oracle prices for the actual token which could in the worst case be used to borrow more tokens at a lower price or borrow more tokens by having a higher collateral value, essentially allowing undercollateralized loans that cannot be liquidated.",
-                "Repair": "Fix the non-existence check"
+                "Location": "UniswapConfig.getTokenConfigBySymbolHash, getTokenConfigByCToken, and getTokenConfigByUnderlying functions",
+                "Type": "Incorrect function implementation",
+                "Description": "The functions getTokenConfigBySymbolHash, getTokenConfigByCToken, and getTokenConfigByUnderlying check returned index against max uint:index != uint(-1)-1 should indicate that the index is not found, however, a default value for an uninitialized uint is 0, so it is impossible to get -1. What is even weirder is that 0 will be returned for non-existing configs but 0 is a valid index for the 1st config.",
+                "Repair": "Reserve 0 for a not found index and use it when searching in mappings. Then normal indexes should start from 1. Another solution would be to introduce a new mapping with a boolean value that indicates if this index is initialized or not"
             },
             {
-                "Name": "[H-02] uint(-1) index for not found",
-                "Location": "Functions getTokenConfigBySymbolHash, getTokenConfigByCToken, and getTokenConfigByUnderlying",
-                "Type": "Logic",
-                "Description": "The default value for an uninitialized uint is 0, so it is impossible to get -1. 0 will be returned for non-existing configs but 0 is a valid index for the 1st config.",
-                "Repair": "Reserve 0 for a not found index and use it when searching in mappings. Then normal indexes should start from 1."
+                "Location": "UniswapConfig.getTokenConfigBySymbolHash, getTokenConfigByCToken, and getTokenConfigByUnderlying functions",
+                "Type": "Incorrect function implementation",
+                "Description": "The UniswapConfig.getTokenConfigBySymbolHash function does not work as getSymbolHashIndex returns 0 if there is no config token for that symbol (uninitialized map value), but the outer function implements the non-existence check with -1.The same issue occurs also for:getTokenConfigByCTokengetTokenConfigByUnderlyingWhen encountering a non-existent token config, it will always return the token config of the first index (index 0) which is a valid token config for a completely different token.",
+                "Repair": "Fix the non-existence check"
             }
         ]
     },
@@ -28,10 +26,9 @@
         ],
         "VulnerabilityDesc": [
             {
-                "Name": "[M-01] Reward rates can be changed through flash borrows",
                 "Location": "Comptroller.refreshCompSpeeds function",
                 "Type": "Flash loan attack",
-                "Description": "An attacker can change the rewards per market by using flash borrows and updating the totalBorrows value. This can be prevented by restricting the Comptroller.refreshCompSpeeds function to admin-only or using a time-weighted total borrow system.",
+                "Description": "The rewards per market are proportional to their totalBorrows which can be changed by a large holder who deposits lots of collateral, takes out a huge borrow in the market, updates the rewards, and then unwinds the position. They'll only pay gas fees as the borrow / repay can happen in the same block. The Comptroller.refreshCompSpeeds function only checks that the single transaction is called from an EOA, but miners (or anyone if a miner offers services like flash bundles for flashbots) can still run flash-loan-like attacks by first sending a borrow tx increasing the totalBorrows, then the refreshCompSpeeds transaction, and then the repay of the borrow, as miners have full control over the transaction order of the block.",
                 "Repair": "Make it an admin-only function or use a time-weighted total borrow system similar to Uniswap's price oracles"
             }
         ]

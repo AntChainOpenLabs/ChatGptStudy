@@ -82,17 +82,30 @@ def query_message(
     # introduction = 'Use the below articles on the 2022 Winter Olympics to answer the subsequent question. If the answer cannot be found in the articles, write "I could not find an answer."'
     introduction = ''
     question = f"\n\nQuestion: {query}"
-    message = introduction
-    for string in strings:
-        next_article = f'\n\narticle section:\n"""\n{string}\n"""'
-        if (
-            num_tokens(message + next_article + question, model=model)
-            > token_budget
-        ):
-            break
-        else:
-            message += next_article
-    return message + question
+    messages = []
+    message = ""
+    index = 0
+    while index < len(strings):
+        while index < len(strings):
+            string = strings[index]
+            next_article = f'\n\narticle section:\n"""\n{string}\n"""'
+            if (
+                    num_tokens(message + next_article + question, model=model)
+                    > token_budget
+            ):
+                if message != "":
+                    messages += [message + question]
+                    message = ""
+                    break
+                else:
+                    # 如果message 为空则证明单个article + question超过了token的数量，跳过
+                    index += 1
+                    print("单个article + question超过了token的数量 : \n{} \n".format(next_article))
+            else:
+                message += next_article
+                index += 1
+
+    return messages
 
 
 def ask(
@@ -106,16 +119,18 @@ def ask(
     message = query_message(query, df, model=model, token_budget=token_budget)
     if print_message:
         print(message)
-    messages = [
-        {"role": "system", "content": "You answer questions about the smart contract vulnerability report."},
-        {"role": "user", "content": message},
-    ]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0
-    )
-    response_message = response["choices"][0]["message"]["content"]
+    response_message = ""
+    for msg in message:
+        messages = [
+            {"role": "system", "content": "You answer questions about the smart contract vulnerability report."},
+            {"role": "user", "content": msg},
+        ]
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=messages,
+            temperature=0
+        )
+        response_message += response["choices"][0]["message"]["content"]  + "\n\n"
     return response_message
 
 
@@ -124,9 +139,10 @@ def get_section_json(embeddings_path):
 
     df['embedding'] = df['embedding'].apply(ast.literal_eval)
 
-    answer = ask(
-        'Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows: {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": "" }',
-        df)
+    # answer = ask(
+    #     'Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows: {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": "" }',
+    #     df,print_message=True)
+    answer  = ask('Point out the vulnerability type, vulnerability location, repair method, and vulnerability information mentioned in the above text. Output if present, empty string if absent. Use the json format required as follows and escape all values in json : {"Vulnerability Type": "", "Vulnerability Location": "", "Repair Method": " ", "Vulnerability Information": ""}.For example text:[H-100] fake notification .fake notification occurs in the erc20 contract. If the erc20 contract only releases standard events without changing contract variables, it is considered that a fake notification has occurred. The way to fix it is to only release the standard event when the contract variable is changed, and the value represented by the event is equal to the value of the variable change",json: {"Vulnerability Type": "fake notification", "Vulnerability Location": "function () external payable {\n emit Transfer(msg.sender, owner, msg.value);\n }", "Repair Method": "When releasing a standard event, check whether the account balance has been modified accordingly", "Vulnerability Information": "fake notification occurs in the erc20 contract. If the erc20 contract only releases standard events without changing contract variables, it is considered that a fake notification has occurred."}',df,print_message=False)
     # print(answer)
     return answer
 
