@@ -253,7 +253,8 @@ def create_json(section_SAVE_PATH,  file_name, code_paths):
             item_json = json.loads(section)
         except:
             print(section)
-            return
+            continue
+            # return
         bug_json = {
             "Location": "",
             "Type": "",
