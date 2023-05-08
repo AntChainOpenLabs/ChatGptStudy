@@ -1,0 +1,71 @@
+[    
+    {
+    "Code": "function _increasePosition(\n    PositionDetails memory currentPos,\n    bool isLong,\n    uint sizeDelta,\n    uint collateralDelta,\n    uint spot\n  ) internal {\n    // add margin fee\n    // when we increase position, fee always got deducted from collateral\n    collateralDelta += _getPositionFee(currentPos.size, sizeDelta, currentPos.entryFundingRate);\n      if (isLong) {\n      uint swapFeeBP = getSwapFeeBP(isLong, true, collateralDelta);\n      collateralDelta = (collateralDelta * (BASIS_POINTS_DIVISOR + swapFeeBP)) / BASIS_POINTS_DIVISOR;\n    }\n  }",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Logical_flaw",
+            "Location": "if (isLong) {\nuint swapFeeBP = getSwapFeeBP(isLong, true, collateralDelta);\ncollateralDelta = (collateralDelta * (BASIS_POINTS_DIVISOR + swapFeeBP)) / BASIS_POINTS_DIVISOR;\n}\ncollateralDelta += _getPositionFee(currentPos.size, sizeDelta, currentPos.entryFundingRate);\n",
+            "Type": "Logical flaw",
+            "Description": "disordered fee calculated causes collateral changes to be inaccurate",
+            "Repair": "Flip the order of getSwapFeeBP() and _getPositionFee()."
+            }
+        ]
+    },
+    {
+    "Code": "function canHedge(\n    uint /* amountOptions */,\n    bool increasesPoolDelta,\n    uint /* strikeId */\n  ) external view override returns (bool) {\n    if (!futuresPoolHedgerParams.vaultLiquidityCheckEnabled) {\n      return true;\n    }\n    uint spotPrice = _getSpotPrice();\n    CurrentPositions memory positions = _getPositions();\n    int expectedHedge = _getCappedExpectedHedge();\n    int currentHedge = _getCurrentHedgedNetDeltaWithSpot(positions, spotPrice);\n    uint absHedgeDiff = (Math.abs(expectedHedge) - Math.abs(currentHedge));\n    if (remainingDeltas < absHedgeDiff.multiplyDecimal(futuresPoolHedgerParams.marketDepthBuffer)) {\n      return false;\n    }\n    return true;\n  }",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Sign_confusion",
+            "Location": "uint absHedgeDiff = (Math.abs(expectedHedge) - Math.abs(currentHedge));\nif (remainingDeltas < absHedgeDiff.multiplyDecimal(futuresPoolHedgerParams.marketDepthBuffer)) {\n return false;\n}\n",
+            "Type": "Sign confusion",
+            "Description": "canHedge may return true when there is insufficient GMX liquidity to facilitate hedging, causing insolvency risks",
+            "Repair": "Check if expectedHedge and currentHedge have different signs and change logic accordingly."
+            },
+        {
+            "Name": "Logical_flaw",
+            "Location": "if (increasesPoolDelta && expectedHedge >= 0) {\n return true;\n}\n",
+            "Type": "Logical flaw",
+            "Description": "canHedge will return true when trade moves delta in same direction as expectedHedge even when that leads to more risk",
+            "Repair": "Take the magnitude of the trade size into account when performing this check."
+            }
+        ]
+    },
+    {
+    "Code": "function initiateWithdraw(address beneficiary, uint amountLiquidityToken) external nonReentrant {\n  if (beneficiary == address(0)) {\n    revert InvalidBeneficiaryAddress(address(this), beneficiary);\n  }\n  Liquidity memory liquidity = getLiquidity();\n  uint tokenPrice = _getTokenPrice(liquidity.NAV, getTotalTokenSupply());\n  uint withdrawalValue = amountLiquidityToken.multiplyDecimal(tokenPrice);\n  if (withdrawalValue < lpParams.minDepositWithdraw && amountLiquidityToken < lpParams.minDepositWithdraw) {\n    revert MinimumWithdrawNotMet(address(this), withdrawalValue, lpParams.minDepositWithdraw);\n  }  if (optionMarket.getNumLiveBoards() == 0 && liquidity.longScaleFactor == DecimalMath.UNIT) {\n    _transferQuote(beneficiary, withdrawalValue);\n    protectedQuote = (liquidity.NAV - withdrawalValue).multiplyDecimal(\n      DecimalMath.UNIT - lpParams.adjustmentNetScalingFactor\n    );\n    // quoteReceived in the event is in 18dp\n    emit WithdrawProcessed(\n      msg.sender,\n      beneficiary,\n      0,\n      amountLiquidityToken,\n      tokenPrice,\n      withdrawalValue,\n      totalQueuedWithdrawals,\n      block.timestamp\n    );\n  } else {\n    QueuedWithdrawal storage newWithdrawal = queuedWithdrawals[nextQueuedWithdrawalId];\n    newWithdrawal.id = nextQueuedWithdrawalId++;\n    newWithdrawal.beneficiary = beneficiary;\n    newWithdrawal.amountTokens = amountLiquidityToken;\n    newWithdrawal.withdrawInitiatedTime = block.timestamp;\n    totalQueuedWithdrawals += amountLiquidityToken;\n    emit WithdrawQueued(\n      msg.sender,\n      beneficiary,\n      newWithdrawal.id,\n      amountLiquidityToken,\n      totalQueuedWithdrawals,\n      block.timestamp\n    );\n  }\n  liquidityToken.burn(msg.sender, amountLiquidityToken);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Logical_flaw",
+            "Location": "if (withdrawalValue < lpParams.minDepositWithdraw && amountLiquidityToken < lpParams.minDepositWithdraw) {\nrevert MinimumWithdrawNotMet(address(this), withdrawalValue, lpParams.minDepositWithdraw);\n}\n",
+            "Type": "Logical flaw",
+            "Description": "small LP providers may be unable to withdraw their deposits",
+            "Repair": "Consider calculating an average exchange rate at which users have minted and use it to verify withdrawal amount is satisfactory."
+            },
+        {
+            "Name": "Logical_flaw",
+            "Location": "protectedQuote = (liquidity.NAV - withdrawalValue).multiplyDecimal(\n DecimalMath.UNIT - lpParams.adjustmentNetScalingFactor\n);",
+            "Type": "Logical flaw",
+            "Description": "protectedQuote can be manipulated by calling processDepositQueue when large price moves in base asset occur",
+            "Repair": "It¡¯s not entirely clear what a good mitigation would be. The protectedQuote needs to be updated as the pool makes profits or losses. Perhaps a calculation that limits the magnitude by which it can change in a single step should be considered."
+        }
+        ]    
+    },
+    {
+    "Code": "function exchangeFromExactBase(\n    address _optionMarket,\n    uint _amountBase\n  ) public override notPaused(_optionMarket) returns (uint quoteReceived) {\n    IERC20Decimals baseAsset = OptionMarket(_optionMarket).baseAsset();\n    IERC20Decimals quoteAsset = OptionMarket(_optionMarket).quoteAsset();\n    uint tokenInPrice = _getChainlinkPrice(_optionMarket);\n    uint tokenOutPrice = _getMaxPrice(address(quoteAsset));\n    if (marketPricingParams[_optionMarket].staticSwapFeeEstimate < 1e18) {\n      revert InvalidStaticSwapFeeEstimate();\n    }\n    uint minOut = tokenInPrice\n      .divideDecimal(marketPricingParams[_optionMarket].staticSwapFeeEstimate)\n      .multiplyDecimal(_amountBase)\n      .divideDecimal(tokenOutPrice);\n    uint scaledAmtBase = _receiveAsset(baseAsset, _amountBase);\n    _transferAsset(baseAsset, address(vault), _amountBase);\n    uint rawQuoteReceived = vault.swap(address(baseAsset), address(quoteAsset), msg.sender);\n    quoteReceived = ConvertDecimals.convertTo18(rawQuoteReceived, quoteAsset.decimals());\n    if (quoteReceived < minOut) {\n      revert InsufficientSwap(address(this), quoteReceived, minOut, baseAsset, quoteAsset, msg.sender);\n    }\n    emit BaseSwappedForQuote(_optionMarket, msg.sender, scaledAmtBase, quoteReceived);\n  }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Price_manipulation",
+            "Location": "uint tokenInPrice = _getMinPrice(address(baseAsset));\nuint tokenOutPrice = _getMaxPrice(address(quoteAsset));\nuint minOut = tokenInPrice\n.multiplyDecimal(marketPricingParams[_optionMarket].minReturnPercent)\n.multiplyDecimal(_amountBase)\n.divideDecimal(tokenOutPrice);\n",
+            "Type": "Price manipulation",
+            "Description": "base to quote swaps trust GMX-provided minPrice and maxPrice to be correct, which may be manipulated",
+            "Repair": "Verify getMinPrice(), getMinPrice() outputs are close to Chainlink-provided prices as done in getSpotPriceForMarket()."
+            },
+        {
+            "Name": "Input_validation",
+            "Location": "uint minOut = tokenInPrice\n      .divideDecimal(marketPricingParams[_optionMarket].staticSwapFeeEstimate)\n      .multiplyDecimal(_amountBase)\n      .divideDecimal(tokenOutPrice);\n",
+            "Type": "Input_validation",
+            "Description": "GMXAdapter minReturnPercent can be over 100%, requiring positive slippage for exchange to execute",
+            "Repair": "Allow minReturnPercent up to 100% (1e18)."
+            }
+        ]    
+    }
+]

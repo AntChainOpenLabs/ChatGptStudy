@@ -1,0 +1,14 @@
+[    
+    {
+    "Code": "function _transfer(address sender, address recipient, uint256 amount) internal virtual { require(sender != address(0), "ERC20: transfer from the zero address"); require(recipient != address(0), "ERC20: transfer to the zero address"); _beforeTokenTransfer(sender, recipient, amount); uint256 senderBalance = _balances[sender]; require(senderBalance >= amount, "ERC20: transfer amount exceeds balance"); _balances[sender] = senderBalance - amount; _balances[recipient] += amount.mul(97).div(100); _totalSupply -= amount.mul(3).div(100); emit Transfer(sender, recipient, amount.mul(97).div(100)); emit Transfer(sender, address(0), amount.mul(3).div(100)); }",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Precision problem",
+            "Location": _balances[recipient] += amount*97/100; _totalSupply -= amount*3/100;",
+            "Type": "Precision problem",
+            "Description": "The result of the accuracy problemusers.",
+            "Repair": "It is suggested to deal with the division precision problem"
+            }
+        ]
+    }
+]

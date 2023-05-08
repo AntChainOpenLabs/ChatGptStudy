@@ -1,0 +1,14 @@
+[    
+    {
+    "Code": "require(IERC20(outputTokenAddress).balanceOf(address(this)) >= (totalAllocatedOutputToken - totalReleasedOutputToken), "INSUFFICIENT_OUTPUT_TOKEN");\nIERC20(inputTokenAddress).transferFrom(msg.sender, address(0), _inputTokenAmount);\nSafeERC20.safeTransfer(IERC20(outputTokenAddress), msg.sender, allocation);\nemit OutputTokenInstantReleased(msg.sender, allocation, outputTokenAddress);\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Logical_flaw",
+            "Location": "require(IERC20(outputTokenAddress).balanceOf(address(this)) >= (totalAllocatedOutputToken - totalReleasedOutputToken), "INSUFFICIENT_OUTPUT_TOKEN");\nIERC20(inputTokenAddress).transferFrom(msg.sender, address(0), _inputTokenAmount);\nSafeERC20.safeTransfer(IERC20(outputTokenAddress), msg.sender, allocation);\nemit OutputTokenInstantReleased(msg.sender, allocation, outputTokenAddress);\n",
+            "Type": "Logical flaw",
+            "Description": "Logical flaw",
+            "Repair": "In transmuteInstant, add a check similar to the one in transmuteLinear. It will ensure allocations are kept faithfully."
+            }
+        ]    
+    }
+]

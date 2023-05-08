@@ -1,0 +1,14 @@
+[    
+    {
+    "Code": "uint256 internal constant closeFactorMinMantissa = 0.05e18;\n uint256 internal constant closeFactorMaxMantissa = 0.9e18;\n function liquidateCalculateSeizeTokens( \n uint256 borrowBalance, \n uint256 closeFactorMantissa \n ) internal returns (uint256) { \n uint256 maxRepay = borrowBalance.rmul(closeFactorMantissa); \n return maxRepay; \n } \n function exploit_liquidate( \n uint256 borrowBalance, \n uint256 mantissa \n ) public { \n require(mantissa > closeFactorMinMantissa); \n require(mantissa < closeFactorMaxMantissa); \n uint256 amountToSeize = liquidateCalculateSeizeTokens(borrowBalance, mantissa);\n  assert(amountToSeize <= borrowBalance.div(2)); \n } \n",
+    "VulnerabilityDesc": [
+        {
+            "Name": " Data_Validation",
+            "Location": " uint256 internal constant closeFactorMaxMantissa = 0.9e18;\n function exploit_liquidate(\n  uint256 borrowBalance,\n  uint256 mantissa \n  ) public { \n  require(mantissa > closeFactorMinMantissa); \n  require(mantissa < closeFactorMaxMantissa);\n  uint256 amountToSeize = liquidateCalculateSeizeTokens(borrowBalance, mantissa); \n  assert(amountToSeize <= borrowBalance.div(2)); \n  } \n ",
+            "Type": " Data Validation",
+            "Description": "Liquidatorscan liquidate more than 50% of loan",
+            "Repair": "Short term, either 1 update the documentation to reflect the correct bounds of the mantissa, or 2 update the code such that it includes a 50% limit on liquidation in accordance with the documentation. Long term, use Echidna or Manticore to ensure that arithmetic invariants hold."
+            }
+        ]
+    }
+]

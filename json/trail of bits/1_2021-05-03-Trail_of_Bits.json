@@ -1,0 +1,45 @@
+[    
+    {
+    "Code": "function calculateTrade(\n        Storage.Curve storage curve,\n        int128 _oGLiq,\n        int128 _nGLiq,\n        int128[] memory _oBals,\n        int128[] memory _nBals,\n        int128 _inputAmt,\n        uint256 _outputIndex\n    ) internal view returns (int128 outputAmt_) {\n        outputAmt_ = -_inputAmt;\n        int128 _lambda = curve.lambda;\n        int128 _beta = curve.beta;\n        int128 _delta = curve.delta;\n        int128[] memory _weights = curve.weights;\n        int128 _omega = calculateFee(_oGLiq, _oBals, _beta, _delta, _weights);\n        int128 _psi;\n        for (uint256 i = 0; i < 32; i++) {\n            _psi = calculateFee(_nGLiq, _nBals, _beta, _delta, _weights);\n            if ((outputAmt_ = _omega < _psi ? -(_inputAmt + _omega - _psi) : -(_inputAmt + _lambda.us_mul(_omega - _psi))) / 1e13 == outputAmt_ / 1e13) {\n                _nGLiq = _oGLiq + _inputAmt + outputAmt_;\n                _nBals[_outputIndex] = _oBals[_outputIndex] + outputAmt_;\n                enforceHalts(curve, _oGLiq, _nGLiq, _oBals, _nBals, _weights);\n                enforceSwapInvariant(_oGLiq, _omega, _nGLiq, _psi);\n                return outputAmt_;\n            } else {\n                _nGLiq = _oGLiq + _inputAmt + outputAmt_;\n                _nBals[_outputIndex] = _oBals[_outputIndex].add(outputAmt_);\n            }\n        }\n  }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Undefined_Behavior",
+            "Location": "if ((outputAmt_ = _omega < _psi ? -(_inputAmt + _omega - _psi) : -(_inputAmt + _lambda.us_mul(_omega - _psi))) / 1e13 == outputAmt_ / 1e13) {\n",
+            "Type": "Undefined Behavior",
+            "Description": "Use of undefined behavior in equality check",
+            "Repair": "Short term, rewrite the if statement such that it does not use and assign the same variable in an equality check. Long term, ensure that the codebase does not contain undefined Solidity or EVM behavior."
+            },
+        {
+            "Name": "Data_Validation ",
+            "Location": "if ((outputAmt_ = _omega < _psi ? -(_inputAmt + _omega - _psi) : -(_inputAmt + _lambda.us_mul(_omega - _psi))) / 1e13 == outputAmt_ / 1e13) {\n",
+            "Type": "Data Validation ",
+            "Description": "Data Validation ",
+            "Repair": "Short term, change all instances of us_mul and us_div to ABDKMath64x64.mul and .div, respectively, which also operate on two fixed-point numbers but have overflow/underflow protections. Long term, review all critical arithmetic to ensure that it accounts for underflows, overflows, and the loss of precision. Consider using SafeMath and the safe functions of ABDKMath64x64 where possible to prevent underflows and overflows."
+            }
+        ]
+    },
+    {
+    "Code": "function getRate() public view override returns (uint256) {\nreturn uint256(1e8);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Data_Validation",
+            "Location": "function getRate() public view override returns (uint256) {\nreturn uint256(1e8);\n}\n",
+            "Type": "Data Validation",
+            "Description": "System always assumes USDC is equivalent to USD",
+            "Repair": "Short term, replace the hard-coded integer literal in the UsdcToUsdAssimilator¡¯s getRate method with a call to the relevant Chainlink oracle, as is done in other assimilator contracts. Long term, ensure that the system is robust against a decrease in the price of any stablecoin. "
+            }
+        ]
+    },
+    {
+    "Code": "function delegate(address _callee, bytes memory _data) internal returns (bytes memory) {\n(bool _success, bytes memory returnData_) = _callee.delegatecall(_data);\nassembly {\nif eq(_success, 0) {\n  revert(add(returnData_, 0x20), returndatasize())\n}\n}\nreturn returnData_;\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": " Data_Validation",
+            "Location": "function delegate(address _callee, bytes memory _data) internal returns (bytes memory) {\n(bool _success, bytes memory returnData_) = _callee.delegatecall(_data);\nassembly {\nif eq(_success, 0) {\n  revert(add(returnData_, 0x20), returndatasize())\n}\n}\nreturn returnData_;\n}\n",
+            "Type": " Data_Validation",
+            "Description": "Missing contract existence checks prior to delegatecall",
+            "Repair": "Short term, consider adding contract existence checks to the delegate function to prevent future errors in the event that these code paths change. Long term, review all contract code that performs low-level calls to ensure that contract existence checks are conducted before those calls where necessary."
+            }
+        ]
+    }
+]

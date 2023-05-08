@@ -1,0 +1,40 @@
+[    
+    {
+    "Code": "fn verify_bid_limit(\n    price: u128,\n    amount: u128,\n    maker_fee: Permill,\n    taker_fee: Permill,\n    base: u32,\n    quote: u32,\n    maker_accounts: u8,\n    pages: u8,\n    dominator: &T::AccountId,\n    leaves: &[MerkleLeaf],\n) -> Result<ClearingResult<T>, DispatchError> {\n    let leaves_count = (4u8 + maker_accounts + pages) as usize;\n    ensure!(leaves.len() == leaves_count, Error::<T>::ProofsUnsatisfied);\n    ensure!(maker_accounts % 2 == 0, Error::<T>::ProofsUnsatisfied);\n    let (ask0, bid0) = leaves[0].split_old_to_u128();\n    let (ask1, bid1) = leaves[0].split_new_to_u128();\n    let ask_delta = ask0 - ask1;\n    let bid_delta = bid1 - bid0;\n    let taker_base = &leaves[maker_accounts as usize + 1];\n    let (tba0, tbf0) = taker_base.split_old_to_u128();\n    let (tba1, tbf1) = taker_base.split_new_to_u128();\n    let tb_delta = (tba1 + tbf1) - (tba0 + tbf0);\n    let (bk, taker_b_id) = taker_base.try_get_account::<T>()?;\n    ensure!(\n        Self::has_authorized_exactly_on(\n            taker_b_id.clone(),\n            base.into(),\n            (tba0 + tbf0).into(),\n            &dominator,\n        ),\n        Error::<T>::ProofsUnsatisfied\n    );\n    let taker_quote = &leaves[maker_accounts as usize + 2];\n    let (tqa0, tqf0) = taker_quote.split_old_to_u128();\n    let (tqa1, tqf1) = taker_quote.split_new_to_u128();\n    let (qk, taker_q_id) = taker_quote.try_get_account::<T>()?;\n    ensure!(\n        Self::has_authorized_exactly_on(\n            taker_q_id.clone(),\n            quote.into(),\n            (tqa0 + tqf0).into(),\n            &dominator,\n        ),\n        Error::<T>::ProofsUnsatisfied\n    );\n    let tq_delta = (tqa0 + tqf0) - (tqa1 + tqf1);\n   }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "let tq_delta = (tqa0 + tqf0) - (tqa1 + tqf1);",
+            "Type": "overflow",
+            "Description": "Value Overflow Audit",
+            "Repair": "Use checkd_add/checkd_sub/checkd_mul/checkd_div to avoid value overflow, instead of using +-*/, +=,-="
+            }
+        ]
+    },
+    {
+    "Code": "fn claim_reward(\n    who: &T::AccountId,\n    at: T::BlockNumber,\n) -> Result<Balance<T>, DispatchError> {\n    let at = at - at % Self::era_duration();\n    let confirmed = Self::rotate_reward(at, Zero::zero(), &who)?;\n    if confirmed == Zero::zero() {\n        return Ok(Zero::zero());\n    }\n    Rewards::<T>::try_mutate_exists(who, |r| -> Result<Balance<T>, DispatchError> {\n        ensure!(r.is_some(), Error::<T>::RewardNotFound);\n        let mut reward: Reward<Balance<T>, Volume<T>, Era<T>> = r.take().unwrap();\n        let confirmed = reward.confirmed;\n        reward.confirmed = Zero::zero();\n        if reward.pending_vol > Zero::zero() {\n            r.replace(reward);\n        }\n        if confirmed > Zero::zero() {\n            T::Asset::try_mutate_account(&T::Asset::native_token_id(), &who, |b| {\n                Ok(b.0 += confirmed)\n            })?;\n        }\n        Ok(confirmed)\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "Ok(b.0 += confirmed)",
+            "Type": "overflow",
+            "Description": "Value Overflow Audit",
+            "Repair": "Use checkd_add/checkd_sub/checkd_mul/checkd_div to avoid value overflow, instead of using +-*/, +=,-="
+            }
+        
+        ]
+    },
+
+    {
+    "Code": "fn rotate_reward(\n    at: T::BlockNumber,\n    vol: Volume<T>,\n    account: &T::AccountId,\n) -> Result<Balance<T>, DispatchError> {\n    Rewards::<T>::try_mutate(account, |r| -> Result<Balance<T>, DispatchError> {\n        if at == r.last_modify {\n            r.pending_vol = r\n                .pending_vol\n                .checked_add(&vol)\n                .ok_or(Error::<T>::Overflow)?;\n            Ok(r.confirmed)\n        } else {\n            if r.pending_vol == Zero::zero() {\n                r.pending_vol = vol;\n                r.last_modify = at;\n            } else {\n                let pending_vol: u128 = r.pending_vol.into();\n                let total_vol: u128 = Volumes::<T>::get(r.last_modify).into();\n                ensure!(total_vol > 0, Error::<T>::DivideByZero);\n                let p: Perquintill = Perquintill::from_rational(pending_vol, total_vol);\n                let era_reward: u128 = T::RewardsPerEra::get().into();\n                let a = p * era_reward;\n                r.confirmed = r\n                    .confirmed\n                    .checked_add(&a.into())\n                    .ok_or(Error::<T>::Overflow)?;\n                r.pending_vol = vol;\n                r.last_modify = at;\n            }\n            Ok(r.confirmed)\n        }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "let a = p * era_reward;",
+            "Type": "overflow",
+            "Description": "Value Overflow Audit",
+            "Repair": "Use checkd_add/checkd_sub/checkd_mul/checkd_div to avoid value overflow, instead of using +-*/, +=,-="
+            }
+        ]
+    }
+]

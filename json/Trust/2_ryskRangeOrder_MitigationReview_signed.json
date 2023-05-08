@@ -1,0 +1,50 @@
+[    
+    {
+    "Code": "function _transferFromParentPool(\n        address token,\n        uint256 amountDesired,\n        uint256 balance\n    ) private {\n        uint256 transferAmount = amountDesired - balance;\n        uint256 parentPoolBalance = ILiquidityPool(parentLiquidityPool).getBalance(token);\n        if (parentPoolBalance < transferAmount) { revert CustomErrors.WithdrawExceedsLiquidity(); }\n        SafeTransferLib.safeTransferFrom(token, address(parentLiquidityPool), address(this), transferAmount);\n    }",
+    "VulnerabilityDesc": [
+        {
+            "Name": " Logic_flaw",
+            "Location": "uint256 transferAmount = amountDesired - balance;\n       uint256 parentPoolBalance = ILiquidityPool(parentLiquidityPool).getBalance(token);\n       if (parentPoolBalance < transferAmount) { revert CustomErrors.WithdrawExceedsLiquidity(); }\n       SafeTransferLib.safeTransferFrom(token, address(parentLiquidityPool), address(this), transferAmount);\n",
+            "Type": " Logic flaw",
+            "Description": "createUniswapRangeOrder() charges manager instead of pool",
+            "Repair": "Ensure safeTransfer from uses parentLiquidityPool as source."
+            }
+        ]    
+    },
+    {
+    "Code": "function getPoolPrice() public view returns (uint256 price, uint256 inversed){\n        (uint160 sqrtPriceX96, , , , , , ) = pool.slot0();\n        uint8 decimals = _getOffsetDecimals();\n        price = sqrtPriceX96ToUint(sqrtPriceX96, decimals);\n        inversed = 1e36 / price;\n    }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "function getPoolPrice() public view returns (uint256 price, uint256 inversed){\n        (uint160 sqrtPriceX96, , , , , , ) = pool.slot0();\n        uint8 decimals = _getOffsetDecimals();\n        price = sqrtPriceX96ToUint(sqrtPriceX96, decimals);\n        inversed = 1e36 / price;\n    }\n",
+            "Type": "overflow",
+            "Description": "multiplication overflow in getPoolPrice() likely",
+            "Repair": "Consider converting the sqrtPrice to a 60x18 format and performing arithmetic operations using the PRBMathUD60x18 library."
+            }
+        ]    
+    },
+    {
+    "Code": "uint256 intermediate = inWei.div(10**(token1.decimals() - token0.decimals()));",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "uint256 intermediate = inWei.div(10**(token1.decimals() - token0.decimals()));",
+            "Type": "overflow",
+            "Description": " Hedging won't work if token1.decimals() < token0.decimals()",
+            "Repair": "Refactor the calculation to support different decimals combinations. Additionally, add more comprehensive tests to detect similar issues in the future."
+            }
+        ]    
+    },
+    {
+    "Code": "function _sqrtPriceX96ToUint(uint160 sqrtPriceX96)\n private\n pure\n returns (uint256)\n{\n uint256 numerator1 = uint256(sqrtPriceX96) * \nuint256(sqrtPriceX96);\n return FullMath.mulDiv(numerator1, 1, 1 << 192);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "overflow",
+            "Location": "function _sqrtPriceX96ToUint(uint160 sqrtPriceX96)\n private\n pure\n returns (uint256)\n{\n uint256 numerator1 = uint256(sqrtPriceX96) * \nuint256(sqrtPriceX96);\n return FullMath.mulDiv(numerator1, 1, 1 << 192);\n}\n",
+            "Type": "overflow",
+            "Description": "Overflow danger in _sqrtPriceX96ToUint",
+            "Repair": "Perform the multiplication after converting the numbers to 60x18 variables"
+            }
+        ]    
+    }
+]

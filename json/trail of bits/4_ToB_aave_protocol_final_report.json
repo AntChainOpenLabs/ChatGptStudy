@@ -1,0 +1,26 @@
+[    
+    {
+    "Code": "function updateReserveTotalBorrowsByRateMode( \n  address _reserve, \n  address _user, \n  uint256 _principalBalance, \n  uint256 _balanceIncrease, \n  uint256 _newBorrowRateMode, \n  uint256 _fixedRate \n  ) external { \n  CoreLibrary.InterestRateMode currentRateMode = getUserCurrentBorrowRateMode(_reserve, _user);\n   CoreLibrary.ReserveData storage reserve = reserves[_reserve]; \n  if (currentRateMode == CoreLibrary.InterestRateMode.FIXED) { \n  CoreLibrary.UserReserveData storage user = usersReserveData[_user][_reserve]; \n  reserve.decreaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance, user.fixedBorrowRate); \n  if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.FIXED)) { \n  reserve.increaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance.add(_balanceIncrease), _fixedRate); \n  } else if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.VARIABLE)) {  \n reserve.increaseTotalBorrowsVariable(_principalBalance.add(_balanceIncrease)); \n  } } else { \n if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.FIXED)) { \n reserve.decreaseTotalBorrowsVariable(_principalBalance); \nreserve.increaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance.add(_balanceIncrease), _fixedRate); \n } else if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.VARIABLE)) { \n reserve.increaseTotalBorrowsVariable(_balanceIncrease); } \n } \n }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": " Access_Controls ",
+            "Location": "function updateReserveTotalBorrowsByRateMode( \n  address _reserve, \n  address _user, \n  uint256 _principalBalance, \n  uint256 _balanceIncrease, \n  uint256 _newBorrowRateMode, \n  uint256 _fixedRate \n  ) external { \n  CoreLibrary.InterestRateMode currentRateMode = getUserCurrentBorrowRateMode(_reserve, _user);\n   CoreLibrary.ReserveData storage reserve = reserves[_reserve]; \n  if (currentRateMode == CoreLibrary.InterestRateMode.FIXED) { \n  CoreLibrary.UserReserveData storage user = usersReserveData[_user][_reserve]; \n  reserve.decreaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance, user.fixedBorrowRate); \n  if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.FIXED)) { \n  reserve.increaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance.add(_balanceIncrease), _fixedRate); \n  } else if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.VARIABLE)) {  \n reserve.increaseTotalBorrowsVariable(_principalBalance.add(_balanceIncrease)); \n  } } else { \n if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.FIXED)) { \n reserve.decreaseTotalBorrowsVariable(_principalBalance); \nreserve.increaseTotalBorrowsFixedAndUpdateAverageRate(_principalBalance.add(_balanceIncrease), _fixedRate); \n } else if (_newBorrowRateMode == uint256 (CoreLibrary.InterestRateMode.VARIABLE)) { \n reserve.increaseTotalBorrowsVariable(_balanceIncrease); } \n } \n }\n",
+            "Type": " Access Controls ",
+            "Description": "Lack of accesscontrolsin updateReserveTotalBorrowsByRateMode,it currently can be called by any user.",
+            "Repair": "Short term, protect setter operations from being called by unexpected addresses. The setter functions that need to be protected are in LendingPoolAddressesProvider, NetworkMetadataProvider, and their base contracts (AddressStorage and UintStorage). This can be done using an Ownable contract and setting the owner to a multi-signature wallet, which will avoid a single point of failure, in case of a private-key compromise. Long term, implement a governance system to agree on changes."
+            }
+        ]
+    },
+    {
+    "Code": "function repay(address _reserve, uint256 _amount, address _onBehalfOf)external payable nonReentrant {\n uint256 compoundedBorrowBalance = core.getUserCompoundedBorrowBalance(_reserve, _onBehalfOf);\n uint256 principalBalance = core.getUserPrincipalBorrowBalance(_reserve, _onBehalfOf);\n uint256 originationFee = core.getUserOriginationFee(_reserve,_onBehalfOf);\n require(compoundedBorrowBalance > 0 );\n require(compoundedBorrowBalance.add(originationFee) >= _amount || _amount == UINT_MAX_VALUE);\n }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Timing",
+            "Location": "function repay(address _reserve, uint256 _amount, address _onBehalfOf)external payable nonReentrant {\n uint256 compoundedBorrowBalance = core.getUserCompoundedBorrowBalance(_reserve, _onBehalfOf);\n uint256 principalBalance = core.getUserPrincipalBorrowBalance(_reserve, _onBehalfOf);\n uint256 originationFee = core.getUserOriginationFee(_reserve,_onBehalfOf);\n require(compoundedBorrowBalance > 0);\n require(compoundedBorrowBalance.add(originationFee) >= _amount || _amount == UINT_MAX_VALUE);\n }\n",
+            "Type": "Timing",
+            "Description": "borrow/repay callsrace condition can be exploited to repay more than expected",
+            "Repair": "Short term, one possible mitigation is to instruct the users to document this behavior to make sure users are aware of this risk. Long term, consider requesting the user input an upper bound of the price that he is willing to repay. Revert if the load is higher than expected. Alternatively, remove the feature to repay the entire loan using uint(-1)."
+            }
+        ]
+    }
+]

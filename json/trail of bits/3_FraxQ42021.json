@@ -1,0 +1,62 @@
+[    
+    {
+    "Code": "function amoMinterBorrow(uint256 collateral_amount) external onlyAMOMinters {\nuint256 minter_col_idx = IFraxAMOMinter(msg.sender).col_idx();\nTransferHelper.safeTransfer(collateral_addresses[minter_col_idx], msg.sender,\ncollateral_amount);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Access_Controls ",
+            "Location": "function amoMinterBorrow(uint256 collateral_amount) external onlyAMOMinters {\nuint256 minter_col_idx = IFraxAMOMinter(msg.sender).col_idx();\nTransferHelper.safeTransfer(collateral_addresses[minter_col_idx], msg.sender,\ncollateral_amount);\n}\n",
+            "Type": "Access Controls ",
+            "Description": "amoMinterBorrow cannot be paused",
+            "Repair": "Short term, require recollateralizePaused[minter_col_idx] to be false and collateralEnabled[minter_col_idx] to be true for a call to amoMinterBorrow to succeed. This will help the FraxPoolV3 custodian to limit the scope of an attack. Long term, regularly review all uses of contract modifiers, such as collateralEnabled. Doing so will help to expose bugs like the one described here."
+            }
+        ]
+    },
+    {
+    "Code": "function removeMinter(address minter_address) external onlyByOwnGov {\n  require(minter_address != address(0), "Zero address detected");\n  require(minters[minter_address] == true, "Address nonexistant");\n  delete minters[minter_address];\n  for (uint i = 0; i < minters_array.length; i++){\n  if (minters_array[i] == minter_address) {\n  minters_array[i] = address(0);\n  break;\n  }\n  }\n  emit MinterRemoved(minter_address);\n  }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Undefined_Behavior",
+            "Location": "for (uint i = 0; i < minters_array.length; i++){\n  if (minters_array[i] == minter_address) {\n  minters_array[i] = address(0);\n  and keep the indices the same\n  break;\n  }\n  }\n",
+            "Type": "Undefined Behavior",
+            "Description": "Array updates are not constant time",
+            "Repair": "Short term, enforce the following policy throughout the codebase: an array’s size is bounded, or the array is linearly searched, but never both. Arrays that grow without bound can be updated by moving computations, such as the computation of the index that needs to be updated, off-chain. Alternatively, the code that uses the array could be adjusted to eliminate the need for the array or to instead use a linked list. Adopting these changes will help ensure that the success of critical operations is not dependent on block gas limits. Long term, incorporate a check for this problematic code pattern into the CI pipeline. In the medium term, such a check might simply involve regular expressions. In the longer term, use Semgrep for Solidity if or when such support becomes stable. This will help to ensure the problem is not reintroduced into the codebase. "
+            }
+        ]
+    },
+    {
+    "Code": "function withdrawRewards(\n  uint256 crv_amt,\n  uint256 cvx_amt,\n  uint256 cvxCRV_amt,\n  uint256 fxs_amt\n  ) external onlyByOwnGovCust {\n  if (crv_amt > 0) TransferHelper.safeTransfer(crv_address, msg.sender, crv_amt);\n  if (cvx_amt > 0) TransferHelper.safeTransfer(address(cvx), msg.sender, cvx_amt);\n  if (cvxCRV_amt > 0) TransferHelper.safeTransfer(cvx_crv_address, msg.sender, cvxCRV_amt);\n  if (fxs_amt > 0) TransferHelper.safeTransfer(fxs_address, msg.sender, fxs_amt);\n  }\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Access_Controls",
+            "Location": "function withdrawRewards(\n  uint256 crv_amt,\n  uint256 cvx_amt,\n  uint256 cvxCRV_amt,\n  uint256 fxs_amt\n  ) external onlyByOwnGovCust {\n  if (crv_amt > 0) TransferHelper.safeTransfer(crv_address, msg.sender, crv_amt);\n  if (cvx_amt > 0) TransferHelper.safeTransfer(address(cvx), msg.sender, cvx_amt);\n  if (cvxCRV_amt > 0) TransferHelper.safeTransfer(cvx_crv_address, msg.sender, cvxCRV_amt);\n  if (fxs_amt > 0) TransferHelper.safeTransfer(fxs_address, msg.sender, fxs_amt);\n  }\n",
+            "Type": "Access Controls ",
+            "Description": "Convex_AMO_V2 custodian can withdraw rewards",
+            "Repair": "Short term, determine whether the Convex_AMO_V2 custodian requires the ability to withdraw rewards. If so, document this as a security concern. This will help users to understand the risks associated with depositing funds into the Convex_AMO_V2 contract. Short term, determine whether the Convex_AMO_V2 custodian requires the ability to withdraw rewards. If so, document this as a security concern. This will help users to understand the risks associated with depositing funds into the Convex_AMO_V2 contract."
+            }
+        ]
+    },
+    {
+    "Code": "function showAllocations() public view returns (uint256[10] memory return_arr) {\n  uint256 lp_owned = (mim3crv_metapool.balanceOf(address(this)));\n  uint256 lp_value_in_vault = MIM3CRVInVault();\n  lp_owned = lp_owned.add(lp_value_in_vault);\n  uint256 mim3crv_supply = mim3crv_metapool.totalSupply();\n  uint256 mim_withdrawable = 0;\n  uint256 _3pool_withdrawable = 0;\n  if (lp_owned > 0) _3pool_withdrawable = mim3crv_metapool.calc_withdraw_one_coin(lp_owned, 1);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Data_Validation",
+            "Location": "if (lp_owned > 0) _3pool_withdrawable = mim3crv_metapool.calc_withdraw_one_coin(lp_owned, 1); // 1: 3pool index",
+            "Type": "Data Validation",
+            "Description": "calc_withdraw_one_coin is vulnerable to manipulation",
+            "Repair": "Short term, do not use the Curve AMM spot price to value collateral.Long term, use an oracle or get_virtual_price to reduce the likelihood of manipulation."
+            }
+        ]
+    },
+    {
+    "Code": "function provideLiquidity(uint256 lpTokenAmount) external {\n  require(totalSupply() != 0, 'EC3');\n  longTermOrders.executeVirtualOrdersUntilCurrentBlock(reserveMap);\n   uint256 amountAIn = lpTokenAmount * reserveMap[tokenA] / totalSupply();\n  uint256 amountBIn = lpTokenAmount * reserveMap[tokenB] / totalSupply();\n  ERC20(tokenA).transferFrom(msg.sender, address(this), amountAIn);\n  ERC20(tokenB).transferFrom(msg.sender, address(this), amountBIn);\n  reserveMap[tokenA] += amountAIn;\n  reserveMap[tokenB] += amountBIn;\n  _mint(msg.sender, lpTokenAmount);\n  emit LiquidityProvided(msg.sender, lpTokenAmount);\n}\n",
+    "VulnerabilityDesc": [
+        {
+            "Name": "Data_Validation",
+            "Location": "unction provideLiquidity(uint256 lpTokenAmount) external {\n require(totalSupply() != 0, 'EC3');\n longTermOrders.executeVirtualOrdersUntilCurrentBlock(reserveMap);\n  uint256 amountAIn = lpTokenAmount * reserveMap[tokenA] / totalSupply();\n uint256 amountBIn = lpTokenAmount * reserveMap[tokenB] / totalSupply();\n ERC20(tokenA).transferFrom(msg.sender, address(this), amountAIn);\n ERC20(tokenB).transferFrom(msg.sender, address(this), amountBIn);\n\n",
+            "Type": "Data Validation",
+            "Description": " Missing check of return value of transfer and transferFrom",
+            "Repair": "Short term, fix the instance described above. Then, fix all instances detected by slither . --detect unchecked-transfer. Long term, review the Token Integration Checklist in appendix D and integrate Slither into the project’s CI pipeline to prevent regression and catch new instances proactively."
+            }
+        ]
+    }
+]
