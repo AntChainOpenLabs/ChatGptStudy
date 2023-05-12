@@ -1,6 +1,6 @@
 import threading
 
-import markdown
+# import markdown
 import os
 import os.path
 import re
@@ -9,7 +9,7 @@ import json
 import requests
 import time
 
-from pdf import *
+from get_PDF_code.pdf import *
 from Embedding_Vul_Text_for_serarch import *
 from Question_answering_using_embeddings import *
 
@@ -31,6 +31,8 @@ mid_count = 0
 no_code = 0
 have_code = 0
 
+json_bug_return  = []  # return相关未校验bug
+json_bug_precision =  [] #精度损失相关校验bug
 
 def report(dir_path):
     # print("{} start report, dir_path: {}".format(threading.currentThread().getName(), dir_path))
@@ -334,7 +336,7 @@ def create_json(section_SAVE_PATH,  file_name, code_paths):
             VulnerabilityDesc[contracts_name] = [bug_json]
 
     # 处理json数据
-    json_file = open(json_name, "w")
+
     have_code_flag = False
     for sol_names, bug_jsons in VulnerabilityDesc.items():
         j = {
@@ -364,6 +366,10 @@ def create_json(section_SAVE_PATH,  file_name, code_paths):
         else:
             have_code += len(bug_jsons)
             have_code_flag = True
+            # 加入额外bug的数据
+            global json_bug_return,json_bug_precision
+            add_bug_to_json(json_bug_return, j, "return")
+            add_bug_to_json(json_bug_precision, j, "precision")
         # 解锁
         LOCK.release()
         # print("{} release lock 5, file: {}".format(threading.currentThread().getName(), file_name))
@@ -371,20 +377,43 @@ def create_json(section_SAVE_PATH,  file_name, code_paths):
         # json.dump(j,json_file,indent=4)
         # json_file.write("\n")
         final_json.append(j)
-    json.dump(final_json, json_file, indent=4)
-    json_file.close()
-    if not have_code_flag : #记录没有code的文件
-        # 加锁
-        # print("{} acquire lock 6, file: {}".format(threading.currentThread().getName(), file_name))
-        LOCK.acquire()
-        with open("no_code_file.txt","a+",encoding="utf-8") as f:
-            f.write(file_name)
-            f.write("\n")
-        # 解锁
-        LOCK.release()
-        # print("{} release lock 6, file: {}".format(threading.currentThread().getName(), file_name))
+
+    # 写入json文件
+    # json_file = open(json_name, "w")
+    # json.dump(final_json, json_file, indent=4)
+    # json_file.close()
+    #
+    # if not have_code_flag : #记录没有code的文件
+    #     # 加锁
+    #     # print("{} acquire lock 6, file: {}".format(threading.currentThread().getName(), file_name))
+    #     LOCK.acquire()
+    #     with open("no_code_file.txt","a+",encoding="utf-8") as f:
+    #         f.write(file_name)
+    #         f.write("\n")
+    #     # 解锁
+    #     LOCK.release()
+    #     # print("{} release lock 6, file: {}".format(threading.currentThread().getName(), file_name))
 
     return
+
+def add_bug_to_json(json_dict,bug_json,bug_type):
+
+    for vul in bug_json["VulnerabilityDesc"]:
+        if bug_type.lower() in vul["Type"].lower().split(" "):
+            json_dict.append(
+                {
+                    "Code": bug_json["Code"],
+                    "VulnerabilityDesc" :[
+                        vul
+                    ]
+                }
+            )
+
+    return
+
+
+
+
 
 
 # 根据md提取漏洞信息
@@ -1076,6 +1105,14 @@ if __name__ == "__main__":
 
     end_time = time.time()  # 记录程序结束运行时间
     print('total cost %f second' % (end_time - start_time))
+
+
+    with open("json/bug_return.json", "w", encoding="utf-8") as f:
+        print("return 相关bug个数: {}".format(len(json_bug_return)))
+        json.dump(json_bug_return, f, indent=4)
+    with open("json/bug_precision.json", "w", encoding="utf-8") as f:
+        print("precision 相关bug个数: {}".format(len(json_bug_precision)))
+        json.dump(json_bug_precision, f, indent=4)
 
     # 测试
     # report(test_path)

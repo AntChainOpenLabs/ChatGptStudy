@@ -41,6 +41,6 @@ def pdf2txt(from_file,to_file):
 
 
 if __name__ == '__main__':
-    from_file = "D:\\学习资料\\学校课程\\研究生\\项目\\陈厅\\蚂蚁\\SolBugReports\\Beosin\\1BOX_202109071819.pdf"
-    to_file = "txt/test3.txt"
+    from_file = "E:\\project2\\ANT\\SolBugReports\\Beosin\\1BOX_202109071819.pdf"
+    to_file = r"test3.txt"
     pdf2txt(from_file,to_file)
