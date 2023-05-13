@@ -1,5 +1,137 @@
 [
     {
+        "Code": "   {\n                uint256 previousInterestRate = loan.perAnumInterestRate;\n                uint256 previousDurationSeconds = loan.durationSeconds;\n\n                require(interestRate <= previousInterestRate, 'rate too high');\n                require(durationSeconds >= previousDurationSeconds, 'duration too low');\n\n                require(Math.ceilDiv(previousLoanAmount * requiredImprovementRate, SCALAR) <= amountIncrease\n                || previousDurationSeconds + Math.ceilDiv(previousDurationSeconds * requiredImprovementRate, SCALAR) <= durationSeconds \n                || (previousInterestRate != 0 // do not allow rate improvement if rate already 0\n                    && previousInterestRate - Math.ceilDiv(previousInterestRate * requiredImprovementRate, SCALAR) >= interestRate), \n                \"insufficient improvement\");\n\n                 accumulatedInterest = _interestOwed(\n                    previousLoanAmount,\n                    loan.lastAccumulatedTimestamp,\n                    previousInterestRate,\n                    loan.accumulatedInterest\n                );\n            }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_1",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// @notice The current number of votes required to submit a proposal\n        function proposalThreshold() public view returns (uint256) {\n            unchecked {\n                return (settings.token.totalSupply() * settings.proposalThresholdBps) / 1e18;\n            }\n        }\n\n        /// @notice The current number of votes required to be in favor of a proposal in order to reach quorum\n        function quorum() public view returns (uint256) {\n            unchecked {\n                return (settings.token.totalSupply() * settings.quorumThresholdBps) / 1e18;\n            }\n        }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_2",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "  /// @inheritdoc IPair\n  function invariant(uint256 amount0, uint256 amount1, uint256 liquidity) public view override returns (bool) {\n    if (liquidity == 0) return (amount0 == 0 && amount1 == 0);\n\n    uint256 scale0 = FullMath.mulDiv(amount0 * token0Scale, 1e18, liquidity) ;//@audit-info change here\n    uint256 scale1 = FullMath.mulDiv(amount1 * token1Scale, 1e18, liquidity) ;//@audit-info change here\n\n    if (scale1 > 2 * upperBound) revert InvariantError();\n\n    uint256 a = scale0 * 1e18;\n    uint256 b = scale1 * upperBound;\n    uint256 c = (scale1 * scale1) / 4;\n    uint256 d = upperBound * upperBound;\n\n    return a + b >= c + d;\n  }\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_3",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function withdraw(address _recipient, uint256 _amount) external override onlyAdmin {\n    address _token = vault.getToken();\n    uint256 beforeBalance = IDetailedERC20(_token).balanceOf(address(this));\n    \n    vault.withdraw(_tokensToShares(_amount));\n\n    IDetailedERC20(_token).safeTransfer(\n        _recipient,\n        IDetailedERC20(_token).balanceOf(address(this)) - beforeBalance\n    );\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_4",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function _pledge(uint256 pledgeId, address user, uint256 amount, uint256 endTimestamp) internal {\n        if(pledgeId >= pledgesIndex()) revert Errors.InvalidPledgeID();\n        if(amount == 0) revert Errors.NullValue();\n\n        // Load Pledge parameters & check the Pledge is still active\n        Pledge memory pledgeParams = pledges[pledgeId];\n        if(pledgeParams.closed) revert Errors.PledgeClosed();\n        if(pledgeParams.endTimestamp <= block.timestamp) revert Errors.ExpiredPledge();\n\n        // To join until the end of the pledge, user can input 0 as endTimestamp\n        // so it's override by the Pledge's endTimestamp\n        if(endTimestamp == 0) endTimestamp = pledgeParams.endTimestamp;\n        if(endTimestamp > pledgeParams.endTimestamp || endTimestamp != _getRoundedTimestamp(endTimestamp)) revert Errors.InvalidEndTimestamp();\n\n        // Calculated the effective Pledge duration\n        uint256 boostDuration = endTimestamp - block.timestamp;\n\n        // Check that the user has enough boost delegation available & set the correct allowance to this contract\n        delegationBoost.checkpoint_user(user);\n        if(delegationBoost.allowance(user, address(this)) < amount) revert Errors.InsufficientAllowance();\n        if(delegationBoost.delegable_balance(user) < amount) revert Errors.CannotDelegate();\n\n        uint256 slope = amount / boostDuration;\n        uint256 bias = slope * boostDuration;\n        if(delegationBoost.adjusted_balance_of(pledgeParams.receiver) + bias > pledgeParams.targetVotes) revert Errors.TargetVotesOverflow();\n        delegationBoost.boost(\n            pledgeParams.receiver,\n            amount,\n            endTimestamp,\n            user\n        );\n        \n        uint256 totalDelegatedAmount = ((bias * boostDuration) + bias) / 2;\n        // Then we can calculate the total amount of rewards for this Boost\n        uint256 rewardAmount = (totalDelegatedAmount * pledgeParams.rewardPerVote) / UNIT;\n\n        if(rewardAmount > pledgeAvailableRewardAmounts[pledgeId]) revert Errors.RewardsBalanceTooLow();\n        pledgeAvailableRewardAmounts[pledgeId] -= rewardAmount;\n\n        // Send the rewards to the user\n        IERC20(pledgeParams.rewardToken).safeTransfer(user, rewardAmount);\n\n        emit Pledged(pledgeId, user, amount, endTimestamp);\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_5",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function compensate(uint256 _amount)\n        external\n        override\n        returns (uint256 _compensated)\n    {\n        require(\n            allocPoints[msg.sender] > 0,\n            \"ERROR_COMPENSATE_UNAUTHORIZED_CALLER\"\n        );\n        uint256 _value = vault.underlyingValue(address(this));\n        if (_value >= _amount) {\n            //When the deposited value without earned premium is enough to cover\n            vault.offsetDebt(_amount, msg.sender);\n            //vault.transferValue(_amount, msg.sender);\n            _compensated = _amount;\n        } else {\n            //Withdraw credit to cashout the earnings\n            uint256 _shortage;\n    if (totalLiquidity() < _amount) {\n    //Insolvency case\n    _shortage = _amount - _value;\n    uint256 _cds = ICDSTemplate(registry.getCDS(address(this)))\n        .compensate(_shortage);\n    _compensated = vault.underlyingValue(address(this));\n}\nvault.offsetDebt(_compensated, msg.sender);}\n        adjustAlloc();\n        emit Compensated(msg.sender, _compensated);\n    }\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_6",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function rebalance(address tokenAddress, uint256[] calldata percentages)\n    external\n    override\n    checkMarketSupported(tokenAddress)\n    onlyAdmin\n{\n    IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);\n    require(percentages.length + 1 == moneyMarkets.length, \"AssetManager: percentages error\");\n\n    for (uint256 i = 0; i < moneyMarkets.length; i++) {\n        if (!moneyMarkets[i].supportsToken(tokenAddress)) {\n            continue;\n        }\n        moneyMarkets[i].withdrawAll(tokenAddress, address(this));\n    }\n\n    uint256 tokenSupply = token.balanceOf(address(this));\n\n    for (uint256 i = 0; i < percentages.length; i++) {\n        if (!moneyMarkets[i].supportsToken(tokenAddress)) {\n            continue;\n        }\n        uint256 amountToDeposit = tokenSupply.mul(percentages[i]).div(10000);\n        if (amountToDeposit == 0) {\n            continue;\n        }\n        token.safeTransfer(address(moneyMarkets[i]), amountToDeposit);\n        moneyMarkets[i].deposit(tokenAddress);\n    }\n\n    uint256 remainingTokens = token.balanceOf(address(this));\n    if (moneyMarkets[moneyMarkets.length - 1].supportsToken(tokenAddress) && remainingTokens > 0) {\n        token.safeTransfer(address(moneyMarkets[moneyMarkets.length - 1]), remainingTokens);\n        moneyMarkets[moneyMarkets.length - 1].deposit(tokenAddress);\n    }\n\n    require(token.balanceOf(address(this)) == 0, \"AssetManager: there are remaining funds in the fund pool\");\n\n    emit LogRebalance(tokenAddress, percentages);\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_7",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function _pull(\n        address to,\n        uint256[] memory tokenAmounts,\n        bytes memory options\n    ) internal override returns (uint256[] memory actualTokenAmounts) {\n        uint256 maxLoss = abi.decode(options, (uint256));\n        for (uint256 i = 0; i < _yTokens.length; i++) {\n            if (tokenAmounts[i] == 0) {\n                continue;\n            }\n\n            IYearnVault yToken = IYearnVault(_yTokens[i]);\n            uint256 yTokenAmount = ((tokenAmounts[i] * (10**yToken.decimals())) / yToken.pricePerShare());\n            uint256 balance = yToken.balanceOf(address(this));\n            if (yTokenAmount > balance) {\n                yTokenAmount = balance;\n            }\n            if (yTokenAmount == 0) {\n                continue;\n            }\n            tokenAmounts[i] = yToken.withdraw(yTokenAmount, to, maxLoss);\n            (tokenAmounts[i], address(this));\n        }\n        actualTokenAmounts = tokenAmounts;\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_8",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "function _accrueInterest() private {\n    if (totalSupply == 0 || totalLiquidityBorrowed == 0) {\n        lastUpdate = block.timestamp;\n        return;\n    }\n\n    uint256 timeElapsed = block.timestamp - lastUpdate;\n    if (timeElapsed == 0) return;\n\n    uint256 _totalLiquidityBorrowed = totalLiquidityBorrowed; // SLOAD\n    uint256 totalLiquiditySupplied = totalLiquidity.add(_totalLiquidityBorrowed); // SLOAD\n\n    uint256 borrowRate = getBorrowRate(_totalLiquidityBorrowed, totalLiquiditySupplied);\n\n    uint256 dilutionLPRequested = borrowRate.mul(_totalLiquidityBorrowed).mul(timeElapsed).div(365 days);\n    uint256 dilutionLP = dilutionLPRequested > _totalLiquidityBorrowed ? _totalLiquidityBorrowed : dilutionLPRequested;\n    uint256 dilutionSpeculative = convertLiquidityToCollateral(dilutionLP);\n\n    totalLiquidityBorrowed = _totalLiquidityBorrowed.sub(dilutionLP);\n    rewardPerPositionStored = rewardPerPositionStored.add(FullMath.mulDiv(dilutionSpeculative, 1e18, totalPositionSize));\n    lastUpdate = block.timestamp;\n\n    emit AccrueInterest(timeElapsed, dilutionSpeculative, dilutionLP);\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_9",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "uint256 private constant ACC_TOKEN_PRECISION = 1e18;function getUpdatedAccTokenPerShare(address _baseToken) public view returns (uint256) {\n    uint256 accumulator = 0;\n    uint256 lastUpdatedTime = poolInfo[_baseToken].lastRewardTime;\n    uint256 counter = block.timestamp;\n    uint256 i = rewardRateLog[_baseToken].length - 1;\n    while (true) {\n        if (lastUpdatedTime >= counter) {\n            break;\n        }\n        unchecked {\n            accumulator +=\n                rewardRateLog[_baseToken][i].rewardsPerSecond *\n                (counter - max(lastUpdatedTime, rewardRateLog[_baseToken][i].timestamp));\n        }\n        counter = rewardRateLog[_baseToken][i].timestamp;\n        if (i == 0) {\n            break;\n        }\n        --i;\n    }\n\n    // We know that during all the periods that were included in the current iterations,\n    // the value of totalSharesStaked[_baseToken] would not have changed, as we only consider the\n    // updates to the pool that happened after the lastUpdatedTime.\n    accumulator = accumulator.mul(ACC_TOKEN_PRECISION).div(totalSharesStaked[_baseToken]);\n    return accumulator + poolInfo[_baseToken].accTokenPerShare;\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_10",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\n    pragma solidity 0.8.15;\n\n    import \"forge-std/Test.sol\";\n    import \"../lib/AggregatorV3Interface.sol\";\n\n    //run with: forge test --fork-url https://arb1.arbitrum.io/rpc -vv \n\n    contract PegOracle {\n\n        /***\n        @dev  for example: oracle1 would be stETH / USD, while oracle2 would be ETH / USD oracle\n        ***/\n        address public oracle1;\n        address public oracle2;\n\n        uint8 public decimals;\n\n        AggregatorV3Interface internal priceFeed1;\n        AggregatorV3Interface internal priceFeed2;\n\n        /** @notice Contract constructor\n          * @param _oracle1 First oracle address\n          * @param _oracle2 Second oracle address\n          */\n        constructor(address _oracle1, address _oracle2) {\n            require(_oracle1 != address(0), \"oracle1 cannot be the zero address\");\n            require(_oracle2 != address(0), \"oracle2 cannot be the zero address\");\n            require(_oracle1 != _oracle2, \"Cannot be same Oracle\");\n            priceFeed1 = AggregatorV3Interface(_oracle1);\n            priceFeed2 = AggregatorV3Interface(_oracle2);\n            require(\n                (priceFeed1.decimals() == priceFeed2.decimals()),\n                \"Decimals must be the same\"\n            );\n\n            oracle1 = _oracle1;\n            oracle2 = _oracle2;\n\n            decimals = priceFeed1.decimals();\n        }\n\n        /** @notice Returns oracle-fed data from the latest round\n          * @return roundID Current round id \n          * @return nowPrice Current price\n          * @return startedAt Starting timestamp\n          * @return timeStamp Current timestamp\n          * @return answeredInRound Round id for which answer was computed \n          */ \n        function latestRoundData()\n            public\n            view\n            returns (\n                uint80 roundID,\n                int256 nowPrice,\n                uint256 startedAt,\n                uint256 timeStamp,\n                uint80 answeredInRound\n            )\n        {\n            (\n                uint80 roundID1,\n                int256 price1,\n                uint256 startedAt1,\n                uint256 timeStamp1,\n                uint80 answeredInRound1\n            ) = priceFeed1.latestRoundData();\n\n            int256 price2 = getOracle2_Price();\n\n            if (price1 > price2) {\n                nowPrice = price2.mul(10000).div(price1);\n            } else {\n                nowPrice = price1.mul(10000).div(price2);\n            }\n\n            int256 decimals10 = int256(10**(18 - priceFeed1.decimals()));\n            nowPrice = nowPrice.mul(decimals10);\n\n            return (\n                roundID1,\n                nowPrice.div(1000000),\n                startedAt1,\n                timeStamp1,\n                answeredInRound1\n            );\n\n        }\n\n        /* solhint-disbable-next-line func-name-mixedcase */\n        /** @notice Lookup first oracle price\n          * @return price Current first oracle price\n          */ \n        function getOracle1_Price() public view returns (int256 price) {\n            (\n                uint80 roundID1,\n                int256 price1,\n                ,\n                uint256 timeStamp1,\n                uint80 answeredInRound1\n            ) = priceFeed1.latestRoundData();\n\n            require(price1 > 0, \"Chainlink price <= 0\");\n            require(\n                answeredInRound1 >= roundID1,\n                \"RoundID from Oracle is outdated!\"\n            );\n            require(timeStamp1 != 0, \"Timestamp == 0 !\");\n\n            return price1;\n        }\n\n        /* solhint-disbable-next-line func-name-mixedcase */\n        /** @notice Lookup second oracle price\n          * @return price Current second oracle price\n          */ \n        function getOracle2_Price() public view returns (int256 price) {\n            (\n                uint80 roundID2,\n                int256 price2,\n                ,\n                uint256 timeStamp2,\n                uint80 answeredInRound2\n            ) = priceFeed2.latestRoundData();\n\n            require(price2 > 0, \"Chainlink price <= 0\");\n            require(\n                answeredInRound2 >= roundID2,\n                \"RoundID from Oracle is outdated!\"\n            );\n            require(timeStamp2 != 0, \"Timestamp == 0 !\");\n\n            return price2;\n        }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_11",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
         "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    uint256 public constant SCALING_FACTOR = 1e18;\n\n    function divide(uint256 a, uint256 b) public pure returns (uint256) {\n        return (a * SCALING_FACTOR) / b;\n    }\n}",
         "VulnerabilityDesc": [
             {
