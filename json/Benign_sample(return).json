@@ -3,9 +3,10 @@
         "Code": "pragma solidity ^0.8.0; contract Fixed { function safeSend(address payable recipient, uint256 amount) public { (bool success, ) = recipient.call{value: amount}(\"\"); require(success, \"Failed to send Ether\"); }}",
         "VulnerabilityDesc": [
               {
+                  "Name": "fixed_return_19",
                   "Location": "",
                   "Type": "unchecked return",
-                  "Description": "no bug",
+                  "Description": "",
                   "Repair": ""
               }
           ]
@@ -14,9 +15,10 @@
         "Code": "pragma solidity ^0.8.0; contract Fixed { function safeTransfer(address payable recipient, uint256 amount, address payable token) public { bool success = IERC20(token).transfer(recipient, amount); require(success, 'Failed to transfer tokens'); } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_20",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]
@@ -25,9 +27,10 @@
         "Code": "pragma solidity ^0.8.0; contract Fixed { function safeTransfer(address payable recipient, uint256 amount, address payable token) public { bool success = IERC20(token).transfer(recipient, amount); require(success, 'Failed to transfer tokens'); } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_21",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]
@@ -36,9 +39,10 @@
         "Code": "pragma solidity ^0.8.0; contract Fixed { function safeAllowance(address token, address owner, address spender) public returns (uint256 remaining) { remaining = IERC20(token).allowance(owner, spender); require(remaining > 0, 'No allowance found'); return remaining; } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_22",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]
@@ -47,9 +51,10 @@
         "Code": "pragma solidity ^0.8.0; import '@openzeppelin/contracts/token/ERC721/ERC721.sol'; contract Fixed is ERC721 { constructor() ERC721('Token', 'TKN') {} function safeMint(address to, uint256 tokenId) public { try _mint(to, tokenId) {} catch { revert('Failed to mint the token'); } } }",
          "VulnerabilityDesc": [
               {
+                  "Name": "fixed_return_23",
                   "Location": "",
                   "Type": "unchecked return",
-                  "Description": "no bug",
+                  "Description": "",
                   "Repair": ""
               }
         ]
@@ -58,9 +63,10 @@
         "Code": "pragma solidity ^0.8.0; import '@openzeppelin/contracts/token/ERC721/ERC721.sol'; contract Fixed is ERC721 { constructor() ERC721('Token', 'TKN') {} function safeTransferFrom(address from, address to, uint256 tokenId) public { try _transfer(from, to, tokenId) {} catch { revert('Failed to transfer the token'); } } }",
          "VulnerabilityDesc": [
               {
+                  "Name": "fixed_return_24",
                   "Location": "",
                   "Type": "unchecked return",
-                  "Description": "no bug",
+                  "Description": "",
                   "Repair": ""
               }
         ]
@@ -69,9 +75,10 @@
         "Code": "pragma solidity ^0.8.0; import '@openzeppelin/contracts/token/ERC20/IERC20.sol'; contract Fixed { function safeBurn(address token, address account, uint256 amount) public { bool success = IERC20(token).burnFrom(account, amount); require(success, 'Failed to burn tokens'); } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_25",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]
@@ -80,9 +87,10 @@
         "Code": "pragma solidity ^0.8.0; contract Fixed { function safeLowLevelCall(address payable recipient) public { (bool success, ) = recipient.call(''); require(success, 'Low-level call failed'); } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_26",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]
@@ -91,9 +99,10 @@
         "Code":"pragma solidity ^0.8.0; contract Fixed { function safeDelegateCall(address target, bytes memory data) public { (bool success, ) = target.delegatecall(data); require(success, 'Delegate call failed'); } }",
         "VulnerabilityDesc": [
             {
+                "Name": "fixed_return_27",
                 "Location": "",
                 "Type": "unchecked return",
-                "Description": "no bug",
+                "Description": "",
                 "Repair": ""
             }
         ]

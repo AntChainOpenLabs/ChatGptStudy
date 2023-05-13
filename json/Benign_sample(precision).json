@@ -1,0 +1,170 @@
+[
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    uint256 public constant SCALING_FACTOR = 1e18;\n\n    function divide(uint256 a, uint256 b) public pure returns (uint256) {\n        return (a * SCALING_FACTOR) / b;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_12",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    uint256 public constant SCALING_FACTOR = 1e18;\n\n    function average(uint256 a, uint256 b) public pure returns (uint256) {\n        return ((a * SCALING_FACTOR) + (b * SCALING_FACTOR)) / (2 * SCALING_FACTOR);\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_13",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.8.0;\n\ncontract Token {\n    mapping(address => uint256) public balances;\n    uint256 public totalSupply;\n\n    function transfer(address to, uint256 value) public returns (bool) {\n        require(balances[msg.sender] >= value, \"Insufficient balance.\");\n\n        balances[msg.sender] -= value;\n        balances[to] += value;\n        return true;\n    }\n\n    function mint(uint256 value) public {\n        totalSupply += value;\n        balances[msg.sender] += value;\n    }\n\n    function burn(uint256 value) public {\n        require(balances[msg.sender] >= value, \"Insufficient balance.\");\n\n        totalSupply -= value;\n        balances[msg.sender] -= value;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_14",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    uint public value;\n\n    function divide(uint256 numerator, uint256 denominator) public {\n        value = (numerator * 10**18) / denominator;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_15",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract PrecisionLoss {\n    function calculatePercentage(uint256 _value, uint256 _total) public pure returns (uint256) {\n        return (_value * 1e18 / _total) * 100 / 1e18;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_16",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code":  "pragma solidity ^0.6.12;\n\ncontract InterestCalculation {\n    uint256 public constant INTEREST_RATE = 105;\n    uint256 public constant RATE_BASE = 100;\n    uint256 public constant PRECISION = 1e18;\n\n    function calculateInterest(uint256 principal) public pure returns (uint256) {\n        return (principal * INTEREST_RATE * PRECISION) / RATE_BASE / PRECISION;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_17",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract MyToken {\n    uint256 public totalSupply;\n    mapping(address => uint256) public balances;\n\n    function transfer(address to, uint256 amount) public returns (bool) {\n        uint256 fee = (amount * 10000) / 1000000;\n        balances[msg.sender] -= amount;\n        balances[to] += amount - fee;\n        totalSupply -= fee;\n        return true;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_18",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code":  "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/math/SafeMath.sol\";\n\ncontract InterestBearing {\n    using SafeMath for uint256;\n\n    uint256 public totalSupply;\n    uint256 public totalInterestEarned;\n\n    function calculateInterest(address account) public view returns (uint256) {\n        uint256 accountBalance = balances[account];\n        uint256 interestEarned = accountBalance.mul(totalInterestEarned).div(totalSupply);\n        return interestEarned;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_19",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code":  "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/math/SafeMath.sol\";\n\ncontract FeeDistributor {\n    using SafeMath for uint256;\n\n    uint256 public totalSupply;\n    mapping(address => uint256) public balances;\n    uint256 public totalFees;\n\n    function distributeFees() public {\n        uint256 feesPerToken = totalFees.div(totalSupply);\n        for (uint256 i = 0; i < totalSupply; i++) {\n            balances[addresses[i]] = balances[addresses[i]].add(feesPerToken);\n        }\n        totalFees = 0;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_20",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code":  "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/math/SafeMath.sol\";\n\ncontract Staking {\n    using SafeMath for uint256;\n\n    uint256 public totalStakes;\n    mapping(address => uint256) public stakes;\n    uint256 public totalRewards;\n\n    function distributeRewards() public {\n        uint256 rewardsPerStake = totalRewards.div(totalStakes);\n        for (uint256 i = 0; i < totalStakes; i++) {\n            stakes[addresses[i]] = stakes[addresses[i]].add(rewardsPerStake);\n        }\n        totalRewards = 0;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_21",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\nimport \"@openzeppelin/contracts/math/SafeMath.sol\";\n\ncontract TokenExchange {\n    using SafeMath for uint256;\n\n    ERC20 public tokenA;\n    ERC20 public tokenB;\n    uint256 public rate;\n\n    constructor(address _tokenA, address _tokenB, uint256 _rate) public {\n        tokenA = ERC20(_tokenA);\n        tokenB = ERC20(_tokenB);\n        rate = _rate;\n    }\n\n    function exchange(uint256 amountA) public {\n        require(tokenA.transferFrom(msg.sender, address(this), amountA), \"transferFrom failed\");\n        uint256 amountB = amountA.mul(rate);\n        tokenB.transfer(msg.sender, amountB);\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_22",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract StakeContract {\n    ERC20 public token;\n\n    uint256 public totalStaked;\n    mapping(address => uint256) public stakedBalance;\n\n    constructor(address _token) public {\n        token = ERC20(_token);\n    }\n\n    function stake(uint256 amount) public {\n        require(token.transferFrom(msg.sender, address(this), amount), \"transfer failed\");\n        totalStaked += amount;\n        stakedBalance[msg.sender] += amount;\n    }\n\n    function claimReward() public {\n        uint256 reward = calculateReward(msg.sender);\n        token.transfer(msg.sender, reward);\n    }\n\n    function calculateReward(address staker) public view returns (uint256) {\n        uint256 stakerBalance = stakedBalance[staker];\n        uint256 reward = (stakerBalance * token.balanceOf(address(this))) / totalStaked;\n        return reward;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_23",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "contract MyContract { using SafeMath for uint256; uint256 public totalSupply; mapping(address => uint256) public balances; function transferFrom(address _from, address _to, uint256 _value) public returns (bool) { uint256 oldBalance = balances[_from]; uint256 newBalance = oldBalance.sub(_value); balances[_from] = newBalance; balances[_to] = balances[_to].add(_value); return true; } function burn(uint256 _value) public { require(_value % 10 == 0, \"Burn value must be a multiple of 10\"); balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply = totalSupply.sub(_value); } }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_24",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12; import \"@openzeppelin/contracts/math/SafeMath.sol\"; contract PrecisionLoss { using SafeMath for uint256; mapping(address => uint256) public tokenBalances; function tokenRatio(address tokenA, address tokenB) public view returns (uint256) { return tokenBalances[tokenA].mul(1e18).div(tokenBalances[tokenB]); } }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "fixed_precision_25",
+                "Location": "",
+                "Type": "Precision loss",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    }
+]

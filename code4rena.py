@@ -258,6 +258,7 @@ def create_json(section_SAVE_PATH,  file_name, code_paths):
             continue
             # return
         bug_json = {
+            "Name" : file_name,
             "Location": "",
             "Type": "",
             "Description": "",
@@ -1107,10 +1108,10 @@ if __name__ == "__main__":
     print('total cost %f second' % (end_time - start_time))
 
 
-    with open("json/bug_return.json", "w", encoding="utf-8") as f:
+    with open("bug_return.json", "w", encoding="utf-8") as f:
         print("return 相关bug个数: {}".format(len(json_bug_return)))
         json.dump(json_bug_return, f, indent=4)
-    with open("json/bug_precision.json", "w", encoding="utf-8") as f:
+    with open("bug_precision.json", "w", encoding="utf-8") as f:
         print("precision 相关bug个数: {}".format(len(json_bug_precision)))
         json.dump(json_bug_precision, f, indent=4)
 
