@@ -1,0 +1,293 @@
+[
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableContract {\n    address public owner;\n    uint public AIRDROP=1e18;\n    mapping(address => bool) public minters;\n    mapping(address=>uint) public balanceOf;\n    address[] public minters_array;\n    uint public maxMinters = 50;\n\n    event MinterAdded(address minter);\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    modifier onlyByOwnGov {\n        require(msg.sender == owner, \"Caller is not the owner\");\n        _;\n    }\n\n    function addMinter(address minter_address) external onlyByOwnGov {\n        require(minter_address != address(0), \"Zero address detected\");\n        require(minters[minter_address] == false, \"Address already exists\");\n        require(minters_array.length < maxMinters, \"Minters array is full\");\n\n        minters[minter_address] = true;\n        minters_array.push(minter_address);\n\n        emit MinterAdded(minter_address);\n    }\n\n    function withdraw() external onlyByOwnGov {\n        uint length = minters_array.length < maxMinters ? minters_array.length : maxMinters;\n        for (uint i = 0; i < length; i++) {\n            balanceOf[minters_array[i]] += AIRDROP;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_1_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableContractTwo {\n    address public contractOwner;\n    uint public REWARD=1e18;\n    mapping(address => bool) public validators;\n    mapping(address=>uint) public accountBalance;\n    address[] public validators_array;\n    uint public numberOfValidators;\n\n    event ValidatorAdded(address validator);\n\n    constructor() {\n        contractOwner = msg.sender;\n    }\n\n    modifier onlyByOwner {\n        require(msg.sender == contractOwner, \"Caller is not the owner\");\n        _;\n    }\n\n    function addValidator(address validator_address) external onlyByOwner {\n        require(validator_address != address(0), \"Zero address detected\");\n        require(validators[validator_address] == false, \"Address already exists\");\n        require(validators_array.length < numberOfValidators, \"Validators array is full\");\n\n        validators[validator_address] = true;\n        validators_array.push(validator_address);\n\n        emit ValidatorAdded(validator_address);\n    }\n\n    function distributeRewards() external onlyByOwner {\n\n        for (uint i = 0; i < validators_array.length; i++) {\n            accountBalance[validators_array[i]] += REWARD;\n        }\n    }\n\n    function setNumberOfValidators(uint _numberOfValidators) external onlyByOwner {\n        numberOfValidators = _numberOfValidators;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_2_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableContractThree {\n    address public admin;\n    uint public TOKENS=1e18;\n    mapping(address => bool) public delegates;\n    mapping(address=>uint) public tokenBalance;\n    address[] public delegates_array;\n    uint public maxDelegates = 100;\n\n    event DelegateAdded(address delegate);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyByAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function addDelegate(address delegate_address) external onlyByAdmin {\n        require(delegate_address != address(0), \"Zero address detected\");\n        require(delegates[delegate_address] == false, \"Address already exists\");\n        require(delegates_array.length < maxDelegates, \"Delegates array is full\");\n\n        delegates[delegate_address] = true;\n        delegates_array.push(delegate_address);\n\n        emit DelegateAdded(delegate_address);\n    }\n\n    function airdropTokens() external onlyByAdmin {\n\n        for (uint i = 0; i < maxDelegates; i++) {\n            tokenBalance[delegates_array[i]] += TOKENS;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_3_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract HBToken {\n    address public admin;\n    uint public TOKEN_SUPPLY=1e18;\n    mapping(address => bool) public endorsers;\n    mapping(address=>uint) public tokenHoldings;\n    address[] public endorsers_array;\n    uint public maxEndorsers = 100;\n\n    event EndorserAdded(address endorser);\n    event MaxEndorsersUpdated(uint maxEndorsers);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function addEndorser(address endorser_address) external onlyAdmin {\n        require(endorser_address != address(0), \"Zero address detected\");\n        require(endorsers[endorser_address] == false, \"Address already exists\");\n        require(endorsers_array.length < maxEndorsers, \"Endorsers array is full\");\n\n        endorsers[endorser_address] = true;\n        endorsers_array.push(endorser_address);\n\n        emit EndorserAdded(endorser_address);\n    }\n\n    function updateMaxEndorsers(uint _maxEndorsers) external onlyAdmin {\n        maxEndorsers = _maxEndorsers;\n        emit MaxEndorsersUpdated(maxEndorsers);\n    }\n\n    function distributeTokens() external onlyAdmin {\n\n        uint length = endorsers_array.length < maxEndorsers ? endorsers_array.length : maxEndorsers;\n        for (uint i = 0; i < length; i++) {\n            tokenHoldings[endorsers_array[i]] += TOKEN_SUPPLY;\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_4_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract AdvancedToken {\n    address public manager;\n    uint public TOKEN_ALLOCATION=1e18;\n    mapping(address => bool) public contributors;\n    mapping(address=>uint) public tokenWallet;\n    address[80] public contributors_array;\n\n    uint public contributorsCount = 0;\n\n    event ContributorAdded(address contributor);\n\n    constructor() {\n        manager = msg.sender;\n    }\n\n    modifier onlyManager {\n        require(msg.sender == manager, \"Caller is not the manager\");\n        _;\n    }\n\n    function addContributor(address contributor_address) external onlyManager {\n        require(contributor_address != address(0), \"Zero address detected\");\n        require(contributors[contributor_address] == false, \"Address already exists\");\n        require(contributorsCount < 80, \"Contributors array is full\");\n\n        contributors[contributor_address] = true;\n        contributors_array[contributorsCount] = contributor_address;\n        contributorsCount++;\n\n        emit ContributorAdded(contributor_address);\n    }\n\n    function allocateTokens() external onlyManager {\n        for (uint i = 0; i < contributorsCount; i++) {\n            tokenWallet[contributors_array[i]] += TOKEN_ALLOCATION;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_5_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract UserActivityToken {\n    address public admin;\n    uint public REWARD=1e18;\n    mapping(address => bool) public participants;\n    mapping(address=>uint) public rewardBalance;\n    address[] public participants_array;\n\n    uint public maxParticipants = 70;\n\n    event UserJoined(address participant);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function joinActivity(address participant_address) external {\n        require(participant_address != address(0), \"Zero address detected\");\n        require(participants[participant_address] == false, \"Address already exists\");\n        require(participants_array.length < maxParticipants, \"Max participants reached\");\n\n        participants[participant_address] = true;\n        participants_array.push(participant_address);\n\n        emit UserJoined(participant_address);\n    }\n\n    function distributeRewards() external onlyAdmin {\n        for (uint i = 0; i < participants_array.length; i++) {\n            rewardBalance[participants_array[i]] += REWARD;\n        }\n    }\n\n    function setMaxParticipants(uint _maxParticipants) external onlyAdmin {\n        maxParticipants = _maxParticipants;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_6_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract CommunityFund {\n    address public manager;\n    uint public GRANT=1e18;\n    mapping(address => bool) public members;\n    mapping(address=>uint) public grantBalance;\n    address[180] public members_array;\n\n    uint public membersCount = 0;\n\n    event MemberAdded(address member);\n\n    constructor() {\n        manager = msg.sender;\n    }\n\n    modifier onlyManager {\n        require(msg.sender == manager, \"Caller is not the manager\");\n        _;\n    }\n\n    function joinFund(address member_address) external onlyManager {\n        require(member_address != address(0), \"Zero address detected\");\n        require(members[member_address] == false, \"Address already exists\");\n        require(membersCount < 180, \"Members array is full\");\n\n        members[member_address] = true;\n        members_array[membersCount] = member_address;\n        membersCount++;\n\n        emit MemberAdded(member_address);\n    }\n\n    function distributeGrants() external onlyManager {\n        for (uint i = 0; i < membersCount; i++) {\n            grantBalance[members_array[i]] += GRANT;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_7_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract CharityDonation {\n    address public admin;\n    uint public DONATION=1e18;\n    mapping(address => bool) public donors;\n    mapping(address=>uint) public donationBalance;\n    address[100] public donors_array;\n\n    uint public donorsCount = 0;\n\n    event DonorAdded(address donor);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function donate(address donor_address) external {\n        require(donor_address != address(0), \"Zero address detected\");\n        require(donors[donor_address] == false, \"Address already exists\");\n        require(donorsCount < 100, \"Donors array is full\");\n\n        donors[donor_address] = true;\n        donors_array[donorsCount] = donor_address;\n        donorsCount++;\n\n        emit DonorAdded(donor_address);\n    }\n\n    function distributeDonations() external onlyAdmin {\n        for (uint i = 0; i < donorsCount; i++) {\n            donationBalance[donors_array[i]] += DONATION;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_8_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract AdvancedVoting {\n    address public organizer;\n    mapping(address => bool) public voters;\n    mapping(address => uint) public votes;\n    address[100] public voters_array;\n\n    uint public votersCount = 0;\n\n    event VoterRegistered(address voter);\n    event VoteReceived(address voter, uint vote);\n\n    constructor() {\n        organizer = msg.sender;\n    }\n\n    modifier onlyOrganizer {\n        require(msg.sender == organizer, \"Caller is not the organizer\");\n        _;\n    }\n\n    function registerVoter(address voter_address) external onlyOrganizer {\n        require(voter_address != address(0), \"Zero address detected\");\n        require(voters[voter_address] == false, \"Address already exists\");\n        require(votersCount < 100, \"Voters array is full\");\n\n        voters[voter_address] = true;\n        voters_array[votersCount] = voter_address;\n        votersCount++;\n\n        emit VoterRegistered(voter_address);\n    }\n\n    function vote(address voter_address, uint vote) external onlyOrganizer {\n        require(voters[voter_address] == true, \"Voter not registered\");\n        votes[voter_address] = vote;\n        emit VoteReceived(voter_address, vote);\n    }\n\n    function tallyVotes() external onlyOrganizer returns(uint totalVotes) {\n        totalVotes = 0;\n        for (uint i = 0; i < votersCount; i++) {\n            totalVotes += votes[voters_array[i]];\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_9_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract DeFiStaking {\n    address public manager;\n    uint public REWARD=1e18;\n    mapping(address => bool) public stakers;\n    mapping(address=>uint) public stakeAmount;\n    mapping(address=>uint) public rewards;\n    address[80] public stakers_array;\n\n    uint public stakersCount = 0;\n\n    event StakerAdded(address staker);\n\n    constructor() {\n        manager = msg.sender;\n    }\n\n    modifier onlyManager {\n        require(msg.sender == manager, \"Caller is not the manager\");\n        _;\n    }\n\n    function stakeTokens(address staker_address, uint amount) external onlyManager {\n        require(staker_address != address(0), \"Zero address detected\");\n        require(stakers[staker_address] == false, \"Address already exists\");\n        require(stakersCount < 80, \"Stakers array is full\");\n\n        stakers[staker_address] = true;\n        stakeAmount[staker_address] = amount;\n        stakers_array[stakersCount] = staker_address;\n        stakersCount++;\n\n        emit StakerAdded(staker_address);\n    }\n\n    function distributeRewards() external onlyManager {\n        for (uint i = 0; i < stakersCount; i++) {\n            rewards[stakers_array[i]] += stakeAmount[stakers_array[i]] * REWARD;\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_10_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract RealEstatePlatform {\n    address public admin;\n    mapping(address => bool) public sellers;\n    mapping(address => uint) public propertyListings;\n    address[100] public sellers_array;\n\n    uint public sellersCount = 0;\n\n    event SellerRegistered(address seller);\n    event PropertyListed(address seller, uint propertyId);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function registerSeller(address seller_address) external onlyAdmin {\n        require(seller_address != address(0), \"Zero address detected\");\n        require(sellers[seller_address] == false, \"Address already exists\");\n        require(sellersCount < 100, \"Sellers array is full\");\n\n        sellers[seller_address] = true;\n        sellers_array[sellersCount] = seller_address;\n        sellersCount++;\n\n        emit SellerRegistered(seller_address);\n    }\n\n    function listProperty(address seller_address, uint propertyId) external onlyAdmin {\n        require(sellers[seller_address] == true, \"Seller not registered\");\n        propertyListings[seller_address] = propertyId;\n        emit PropertyListed(seller_address, propertyId);\n    }\n\n    function countProperties() external onlyAdmin returns(uint totalProperties) {\n        totalProperties = 0;\n        for (uint i = 0; i < sellersCount; i++) {\n            totalProperties += propertyListings[sellers_array[i]];\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_11_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract TimeLockLiquidity {\n    address public admin;\n    uint public interestRate = 5;\n    mapping(address => bool) public participants;\n    mapping(address => uint) public deposits;\n    mapping(address => uint) public depositTimes;\n    address[100] public participants_array;\n\n    uint public participantsCount = 0;\n\n    event ParticipantAdded(address participant);\n    event InterestCalculated(address participant, uint interest);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function addParticipant(address participant_address, uint amount) external onlyAdmin {\n        require(participant_address != address(0), \"Zero address detected\");\n        require(participants[participant_address] == false, \"Address already exists\");\n        require(participantsCount < 100, \"Participants array is full\");\n\n        participants[participant_address] = true;\n        deposits[participant_address] = amount;\n        depositTimes[participant_address] = block.timestamp;\n        participants_array[participantsCount] = participant_address;\n        participantsCount++;\n\n        emit ParticipantAdded(participant_address);\n    }\n\n    function calculateInterest() external onlyAdmin {\n        for (uint i = 0; i < participantsCount; i++) {\n            uint timeElapsed = block.timestamp - depositTimes[participants_array[i]];\n            uint interest = deposits[participants_array[i]] * interestRate * timeElapsed / 1e18;\n            emit InterestCalculated(participants_array[i], interest);\n        }\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_12_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract BonusDistribution {\n    address public admin;\n    uint public remainingBonus = 10000 * 1e18;\n    mapping(address => bool) public users;\n    mapping(address => uint) public bonuses;\n    address[100] public users_array;\n    uint public usersCount = 0;\n\n    event UserAdded(address user);\n    event BonusDistributed(address user, uint bonus);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    modifier onlyAdmin {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        _;\n    }\n\n    function addUser(address user_address) external onlyAdmin {\n        require(user_address != address(0), \"Zero address detected\");\n        require(users[user_address] == false, \"Address already exists\");\n        require(usersCount < 100, \"Users array is full\");\n\n        users[user_address] = true;\n        users_array[usersCount] = user_address;\n        usersCount++;\n\n        emit UserAdded(user_address);\n    }\n\n    function distributeBonus() external onlyAdmin {\n        require(remainingBonus >= usersCount, \"Not enough bonus left\");\n        for (uint i = 0; i < usersCount; i++) {\n            bonuses[users_array[i]] += 1e18;\n            remainingBonus -= 1e18;\n            emit BonusDistributed(users_array[i], 1e18);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_13_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract CrowdFundingCampaign {\n    address public admin;\n    uint public fundingGoal;\n    uint public totalFunded;\n    mapping(address => bool) public funders;\n    mapping(address => uint) public contributions;\n    address[100] public funders_array;\n    uint public fundersCount = 0;\n\n    event FunderAdded(address funder);\n    event FundingReceived(address funder, uint amount);\n\n    constructor(uint _fundingGoal) {\n        admin = msg.sender;\n        fundingGoal = _fundingGoal;\n    }\n\n    function contribute() external payable {\n        require(msg.value > 0, \"No funds sent\");\n        if(funders[msg.sender] == false) {\n            require(fundersCount < 100, \"Funders array is full\");\n            funders[msg.sender] = true;\n            funders_array[fundersCount] = msg.sender;\n            fundersCount++;\n            emit FunderAdded(msg.sender);\n        }\n        contributions[msg.sender] += msg.value;\n        totalFunded += msg.value;\n        emit FundingReceived(msg.sender, msg.value);\n    }\n\n    function checkGoalReached() external {\n        require(totalFunded >= fundingGoal, \"Funding goal not reached\");\n        for (uint i = 0; i < fundersCount; i++) {\n            contributions[funders_array[i]] = 0;\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_14_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VotingSystem {\n    address public admin;\n    mapping(address => bool) public voters;\n    mapping(address => uint) public votes;\n    address[100] public voters_array;\n    uint public votersCount = 0;\n    uint public totalVotes;\n\n    event VoterAdded(address voter);\n    event VoteCasted(address voter, uint vote);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    function addVoter(address voter_address) external {\n        require(voter_address != address(0), \"Zero address detected\");\n        require(voters[voter_address] == false, \"Address already exists\");\n        require(votersCount < 100, \"Voters array is full\");\n\n        voters[voter_address] = true;\n        voters_array[votersCount] = voter_address;\n        votersCount++;\n\n        emit VoterAdded(voter_address);\n    }\n\n    function castVote(uint vote) external {\n        require(voters[msg.sender] == true, \"Not a registered voter\");\n        votes[msg.sender] += vote;\n        totalVotes += vote;\n\n        emit VoteCasted(msg.sender, vote);\n    }\n\n    function calculateResults() external {\n        uint highestVote = 0;\n        address winner;\n        for (uint i = 0; i < votersCount; i++) {\n            if(votes[voters_array[i]] > highestVote) {\n                highestVote = votes[voters_array[i]];\n                winner = voters_array[i];\n            }\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_15_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract RewardDistribution {\n    address public admin;\n    uint public totalRewards;\n    mapping(address => bool) public participants;\n    mapping(address => uint) public rewards;\n    address[100] public participants_array;\n    uint public participantsCount = 0;\n\n    event ParticipantAdded(address participant);\n    event RewardDistributed(address participant, uint reward);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    function addParticipant(address participant_address) external {\n        require(participant_address != address(0), \"Zero address detected\");\n        require(participants[participant_address] == false, \"Address already exists\");\n        require(participantsCount < 100, \"Participants array is full\");\n\n        participants[participant_address] = true;\n        participants_array[participantsCount] = participant_address;\n        participantsCount++;\n\n        emit ParticipantAdded(participant_address);\n    }\n\n    function distributeRewards() external {\n        require(totalRewards >= participantsCount, \"Not enough rewards\");\n        for (uint i = 0; i < participantsCount; i++) {\n            rewards[participants_array[i]] += 1;\n            totalRewards -= 1;\n\n            emit RewardDistributed(participants_array[i], 1);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_16_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract Lottery {\n    address public admin;\n    uint public prizePool;\n    mapping(address => bool) public ticketHolders;\n    mapping(address => uint) public ticketCount;\n    address[100] public ticketHolders_array;\n    uint public ticketHoldersCount = 0;\n\n    event TicketPurchased(address holder, uint amount);\n    event PrizeAwarded(address winner, uint prize);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    function purchaseTicket(address holder_address, uint amount) external {\n        require(holder_address != address(0), \"Zero address detected\");\n        require(ticketHolders[holder_address] == false, \"Address already has a ticket\");\n        require(ticketHoldersCount < 100, \"Ticket holders array is full\");\n\n        ticketHolders[holder_address] = true;\n        ticketCount[holder_address] += amount;\n        ticketHolders_array[ticketHoldersCount] = holder_address;\n        ticketHoldersCount++;\n\n        emit TicketPurchased(holder_address, amount);\n    }\n\n    function awardPrize() external {\n        require(prizePool >= ticketHoldersCount, \"Not enough prize pool\");\n        for (uint i = 0; i < ticketHoldersCount; i++) {\n            if(ticketCount[ticketHolders_array[i]] > 0) {\n                uint prize = prizePool / ticketHoldersCount;\n                prizePool -= prize;\n                emit PrizeAwarded(ticketHolders_array[i], prize);\n            }\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_17_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VoteSystem {\n    address public admin;\n    uint public totalVotes;\n    mapping(address => bool) public voters;\n    mapping(address => uint) public votes;\n    address[] public voters_array;\n    uint public maxVotersCount;\n    \n    event VoterRegistered(address voter);\n    event VotesCounted(address voter, uint voteCount);\n\n    constructor(uint _maxVotersCount) {\n        admin = msg.sender;\n        maxVotersCount = _maxVotersCount;\n    }\n\n    function registerVoter(address voter_address) external {\n        require(voter_address != address(0), \"Zero address detected\");\n        require(voters[voter_address] == false, \"Address already registered\");\n        require(voters_array.length < maxVotersCount, \"Max voters count reached\");\n\n        voters[voter_address] = true;\n        voters_array.push(voter_address);\n\n        emit VoterRegistered(voter_address);\n    }\n\n    function countVotes() external {\n        require(totalVotes >= voters_array.length, \"Not enough votes\");\n        for (uint i = 0; i < voters_array.length; i++) {\n            votes[voters_array[i]] += 1;\n            totalVotes -= 1;\n\n            emit VotesCounted(voters_array[i], 1);\n        }\n    }\n\n    function setMaxVotersCount(uint _maxVotersCount) external {\n        require(msg.sender == admin, \"Caller is not the admin\");\n        maxVotersCount = _maxVotersCount;\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_18_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract FinanceTracker {\n    address public admin;\n    uint public totalBalance;\n    mapping(address => bool) public investors;\n    mapping(address => uint) public balances;\n\n    event InvestmentAdded(address investor, uint amount);\n    event InterestCalculated(address investor, uint interest);\n\n    constructor() {\n        admin = msg.sender;\n    }\n\n    function addInvestment(address investor_address, uint amount) external {\n        require(investor_address != address(0), \"Zero address detected\");\n        require(investors[investor_address] == false, \"Address already exists\");\n\n        investors[investor_address] = true;\n        balances[investor_address] += amount;\n        totalBalance += amount;\n\n        emit InvestmentAdded(investor_address, amount);\n    }\n\n    function addInterest(address investor_address, uint interest) external {\n        require(msg.sender == admin, \"Only admin can add interest\");\n        require(investors[investor_address] == true, \"Investor does not exist\");\n        require(balances[investor_address] * 5 / 100 == interest, \"Incorrect interest\");\n\n        balances[investor_address] += interest;\n        totalBalance += interest;\n\n        emit InterestCalculated(investor_address, interest);\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_19_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract LoyaltyPointsSystem {\n    address public admin;\n    uint public totalPoints;\n    uint public maxMembers;\n    mapping(address => bool) public members;\n    mapping(address => uint) public points;\n    address[] public members_array;\n\n    event MemberAdded(address member);\n    event PointsAwarded(address member, uint points);\n\n    constructor(uint _maxMembers) {\n        require(_maxMembers > 0, \"Max members should be greater than 0\");\n        admin = msg.sender;\n        maxMembers = _maxMembers;\n    }\n\n    function addMember(address member_address) external {\n        require(member_address != address(0), \"Zero address detected\");\n        require(members[member_address] == false, \"Address already exists\");\n        require(members_array.length < maxMembers, \"Max members limit reached\");\n\n        members[member_address] = true;\n        members_array.push(member_address);\n\n        emit MemberAdded(member_address);\n    }\n\n    function setMaxMembers(uint _maxMembers) external {\n        require(msg.sender == admin, \"Only admin can set max members\");\n        require(_maxMembers > members_array.length, \"New max members should be greater than current members\");\n\n        maxMembers = _maxMembers;\n    }\n\n    function awardPoints() external {\n        require(totalPoints >= members_array.length, \"Not enough points\");\n        for (uint i = 0; i < members_array.length; i++) {\n            uint award = points[members_array[i]] * 10 / 100;\n            points[members_array[i]] += award;\n            totalPoints -= award;\n\n            emit PointsAwarded(members_array[i], award);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_20_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract RewardDistributor {\n    address public admin;\n    uint public totalRewards;\n    uint public maxParticipants;\n    mapping(address => bool) public participants;\n    mapping(address => uint) public rewards;\n    address[] public participants_array;\n\n    event ParticipantAdded(address participant);\n    event RewardsDistributed(address participant, uint reward);\n\n    constructor(uint _maxParticipants) {\n        require(_maxParticipants > 0, \"Max participants should be greater than 0\");\n        admin = msg.sender;\n        maxParticipants = _maxParticipants;\n    }\n\n    function addParticipant(address participant_address) external {\n        require(participant_address != address(0), \"Can not be zero!\");\n        require(participants[participant_address] == false, \"Address already exists\");\n        require(participants_array.length < maxParticipants, \"Max participants limit reached\");\n\n        participants[participant_address] = true;\n        participants_array.push(participant_address);\n\n        emit ParticipantAdded(participant_address);\n    }\n\n    function setMaxParticipants(uint _maxParticipants) external {\n        require(msg.sender == admin, \"Only admin can set max participants\");\n        require(_maxParticipants > participants_array.length, \"New max participants should be greater than current participants\");\n\n        maxParticipants = _maxParticipants;\n    }\n\n    function distributeRewards() external {\n        require(totalRewards >= participants_array.length, \"Not enough rewards\");\n        for (uint i = 0; i < participants_array.length; i++) {\n            uint reward = rewards[participants_array[i]] * 15 / 100;\n            rewards[participants_array[i]] += reward;\n            totalRewards -= reward;\n\n            emit RewardsDistributed(participants_array[i], reward);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_21_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract RealEstatePlatform {\n    address public platformOwner;\n    uint public totalHouses;\n    uint public maxLandlords;\n    mapping(address => bool) public landlords;\n    mapping(address => uint) public houses;\n    address[] public landlords_array;\n\n    event LandlordAdded(address landlord);\n    event HousesCountUpdated(address landlord, uint count);\n\n    constructor(uint _maxLandlords) {\n        require(_maxLandlords > 0, \"Max landlords should be greater than 0\");\n        platformOwner = msg.sender;\n        maxLandlords = _maxLandlords;\n    }\n\n    function addLandlord(address landlord_address) external {\n        require(landlord_address != address(0), \"Cannot be zero!\");\n        require(landlords[landlord_address] == false, \"Address already exists\");\n        require(landlords_array.length < maxLandlords, \"Max landlords limit reached\");\n\n        landlords[landlord_address] = true;\n        landlords_array.push(landlord_address);\n\n        emit LandlordAdded(landlord_address);\n    }\n\n    function setMaxLandlords(uint _maxLandlords) external {\n        require(msg.sender == platformOwner, \"Only platform owner can set max landlords\");\n        require(_maxLandlords > landlords_array.length, \"New max landlords should be greater than current landlords\");\n\n        maxLandlords = _maxLandlords;\n    }\n\n    function updateHousesCount() external {\n        require(totalHouses >= landlords_array.length, \"Not enough houses\");\n        for (uint i = 0; i < landlords_array.length; i++) {\n            uint houseCount = houses[landlords_array[i]] + 5;\n            houses[landlords_array[i]] = houseCount;\n            totalHouses -= houseCount;\n\n            emit HousesCountUpdated(landlords_array[i], houseCount);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_22_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract CreditPointsSystem {\n    address public systemAdmin;\n    uint public totalCreditPoints;\n    uint public maxCustomers;\n    mapping(address => bool) public customers;\n    mapping(address => uint) public creditPoints;\n    address[] public customers_array;\n\n    event CustomerAdded(address customer);\n    event CreditPointsUpdated(address customer, uint points);\n\n    constructor(uint _maxCustomers) {\n        require(_maxCustomers > 0, \"Max customers should be greater than 0\");\n        systemAdmin = msg.sender;\n        maxCustomers = _maxCustomers;\n    }\n\n    function addCustomer(address customer_address) external {\n        require(customer_address != address(0), \"Cannot be zero!\");\n        require(customers[customer_address] == false, \"Address already exists\");\n        require(customers_array.length < maxCustomers, \"Max customers limit reached\");\n\n        customers[customer_address] = true;\n        customers_array.push(customer_address);\n\n        emit CustomerAdded(customer_address);\n    }\n\n    function setMaxCustomers(uint _maxCustomers) external {\n        require(msg.sender == systemAdmin, \"Only system admin can set max customers\");\n        require(_maxCustomers > customers_array.length, \"New max customers should be greater than current customers\");\n\n        maxCustomers = _maxCustomers;\n    }\n\n    function updateCreditPoints() external {\n        require(totalCreditPoints >= customers_array.length * 10, \"Not enough credit points\");\n        for (uint i = 0; i < customers_array.length; i++) {\n            uint points = creditPoints[customers_array[i]] + 10;\n            creditPoints[customers_array[i]] = points;\n            totalCreditPoints -= points;\n\n            emit CreditPointsUpdated(customers_array[i], points);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_23_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract MusicStreamingPlatform {\n    address public platformAdmin;\n    uint public totalStreams;\n    uint public maxArtists;\n    mapping(address => bool) public artists;\n    mapping(address => uint) public streams;\n    address[] public artists_array;\n\n    event ArtistAdded(address artist);\n    event StreamsUpdated(address artist, uint streamCount);\n\n    constructor(uint _maxArtists) {\n        require(_maxArtists > 0, \"Max artists should be greater than 0\");\n        platformAdmin = msg.sender;\n        maxArtists = _maxArtists;\n    }\n\n    function addArtist(address artist_address) external {\n        require(artist_address != address(0), \"Cannot be zero!\");\n        require(artists[artist_address] == false, \"Address already exists\");\n        require(artists_array.length < maxArtists, \"Max artists limit reached\");\n\n        artists[artist_address] = true;\n        artists_array.push(artist_address);\n\n        emit ArtistAdded(artist_address);\n    }\n\n    function setMaxArtists(uint _maxArtists) external {\n        require(msg.sender == platformAdmin, \"Only platform admin can set max artists\");\n        require(_maxArtists > artists_array.length, \"New max artists should be greater than current artists\");\n\n        maxArtists = _maxArtists;\n    }\n\n    function updateStreams() external {\n        require(totalStreams >= artists_array.length * 1000, \"Not enough streams\");\n        for (uint i = 0; i < artists_array.length; i++) {\n            uint streamCount = streams[artists_array[i]] + 1000;\n            streams[artists_array[i]] = streamCount;\n            totalStreams -= streamCount;\n\n            emit StreamsUpdated(artists_array[i], streamCount);\n        }\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_24_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract MinterManagement {\n    address public owner;\n    uint public maxMinters;\n    mapping(address => bool) public minters;\n    address[] public minters_array;\n\n    event MinterAdded(address minter);\n    event MinterRemoved(address minter);\n\n    modifier onlyByOwnGov() {\n        require(msg.sender == owner, \"Only owner can perform this operation\");\n        _;\n    }\n\n    constructor(uint _maxMinters) {\n        require(_maxMinters > 0, \"Max minters should be greater than 0\");\n        owner = msg.sender;\n        maxMinters = _maxMinters;\n    }\n\n    function addMinter(address minter_address) external onlyByOwnGov {\n        require(minter_address != address(0), \"Cannot be zero!\");\n        require(minters[minter_address] == false, \"Address already exists\");\n        require(minters_array.length < maxMinters, \"Max minters limit reached\");\n\n        minters[minter_address] = true;\n        minters_array.push(minter_address);\n\n        emit MinterAdded(minter_address);\n    }\n\n    function setMaxMinters(uint _maxMinters) external onlyByOwnGov {\n        require(_maxMinters > minters_array.length, \"New max minters should be greater than current minters\");\n\n        maxMinters = _maxMinters;\n    }\n\n    function removeMinter(address minter_address) external onlyByOwnGov {\n        require(minter_address != address(0), \"Cannot be zero!\");\n        require(minters[minter_address] == true, \"Address non-existent\");\n\n        delete minters[minter_address];\n        for (uint i = 0; i < minters_array.length; i++) {\n            if (minters_array[i] == minter_address) {\n                minters_array[i] = minters_array[minters_array.length - 1];\n                minters_array.pop();\n                break;\n            }\n        }\n\n        emit MinterRemoved(minter_address);\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "variable_25_fixed",
+                "Location": "",
+                "Type": "variable_array_traverse",
+                "Description": ""
+            }
+        ]
+    }
+    
+    
+    
+    
+    
+    
+]
