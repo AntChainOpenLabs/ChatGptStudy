@@ -126,7 +126,8 @@
                 "Name": "variable_11_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -137,7 +138,8 @@
                 "Name": "variable_12_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -148,7 +150,8 @@
                 "Name": "variable_13_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -159,7 +162,8 @@
                 "Name": "variable_14_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -170,7 +174,8 @@
                 "Name": "variable_15_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -181,7 +186,8 @@
                 "Name": "variable_16_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -192,7 +198,8 @@
                 "Name": "variable_17_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -203,7 +210,8 @@
                 "Name": "variable_18_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -214,7 +222,8 @@
                 "Name": "variable_19_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -225,7 +234,8 @@
                 "Name": "variable_20_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -236,7 +246,8 @@
                 "Name": "variable_21_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -247,7 +258,8 @@
                 "Name": "variable_22_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -258,7 +270,8 @@
                 "Name": "variable_23_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -269,7 +282,8 @@
                 "Name": "variable_24_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     },
@@ -280,7 +294,8 @@
                 "Name": "variable_25_fixed",
                 "Location": "",
                 "Type": "variable_array_traverse",
-                "Description": ""
+                "Description": "",
+                "Repair": ""
             }
         ]
     }

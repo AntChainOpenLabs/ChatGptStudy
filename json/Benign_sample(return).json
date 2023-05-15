@@ -229,7 +229,7 @@
     },
     {
         "Code": "pragma solidity ^0.8.0;\nimport {IERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';\n contract Fixed { function safeTransfer(address payable recipient, uint256 amount, address payable token) public { IERC20(token).safeTransfer(recipient, amount); } }",
-        "VulnerabilityDesc": [1
+        "VulnerabilityDesc": [
             {
                 "Name": "fixed_return_20",
                 "Location": "",

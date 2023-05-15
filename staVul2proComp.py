@@ -1,4 +1,5 @@
 import json
+#
 
 # 创建一个空列表来存储所有字典
 vulnerabilities = []
@@ -55,6 +56,11 @@ def generate_prompt_completion(filename):
             prompt_completion_6(f, vul)
             prompt_completion_7(f, vul)
             prompt_completion_8(f, vul)
+            prompt_completion_9(f, vul)
+
+
+
+
 
 def prompt_optimization(prompt, completion):
     prompt_completion = {}
@@ -164,6 +170,36 @@ def prompt_completion_8(f, vul):
         prompt_completion = prompt_optimization(prompt, completion)
         write_file(prompt_completion,f)
 
+# 修复好的良性样本
+def prompt_completion_9(f,vul):
+    for Desc in vul['VulnerabilityDesc']:
+        if Desc['Type'] == "":
+            continue
+        if Desc['Location'] == "":
+            prompt = "Does this  smart contract  have any vulnerabilities ? " + vul['Code']
+            completion = "No  , the contract don't have " + Desc['Type'] + " vulnerability"
+
+            prompt_completion = prompt_optimization(prompt, completion)
+            write_file(prompt_completion, f)
+
+
 if __name__=="__main__":
-    read_standard_vulnerability(readfilename)
+    read_list = [
+        r"json/bug_return.json",
+        r"json/Benign_sample(return).json",
+        r"json/bug_precision.json",
+        r"json/Benign_sample(precision).json",
+        r"json/bug_fake deposit.json",
+        r"json/fixed_fake deposit.json",
+        r"json/bug_fake notification.json",
+        r"json/fixed_fake notification.json",
+
+        r"json/bug_variable length array out of gas.json",
+        r"json/fixed_variable length array out of gas.json"
+
+    ]
+    for f_name in read_list:
+        read_standard_vulnerability(f_name)
+
+
     generate_prompt_completion(wirtefilename)
