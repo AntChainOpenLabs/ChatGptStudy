@@ -1,0 +1,12 @@
+{"Vulnerability Type": "Incorrect internal balance bookkeeping", "Vulnerability Location": "PoolBase.sol line 271", "Repair Method": "Require the amount to be added to the contract's balance or update the pool based on actual balance changes", "Vulnerability Information": "An attacker can perform stake and deposit actions without actually depositing the amount that sherlock assumes."}
+
+{"Vulnerability Type": "Reputation risks with updateSolution", "Vulnerability Location": "GovDev.sol line 25", "Repair Method": "Apply extra safeguards, for example, limit the time period where updateSolution can be used", "Vulnerability Information": "Via updateSolution, any functionality can be changed and all the funds can be accessed/rugged."}
+
+{"Vulnerability Type": "Bug", "Vulnerability Location": "PoolBase.sol line 271", "Repair Method": "Fix all the places where the same pattern is used", "Vulnerability Information": "A malicious user can inject extra values at the end of calldata and fake return values."}
+
+{"Vulnerability Type": "Single under-funded protocol can break paying off debt", "Vulnerability Location": "SherXERC20.payOffDebtAll function", "Repair Method": "Add a rule in the withdrawProtocolBalance to only allow withdrawals with at least 2 days of remaining balance", "Vulnerability Information": "If a single project does not have enough funds to cover the premium payments, the transactions come to a halt."}
+
+{"Vulnerability Type": "_doSherX optimistically assumes premiums will be paid", "Vulnerability Location": "_doSherX function", "Repair Method": "Attempt to pay off the accrued premiums for all tokens, not just the ones that would otherwise revert the tx", "Vulnerability Information": "The amounts array is an optimistic view assuming all outstanding, accrued premiums would indeed be paid until now."}
+
+{"Vulnerability Type": "Yield distribution after large payout seems unfair", "Vulnerability Location": "SherX.sol line 309", "Repair Method": "If unallocatedSherX is insufficient to provide for all the yields, only give the yields partly (so that each user gets their fair share)", "Vulnerability Information": "When a large payout occurs, it will lower unallocatedSherX. The first couple of users will be able to get their full Yield, until the moment unallocatedSherX is depleted. The next users don't get any yield at all."}
+

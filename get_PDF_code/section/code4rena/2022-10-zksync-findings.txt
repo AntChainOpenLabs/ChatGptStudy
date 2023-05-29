@@ -1,0 +1,3 @@
+1. {"Vulnerability Type": "Governor key leakage", "Vulnerability Location": "diamondCut function in Diamond.sol and DiamondCut.sol", "Repair Method": "Include `_calldata` in the proposed diamondCut or have at least one security council member approve the `_calldata` during execution of the proposal", "Vulnerability Information": "If the governor's key is leaked, the attacker can execute the proposal earlier than the governor with malicious `_calldata`."}
+2. {"Vulnerability Type": "Incorrect configuration", "Vulnerability Location": "BLOCK_PERIOD constant in Config.sol", "Repair Method": "Change the block period to be 12 seconds", "Vulnerability Information": "Due to an incorrect configuration, L2Transactions will expire earlier than intended."}
+

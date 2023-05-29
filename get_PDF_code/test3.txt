@@ -1,0 +1,489 @@
+Beosin
+
+BEOSIN
+
+Blockchain Security
+
+Smart contract security
+audit report
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Audit Number: 202109071819
+Project Contract Name: 1BOX
+Project Deployment Platform: Binance Smart Chain
+
+Project Contract Address:
+
+Contract Name On-chain Address
+
+OneBoxToken 0x82160113b6730fC0B36C18795CC976fda93ccclel
+
+Audit Start Date: 2021.09.06
+Audit Completion Date: 2021.09.07
+Audit Result: Pass
+
+Audit Team: Beosin (Chengdu LianAn) Technology Co. Ltd.
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Audit Results Explained
+
+Beosin (Chengdu LianAn) Technology has used several methods including Formal Verification, Static
+Analysis, Typical Case Testing and Manual Review to audit three major aspects of 1BOX smart contract,
+including Coding Standards, Security, and Business Logic. After auditing, the 1BOX smart contract was
+found to have 3 risk items: 2 Medium-risk and 1 Info. As of the completion of the audit, all risk items
+have been fixed or properly handled. The overall result of the 1BOX smart contract is Pass. The
+
+following is the detailed audit information for this project.
+
+Index Risk description Risk level Fix results
+
+OneBoxToket1 The implementation of minting related functions is
+
+a s . Medi Rerain
+inconsistent with the demand edium epaired
+
+OneBoxToken-2 The voting information is not updated synchronously
+when the token is transferred
+
+Medium Repaired
+
+OneBoxToken-3 Compiler warning Info Repaired
+Table 1. Risk Statistics
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Risk descriptions and fix results explained
+
+[OneBoxToken-1 Medium] The implementation of minting related functions is inconsistent
+with the demand
+
+> Description: As shown in Figures 1 and 2, the contract implements two mint functions for the contract
+owner to mint tokens. The mint function in the parent contract BEP20 (Figure 1) checked the cap of
+minting, but did not call the _moveDelegates function to update the voting information of the
+corresponding address; while the mint function in the main contract OneBoxToken (Figure 2) called the
+_moveDelegates function to update the voting information of the corresponding address, but the cap of
+
+minting has not been checked.
+
+mint to, _ amount onlyOwner
+_mint(_to, _amount);
+_moveDelegates( a), _delegates[_to], _amount);
+
+Figure 2 Source code of mint function in OneBoxToken contract (unfixed)
+
+> Fix recommendations: Delete the mint function in the parent contract BEP20; rewrite the _mint function
+in the main contract OneBoxToken, and add the logic of checking the cap of minting.
+
+> Fix results: Fixed. In the new version of the contract, two mint functions have been merged into one, the
+_mint function is rewritten in the main contract, and the _moveDelegates function is called internally to
+transfer voting information.
+
+_mint( account, amount)
+. mint(account, amount);
+
+_moveDelegates( (8), _delegates[account], amount);
+
+Figure 3 Source code of _mint function
+
+
+PIBEOSIN
+
+Beosin, Blockchain Security
+
+[OneBoxToken-2 Medium] The voting information is not updated synchronously when the
+
+token is transferred
+
+> Description: This contract implements the transfer and fransferFrom functions for users to transfer
+tokens. But the transfer logic processing function _fransfer function does not transfer the vote of the
+
+corresponding address.
+
+e(recipient !=
+
+_balances[sender] = _balances[sender].sub (amount,
+_balances[recipient] = _balances[recipient] .add(amount);
+Transfer(sender, recipient, amount);
+
+Figure 4 Source code of _transfer function in BEP2O contract
+
+> Fix recommendations: Rewrite the _fransfer function in the main contract OneBoxToken, and call
+_moveDelegates internally to transfer voting information.
+> Fix results: Fixed. In the new version of the contract, the _fransfer function has been rewritten in the
+
+main contract, and the _moveDelegates function is called internally to transfer voting information.
+
+_transfer(
+
+. transfer (sender ,‚recipient, amount);
+
+_moveDelegates(_delegates[sender], _delegates[recipient], amount);
+
+Figure 5 Source code of _transfer function in OneBoxToken contract
+[OneBoxToken-3 Info] Compiler warning
+
+> Description: This contract specifies that the compiler version is 0.6.12, and the compiler warning shown
+
+in Figure 6 appears when the contract is compiled with this version of the compiler.
+
+
+> Fix recommendations: Follow the compiler warning, modify the code, and eliminate the
+
+warning.
+
+> Fixresults: Fixed.
+
+PIBEOSIN
+
+Beosin, Blockchain Security
+
+Ibox/token.sol: Warning: SPDX license identifier not
+provided in source file. Before publishing, consider
+adding a comment containing "SPDX-License-Identifier:
+<SPDX-License>" to each source file. Use "SPDX-
+License-Identifier: UNLICENSED" for non-open-source
+code. Please see https: //spdx.org for more
+
+informstion.
+
+1box/token.sol:1184:5: Warning: Documentation tag on
+non-public state wariables will be disallowed in
+8.7.8. You will need to use the @dew tag explicitly.
+
+//F Anotice A record of each accounts delegate
+
+Figure 6 Contract compilation warning
+
+compiler
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Other audit items explained
+
+1. Basic Token Information
+
+Token name 1BOX Token
+
+Token symbol
+
+Token decimals
+
+Token total supply Initially 300 million, can be minted, and the cap is 1 billion
+
+Token type BEP-20
+Table 2 - 1BOX Token Information
+
+2. Token distribution instructions
+
+For the tokens of this contract, 300 million tokens will be allocated to the deployer when the contract
+is deployed. After the contract is deployed, the contract owner can manage the minting authority, and
+the address with the mint authority can call the mint function of the contract to mint the token to the
+specified address. The cap of tokens is 1 billion.
+
+3. Voting mechanism
+
+In this contract, the user can call the delegate function to delegate voting to the specified address (or
+use the delegateBySig function to delegate based on the signature data), and the voting information
+
+will be updated simultaneously when the token transfer is made by the delegated user.
+
+
+BEOSIN
+
+Blockchain Security
+
+Appendix 1 Description of Vulnerability Level
+
+Vulnerability Level
+
+Description
+
+Example
+
+Critical
+
+Vulnerabilities that lead to the complete
+destruction of the project and cannot be
+recovered. It is strongly recommended to fix.
+
+Vulnerabilities that lead to major abnormalities
+in the operation of the contract due to contract
+operation errors. It is strongly recommended to
+
+fix.
+
+Malicious tampering of core
+contract privileges and theft of
+contract assets.
+
+Unstandardized docking of the
+USDT interface, causing the
+user's assets to be unable to
+
+withdraw.
+
+Vulnerabilities that cause the contract operation
+result to be inconsistent with the design but will
+not harm the core business. It is recommended to
+
+fix.
+
+The rewards that users received
+
+do not match expectations.
+
+Vulnerabilities that have no impact on the
+operation of the contract, but there are potential
+security risks, which may affect other functions.
+The project party needs to confirm and
+determine whether the fix is needed according to
+
+the business scenario as appropriate.
+
+Inaccurate annual interest rate
+
+data queries.
+
+There is no impact on the normal operation of
+
+the contract, but improvements are still
+
+recommended to comply with widely accepted
+
+common project specifications.
+
+ki needed to trigger
+
+corresponding events after
+
+modifying the core configuration.
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Appendix 2 Audit Categories and Details
+
+No. Categories Subitems
+
+Compiler Version Security
+
+Deprecated Items
+
+1 Coding Conventions Redundant Code
+
+require/assert Usage
+
+Gas Consumption
+
+Integer Overflow/Underflow
+
+Reentrancy
+
+Pseudo-random Number Generator
+(PRNG)
+
+Transaction-Ordering Dependence
+
+DoS (Denial of Service)
+
+? General Vulnerability Function Call Permissions
+
+call/delegatecall Security
+
+Returned Value Security
+
+tx.origin Usage
+
+Replay Attack
+
+Overriding Variables
+
+Business Logics
+
+3 Business Security
+Business Implementations
+
+1. Coding Conventions
+1.1. Compiler Version Security
+
+The old version of the compiler may cause various known security issues. Developers are advised to
+specify the contract code to use the latest compiler version and eliminate the compiler alerts.
+1.2. Deprecated Items
+
+The Solidity smart contract development language is in rapid iteration. Some keywords have been
+deprecated by newer versions of the compiler, such as throw, years, etc. To eliminate the potential pitfalls they
+may cause, contract developers should not use the keywords that have been deprecated by the current
+
+compiler version.
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+1.3. Redundant Code
+Redundant code in smart contracts can reduce code readability and may require more gas consumption
+for contract deployment. It is recommended to eliminate redundant code.
+1.4. SafeMath Features
+Check whether the functions within the SafeMath library are correctly used in the contract to perform
+mathematical operations, or perform other overflow prevention checks.
+1.5. require/assert Usage
+Solidity uses state recovery exceptions to handle errors. This mechanism will undo all changes made to
+the state in the current call (and all its subcalls) and flag the errors to the caller. The functions assert and
+require can be used to check conditions and throw exceptions when the conditions are not met. The assert
+function can only be used to test for internal errors and check non-variables. The require function is used to
+confirm the validity of conditions, such as whether the input variables or contract state variables meet the
+conditions, or to verify the return value of external contract calls.
+1.6. Gas Consumption
+The smart contract virtual machine needs gas to execute the contract code. When the gas is insufficient,
+the code execution will throw an out of gas exception and cancel all state changes. Contract developers are
+required to control the gas consumption of the code to avoid function execution failures due to insufficient gas.
+1.7. Visibility Specifiers
+Check whether the visibility conforms to design requirement.
+1.8. Fallback Usage
+Check whether the Fallback function has been used correctly in the current contract.
+2. General Vulnerability
+2.1. Integer overflow
+Integer overflow is a security problem in many languages, and they are especially dangerous in smart
+contracts. Solidity can handle up to 256-bit numbers (2**256-1). If the maximum number is increased by 1, it
+will overflow to 0. Similarly, when the number is a uint type, O0 minus 1 will underflow to get the maximum
+number value. Overflow conditions can lead to incorrect results, especially if its possible results are not
+expected, which may affect the reliability and safety of the program. For the compiler version after Solidity
+0.8.0, smart contracts will perform overflow checking on mathematical operations by default. In the previous
+compiler versions, developers need to add their own overflow checking code, and SafeMath library is
+recommended to use.
+2.2. Reentrancy
+The reentrancy vulnerability is the most typical Binance Smart Chain smart contract vulnerability, which
+has caused the DAO to be attacked. The risk of reentry attack exists when there is an error in the logical order
+of calling the call.value() function to send assets.
+
+2.3 Pseudo-random Number Generator (PRNG)
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Random numbers may be used in smart contracts. In solidity, it is common to use block information as a
+random factor to generate, but such use is insecure. Block information can be controlled by miners or obtained
+by attackers during transactions, and such random numbers are to some extent predictable or collidable.
+
+2.4. Transaction-Ordering Dependence
+
+In the process of transaction packing and execution, when faced with transactions of the same difficulty,
+miners tend to choose the one with higher gas cost to be packed first, so users can specify a higher gas cost to
+have their transactions packed and executed first.
+
+2.5. DoS(Denial of Service)
+
+DoS, or Denial of Service, can prevent the target from providing normal services. Due to the
+immutability of smart contracts, this type of attack can make it impossible to ever restore the contract to its
+normal working state. There are various reasons for the denial of service of a smart contract, including
+malicious revert when acting as the recipient of a transaction, gas exhaustion caused by code design flaws, etc.
+2.6. Function Call Permissions
+
+If smart contracts have high-privilege functions, such as coin minting, self-destruction, change owner,
+etc., permission restrictions on function calls are required to avoid security problems caused by permission
+leakage.
+
+2.7. call/delegatecall Security
+
+Solidity provides the call/delegatecall function for function calls, which can cause call injection
+vulnerability if not used properly. For example, the parameters of the call, if controllable, can control this
+contract to perform unauthorized operations or call dangerous functions of other contracts.
+
+2.8. Returned Value Security
+
+In Solidity, there are transfer(), send(), call.value() and other methods. The transaction will be rolled back
+if the transfer fails, while send and call.value will return false if the transfer fails. If the return is not correctly
+judged, the unanticipated logice may be executed. In addition, in the implementation of the
+transfer/transferFrom function of the token contract, it is also necessary to avoid the transfer failure and return
+false, so as not to create fake recharge loopholes.
+
+2.9. tx.origin Usage
+
+The tx.origin represents the address of the initial creator of the transaction. If tx.origin is used for
+permission judgment, errors may occur; in addition, if the contract needs to determine whether the caller is the
+contract address, then tx.origin should be used instead of extcodesize.
+
+2.10. Replay Attack
+
+A replay attack means that if two contracts use the same code implementation, and the identity
+authentication is in the transmission of parameters, the transaction information can be replayed to the other
+contract to execute the transaction when the user executes a transaction to one contract.
+
+2.11. Overriding Variables
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+There are complex variable types in Solidity, such as structures, dynamic arrays, etc. When using a lower
+version of the compiler, improperly assigning values to it may result in overwriting the values of existing state
+
+variables, causing logical exceptions during contract execution.
+
+
+BEOSIN
+Beosin, Blockchain Security
+
+Appendix 3 Disclaimer
+
+This report is made in response to the project code. No description, expression or wording in this report
+shall be construed as an endorsement, affirmation or confirmation of the project. This audit is only applied to
+the type of auditing specified in this report and the scope of given in the results table. Other unknown security
+vulnerabilities are beyond auditing responsibility. Beosin (Chengdu LianAn) Technology only issues this
+report based on the attacks or vulnerabilities that already existed or occurred before the issuance of this report.
+For the emergence of new attacks or vulnerabilities that exist or occur in the future, Beosin (Chengdu LianAn)
+Technology lacks the capability to judge its possible impact on the security status of smart contracts, thus
+taking no responsibility for them. The security audit analysis and other contents of this report are based solely
+on the documents and materials that the contract provider has provided to Beosin (Chengdu LianAn)
+Technology before the issuance of this report, and the contract provider warrants that there are no missing,
+tampered, deleted; if the documents and materials provided by the contract provider are missing, tampered,
+deleted, concealed or reflected in a situation that is inconsistent with the actual situation, or if the documents
+and materials provided are changed after the issuance of this report, Beosin (Chengdu LianAn) Technology
+assumes no responsibility for the resulting loss or adverse effects. The audit report issued by Beosin (Chengdu
+LianAn) Technology is based on the documents and materials provided by the contract provider, and relies on
+the technology currently possessed by Beosin (Chengdu LianAn). Due to the technical limitations of any
+organization, this report conducted by Beosin (Chengdu LianAn) still has the possibility that the entire risk
+cannot be completely detected. Beosin (Chengdu LianAn) disclaims any liability for the resulting losses.
+
+The final interpretation of this statement belongs to Beosin (Chengdu LianAn).
+
+
+P,3
+
+Beosin
+
+BEOSIN
+
+Blockchain Security
+
+Official Website
+https://lianantech.com
+E-mail
+market@lianantech.com
+
+Twitter
+
+a [)
+-ComM/Dec
+Ja DN\
+
+N |
+YA |
+
+Ya
+
+RZ “ Ah prix In »
+
+

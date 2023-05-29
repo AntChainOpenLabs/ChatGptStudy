@@ -1,0 +1,10 @@
+{"Vulnerability Type": "Arbitrary contract call", "Vulnerability Location": "`fillZrxQuote()` function in `Swap.sol` at L200-L212", "Repair Method": "Consider adding a whitelist for `zrxTo` addresses", "Vulnerability Information": "An arbitrary contract call allows attackers to steal ERC20 from users' wallets."}
+
+{"Vulnerability Type": "Wrong calculation", "Vulnerability Location": "`fillZrxQuote()` function in `Swap.sol` at L200-L225", "Repair Method": "Subtract the input amount from the originalBalance", "Vulnerability Information": "Wrong calculation of `erc20Delta` and `ethDelta` can result in users losing assets that they will never be able to recover."}
+
+{"Vulnerability Type": "Avoiding fees", "Vulnerability Location": "`swapByQuote()` function in `Swap.sol`", "Repair Method": "Charge swap fees for the 'refunded ETH' on ERC20 swaps or require `boughtETHAmount == 0`", "Vulnerability Information": "Users can execute ETH swap without paying swap fees for the ETH they got from the swap."}
+
+{"Vulnerability Type": "Unused ERC20 tokens", "Vulnerability Location": "`fillZrxQuote()` function in `Swap.sol` at L153-L181", "Repair Method": "Refund unused ERC20 tokens", "Vulnerability Information": "Unused ERC20 tokens may be left in the contract unintentionally."}
+
+{"Vulnerability Type": "Potentially dangerous transfer", "Vulnerability Location": "`transfer()` function in `Swap.sol` at L158, L173, L257", "Repair Method": "Use a re-entrancy guard or OpenZeppelin Address.sendValue library", "Vulnerability Information": "The use of `transfer()` in `Swap.sol` may have unintended outcomes on the eth being sent to the receiver."}
+

@@ -1,0 +1,30 @@
+{"Vulnerability Type": "MEV vulnerability", "Vulnerability Location": "CvxCrvRewardsLocker contract", "Repair Method": "Use a proper value for `minOut` instead of `0`.", "Vulnerability Information": "The CvxCrvRewardsLocker contract swaps tokens through the CRV cvxCRV pool without using any slippage checks, which can result in a loss of funds through MEV."}
+
+{"Vulnerability Type": "Inconsistency", "Vulnerability Location": "constructor and setting method for slippageTolerance in StrategySwapper.sol", "Repair Method": "Add the corresponding validations to the constructor.", "Vulnerability Information": "There is an inconsistency between the constructor and setting method for slippageTolerance in StrategySwapper.sol, which can lead to errors."}
+
+{"Vulnerability Type": "Loss of governance control", "Vulnerability Location": "RoleManager.sol", "Repair Method": "Add a new function to know who are the active members for any role, like getRoleMembers(bytes32 role) returning address account.", "Vulnerability Information": "There is a possibility of losing all governance control due to a corner case in RoleManager.sol, which can lead to a high impact."}
+
+{"Vulnerability Type": "Denial of service attack", "Vulnerability Location": "TopUpAction.sol", "Repair Method": "Add some way of blacklisting badly behaved Stakers.", "Vulnerability Information": "Malicious Stakers can grief Keepers by deploying a smart contract to the payer address that has implemented a receive() function that calls revert(), which can lead to a denial of service attack."}
+
+{"Vulnerability Type": "Sandwich attack", "Vulnerability Location": "TopUpAction.sol", "Repair Method": "Allow user to specify max swap slippage when creating topup similar to how it's specified on uniswap or sushiswap to block attacks from both keepers and owners.", "Vulnerability Information": "The default swap slippage of 5% allows malicious keepers to sandwich attack topup, which can lead to a medium impact."}
+
+{"Vulnerability Type": "Rewards stealing", "Vulnerability Location": "StakerVault.sol", "Repair Method": "Move the call to ILpGauge(lpGauge).userCheckpoint() to before the balances are updated in StakerVault.transfer().", "Vulnerability Information": "Users can steal all rewards due to checkpoint after transfer in StakerVault.sol, which can lead to a high impact."}
+
+{"Vulnerability Type": "Incorrect stake transfer and locking", "Vulnerability Location": "TopUpActionLibrary.lockFunds()", "Repair Method": "Add stakerVault.increaseActionLockedBalance() after stakerVault.transferFrom()", "Vulnerability Information": "Function lockFunds transfers user stakes but doesn't call stakerVault.increaseActionLockedBalance() for the payer, causing stakerVault.actionLockedBalances[payer] to get different values and stakerVault.stakedAndActionLockedBalanceOf(payer) to show the wrong value. This can cause fund loss and theft and bypass of some restrictions."}
+
+1. {"Vulnerability Type": "Lack of safeApprove", "Vulnerability Location": "TopUpAction.sol#L50, LiquidityPool.sol#L721", "Repair Method": "Always do safeApprove(0) if the allowance is being changed, or use safeIncreaseAllowance()", "Vulnerability Information": "Prevents some registrations, and the changing of stakers and LP tokens."}
+2. {"Vulnerability Type": "Using the wrong function selector", "Vulnerability Location": "CompoundHandler#topUp()", "Repair Method": "Use the correct function selector for the respective cToken", "Vulnerability Information": "Native token topUp() always reverts."}
+3. {"Vulnerability Type": "Bypassing depositCap guard", "Vulnerability Location": "LiquidityPool.sol#L523", "Repair Method": "Add reentrancy guards to depositFor()", "Vulnerability Information": "ERC777 tokens can bypass depositCap guard."}
+4. {"Vulnerability Type": "Using deprecated transfer() function", "Vulnerability Location": "EthPool.sol#L30, BkdEthCvx.sol#L77, EthVault.sol#L29, VaultReserve.sol#L81", "Repair Method": "Use call() instead of transfer()", "Vulnerability Information": "The transaction will fail when the claimer smart contract does not implement a payable function or implements a payable fallback which uses more than 2300 gas unit."}
+5. {"Vulnerability Type": "Reading non-existing returns", "Vulnerability Location": "CEthInterface#mint()", "Repair Method": "Use the correct interface for the respective cToken", "Vulnerability Information": "TopUp() with native token always reverts."}
+
+{"Vulnerability Type": "reading non-existing returns", "Vulnerability Location": "CEthInterface#repayBorrowBehalf()", "Repair Method": "Update the CEthInterface interface to match the return value of repayBorrowBehalf() for native cToken (CEther)", "Vulnerability Information": "CEthInterface#repayBorrowBehalf() reading non-existing returns makes _repayAnyDebt() with CEther always revert"}
+
+{"Vulnerability Type": "extending period of higher withdrawal fees", "Vulnerability Location": "_updateUserFeesOnDeposit()", "Repair Method": "Scale the lastActionTimestamp variable the same way the feeRatio is scaled", "Vulnerability Information": "Griefer can extend period of higher withdrawal fees"}
+
+{"Vulnerability Type": "returning stale or incorrect results", "Vulnerability Location": "latestRoundData()", "Repair Method": "Check if the return value indicates stale data", "Vulnerability Information": "Chainlink's latestRoundData might return stale or incorrect results"}
+
+{"Vulnerability Type": "not accounting for tokens with decimals higher than 18", "Vulnerability Location": "_decimalMultiplier", "Repair Method": "Modify how _decimalMultiplier works so it could handle tokens with higher than 18 decimals", "Vulnerability Information": "_decimalMultiplier doesn't account for tokens with decimals higher than 18"}
+
+{"Vulnerability Type": "reverting when minFeePercentage > feeRatio", "Vulnerability Location": "getNewCurrentFees()", "Repair Method": "Add a new condition in getNewCurrentFees to account for this case", "Vulnerability Information": "getNewCurrentFees reverts when minFeePercentage > feeRatio"}
+
