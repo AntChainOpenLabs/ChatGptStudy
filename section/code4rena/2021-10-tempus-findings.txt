@@ -1,6 +1,0 @@
-{"Vulnerability Type": "Stealing Tokens", "Vulnerability Location": "_depositAndProvideLiquidity function in TempusController.sol", "Repair Method": "Create a whitelist registry for TempusAMMs and TempusPools to prevent possible attacks with fake AMMs and pools", "Vulnerability Information": "The function `_depositAndProvideLiquidity` can be used to retrieve arbitrary ERC20 tokens from the TempusController.sol contract."}
-
-{"Vulnerability Type": "Griefing Attack", "Vulnerability Location": "_depositAndFix function in TempusController.sol", "Repair Method": "Remove the assert check", "Vulnerability Information": "There's a griefing attack where an attacker can make any user transaction for `TempusController.depositAndFix` fail."}
-
-{"Vulnerability Type": "Griefing Attack", "Vulnerability Location": "_exitTempusAMM function in TempusController.sol", "Repair Method": "Remove the assert check", "Vulnerability Information": "There's a griefing attack where an attacker can make any user transaction for `TempusController.exitTempusAMM` fail."}
-

@@ -1,6 +1,0 @@
-{"Vulnerability Type": "Wrong logic", "Vulnerability Location": "veCVXStrategy.manualRebalance function", "Repair Method": "Rewrite the code for manualRebalance", "Vulnerability Information": "The rebalancing is broken and does not correctly rebalance. It usually leads to locking nearly everything if totalCVXBalance is high."}
-
-{"Vulnerability Type": "Block lock circumvention", "Vulnerability Location": "SettV3.transferFrom function", "Repair Method": "Parameterize blockLocked to take an account parameter instead", "Vulnerability Information": "The protection desired from the blockLocked call does not work for this function."}
-
-{"Vulnerability Type": "Wrong validation", "Vulnerability Location": "CvxLocker.setBoost function", "Repair Method": "Implement the correct checks for _max and _rate parameters", "Vulnerability Information": "Once wrong boost values are set (which are not validated when they are set), they cannot be set to new values anymore, breaking core contract functionality."}
-

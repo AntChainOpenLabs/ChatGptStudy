@@ -1,8 +1,0 @@
-{"Vulnerability Type": "centralization issue", "Vulnerability Location": "ArtGobblers.upgradeRandProvider()", "Repair Method": "Reset some variables in upgradeRandProvider instead of reverting", "Vulnerability Information": "Possible centralization issue around RandProvider"} 
-
-{"Vulnerability Type": "violation of fundamental mechanics", "Vulnerability Location": "ArtGobblers.mintLegendaryGobbler()", "Repair Method": "Ensure token ownership is reset in the for-loop of the mintLegendaryGobbler method", "Vulnerability Information": "Can Recover Gobblers Burnt In Legendary Mint"}
-
-{"Vulnerability Type": "process failure", "Vulnerability Location": "ArtGobblers.requestRandomSeed()", "Repair Method": "Reset some variables in upgradeRandProvider instead of reverting", "Vulnerability Information": "The reveal process could brick if randProvider stops working"}
-
-{"Vulnerability Type": "Incorrect balance calculation", "Vulnerability Location": "ArtGobblers.sol#L458", "Repair Method": "Remove adding 1 when calculating gobblersOwned", "Vulnerability Information": "The mintLegendaryGobbler() function in ArtGobblers.sol incorrectly updates gobblersOwned, leading to incorrect balanceOf() values."}
-

@@ -1,4 +1,0 @@
-{"Vulnerability Type": "Incorrect amount of Collateral moves for Auction", "Vulnerability Location": "function _calcAuction", "Repair Method": "Revise the calculation as mentioned in the report", "Vulnerability Information": "The debt and collateral which moves for Auction is calculated incorrectly. In case where `line.proportion` is set to small value, chances are art will become lower than min debt. This causes whole collateral to go for auction, which was not expected."}
-
-{"Vulnerability Type": "Someone can create non-liquidatable auction", "Vulnerability Location": "function auction", "Repair Method": "Add a check while starting an auction to ensure that the `to` address is not `address(0)`", "Vulnerability Information": "If someone starts an `auction` with `to = address(0)`, this auction becomes un-liquidatable. A malicious user can exploit this vulnerability to avoid being liquidated, which breaks the design of the system."}
-
