@@ -23,7 +23,7 @@ def read_testFile(file, testCaseNum):
 
 
 
-def test_fineTune(FINE_TUNED_MODEL , testCase , file):
+def fineTune(FINE_TUNED_MODEL , testCase , file):
     ans_js =  {}
     for i in range(len(testCase)):
         PROMPT = testCase[i]
@@ -34,7 +34,7 @@ def test_fineTune(FINE_TUNED_MODEL , testCase , file):
                 model= FINE_TUNED_MODEL,
                 prompt= PROMPT + prompt_end,
                 stop=completion_end,
-                temperature= 2,
+                temperature= 1,
                 n = 10
             )
             for choice in response["choices"]:
@@ -47,4 +47,4 @@ def test_fineTune(FINE_TUNED_MODEL , testCase , file):
 
 if __name__ == "__main__":
     testCase = read_testFile( testfilename , 10)
-    test_fineTune(FINE_TUNED_MODEL, testCase , testResult)
+    fineTune(FINE_TUNED_MODEL, testCase , testResult)
