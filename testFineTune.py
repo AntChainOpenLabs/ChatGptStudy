@@ -4,8 +4,8 @@ prompt_end = "\n\n###\n\n"
 completion_start = " "
 completion_end = "###"
 FINE_TUNED_MODEL = "davinci:ft-antchainopenlab-2023-05-29-14-14-47"
-testfilename = r"experiment\1\prompt_completion_1G_test.jsonl"
-testResult = r"experiment\1\prompt_completion_1G_result2.jsonl"
+testfilename = r"experiment\1\prompt_completion_1G_test_bug.jsonl"
+testResult = r"experiment\1\prompt_completion_1G_result_bug_3.jsonl"
 
 
 def read_testFile(file, testCaseNum):
@@ -34,7 +34,7 @@ def fineTune(FINE_TUNED_MODEL , testCase , file):
                 model= FINE_TUNED_MODEL,
                 prompt= PROMPT + prompt_end,
                 stop=completion_end,
-                temperature= 1,
+                temperature= 2,
                 n = 10
             )
             for choice in response["choices"]:
