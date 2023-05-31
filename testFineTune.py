@@ -1,26 +1,25 @@
 import openai
 import json
+import random
 prompt_end = "\n\n###\n\n"
 completion_start = " "
 completion_end = "###"
 FINE_TUNED_MODEL = "davinci:ft-antchainopenlab-2023-05-29-14-14-47"
-testfilename = r"experiment\1\prompt_completion_1G_test_bug.jsonl"
-testResult = r"experiment\1\prompt_completion_1G_result_bug_3.jsonl"
+testfilename = r"experiment\1\prompt_completion_test_bug.jsonl"
+testfilename2 = r"experiment\1\prompt_completion_test_benign.jsonl"
+
+testResult = r"experiment\1\prompt_completion_1G_result_bug_1.jsonl"
 
 
 def read_testFile(file, testCaseNum):
     i = 1
     testCase = []
     with open(file,"r") as f:
-        for line in f.readlines():
-            if i > testCaseNum : #只取适量的测试样本
-                break
+        tst = random.sample(f.readlines(), testCaseNum) #随机取样本数
+        for line in tst:
             line = json.loads(line)
             testCase.append(line["prompt"])
-            i+=1
     return testCase
-
-
 
 
 def fineTune(FINE_TUNED_MODEL , testCase , file):
@@ -34,7 +33,7 @@ def fineTune(FINE_TUNED_MODEL , testCase , file):
                 model= FINE_TUNED_MODEL,
                 prompt= PROMPT + prompt_end,
                 stop=completion_end,
-                temperature= 2,
+                temperature= 0,
                 n = 10
             )
             for choice in response["choices"]:

@@ -5,10 +5,10 @@ from staVul2proComp import *
 vulnerabilities = []
 benign = []
 # prompt&completion文件
-wirtefilename = r"experiment\1\prompt_completion_1G.jsonl"
-wirtefilename2 = r"experiment\1\prompt_completion_1G_benign.jsonl"
-testfilename = r"experiment\1\prompt_completion_1G_test.jsonl"
-testfilename_bug = r"experiment\1\prompt_completion_1G_test_bug.jsonl"
+wirtefilename = r"experiment\1\1A\prompt_completion_1A.jsonl"
+wirtefilename2 = r"experiment\1\1A\prompt_completion_1A_benign.jsonl"
+testfilename = r"experiment\1\1A\prompt_completion_1A_test.jsonl"
+testfilename_bug = r"experiment\1\1A\prompt_completion_1A_test_bug.jsonl"
 # prompt优化字符
 prompt_end = "\n\n###\n\n"
 completion_start = " "
@@ -81,15 +81,15 @@ def prompt_completion_benign(f, vul):
 if __name__ == "__main__":
     good = 300
     bad = 300
-    # read_file(r"experiment\1\fake_deposit_final.json",bad)
-    # read_benign_file(r"experiment\1\Benign_sample_Check_token_True.json",good)
-    # generate_prompt_completion(wirtefilename,vulnerabilities,1)
-    # generate_prompt_completion(wirtefilename2,benign[:good],1)
+    read_file(r"experiment\1\fake_deposit_final.json",bad)
+    read_benign_file(r"experiment\1\Benign_sample_Check_token_True.json",good)
+    generate_prompt_completion(wirtefilename,vulnerabilities,1)
+    generate_prompt_completion(wirtefilename2,benign[:good],1)
     # generate_prompt_completion(testfilename,benign[good+1:],2)
 
 
-    read_file(r"experiment\1\fake_deposit_test.json",10)
-    generate_prompt_completion(testfilename_bug,vulnerabilities,1)
+    # read_file(r"experiment\1\fake_deposit_test.json",10)
+    # generate_prompt_completion(testfilename_bug,vulnerabilities,1)
 
 
 
