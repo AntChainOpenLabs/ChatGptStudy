@@ -84,7 +84,7 @@ if __name__ == "__main__":
     read_file(r"experiment\1\fake_deposit_final.json",bad)
     read_benign_file(r"experiment\1\Benign_sample_Check_token_True.json",good)
     generate_prompt_completion(wirtefilename,vulnerabilities,1)
-    generate_prompt_completion(wirtefilename2,benign[:good],1)
+    # generate_prompt_completion(wirtefilename2,benign[:good],1)
     # generate_prompt_completion(testfilename,benign[good+1:],2)
 
 
