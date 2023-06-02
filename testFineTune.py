@@ -77,13 +77,13 @@ def run(filename, testResultFile, testCaseNum):
     testCase = read_testFile(filename, testCaseNum)
     for temperature in range(0,3):
         print("---------------------")
-        print("正在测试 temperatur 为 {} 时 ".format(temperature))
-        fineTune(FINE_TUNED_MODEL, testCase,testCaseNum, testResultFile +"_" + str(temperature) + ".jsonl", prompt_start_0 ,temperature)
+        # print("正在测试 temperatur 为 {} 时 ".format(temperature))
+        # fineTune(FINE_TUNED_MODEL, testCase,testCaseNum, testResultFile +"_" + str(temperature) + ".jsonl", prompt_start_0 ,temperature)
         # time.sleep(2)
-        # print("正在测试 temperatur 为 {} 时 / 加了角色描述".format(temperature))
-        # fineTune(FINE_TUNED_MODEL ,testCase,testCaseNum, testResultFile +"_addRole_"  + str(temperature) + ".jsonl", prompt_start_1 ,temperature)
+        print("正在测试 temperatur 为 {} 时 / 加了角色描述".format(temperature))
+        fineTune(FINE_TUNED_MODEL ,testCase,testCaseNum, testResultFile +"_addRole_"  + str(temperature) + ".jsonl", prompt_start_1 ,temperature)
 
 if __name__ == "__main__":
-    # run(testfilename,testResult, 15)
+    run(testfilename,testResult, 10)
     # time.sleep(5)
-    run(testfilename2,testResult2, 15)
+    run(testfilename2,testResult2, 10)
