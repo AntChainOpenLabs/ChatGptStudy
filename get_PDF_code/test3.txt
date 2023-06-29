@@ -1,489 +1,501 @@
-Beosin
+Security Audit Report for Earnmos Vault
+and StratDiffusion Contracts
 
-BEOSIN
+Date: May 03, 2022
 
-Blockchain Security
+Version: 1.0
 
-Smart contract security
-audit report
+Contact: contact@blocksecteam.com
 
+mailto:contact@blocksecteam.com
 
-BEOSIN
-Beosin, Blockchain Security
 
-Audit Number: 202109071819
-Project Contract Name: 1BOX
-Project Deployment Platform: Binance Smart Chain
+Contents
 
-Project Contract Address:
+1 Introduction 1
+1.1 About Target Contracts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
 
-Contract Name On-chain Address
+1.2 Disclaimer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
 
-OneBoxToken 0x82160113b6730fC0B36C18795CC976fda93ccclel
+1.3 Procedure of Auditing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
 
-Audit Start Date: 2021.09.06
-Audit Completion Date: 2021.09.07
-Audit Result: Pass
+1.3.1 Software Security . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
 
-Audit Team: Beosin (Chengdu LianAn) Technology Co. Ltd.
+1.3.2 DeFi Security . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
 
+1.3.3 NFT Security . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
 
-BEOSIN
-Beosin, Blockchain Security
+1.3.4 Additional Recommendation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
 
-Audit Results Explained
+1.4 Security Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
 
-Beosin (Chengdu LianAn) Technology has used several methods including Formal Verification, Static
-Analysis, Typical Case Testing and Manual Review to audit three major aspects of 1BOX smart contract,
-including Coding Standards, Security, and Business Logic. After auditing, the 1BOX smart contract was
-found to have 3 risk items: 2 Medium-risk and 1 Info. As of the completion of the audit, all risk items
-have been fixed or properly handled. The overall result of the 1BOX smart contract is Pass. The
+2 Findings 4
+2.1 DeFi Security . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
 
-following is the detailed audit information for this project.
+2.1.1 Possible price manipulation attack . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
 
-Index Risk description Risk level Fix results
+2.2 Additional Recommendation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
 
-OneBoxToket1 The implementation of minting related functions is
+2.2.1 Ensure the security of the private key of the owner . . . . . . . . . . . . . . . . . . 6
 
-a s . Medi Rerain
-inconsistent with the demand edium epaired
+i
 
-OneBoxToken-2 The voting information is not updated synchronously
-when the token is transferred
 
-Medium Repaired
 
-OneBoxToken-3 Compiler warning Info Repaired
-Table 1. Risk Statistics
+Report Manifest
 
+Item Description
+Client Earnmos
+Target Earnmos Vault and StratDiffusion Contracts
 
-BEOSIN
-Beosin, Blockchain Security
+Version History
 
-Risk descriptions and fix results explained
+Version Date Description
+1.0 May 03, 2022 First version
 
-[OneBoxToken-1 Medium] The implementation of minting related functions is inconsistent
-with the demand
+About BlockSec The BlockSec Team focuses on the security of the blockchain ecosystem, and col-
 
-> Description: As shown in Figures 1 and 2, the contract implements two mint functions for the contract
-owner to mint tokens. The mint function in the parent contract BEP20 (Figure 1) checked the cap of
-minting, but did not call the _moveDelegates function to update the voting information of the
-corresponding address; while the mint function in the main contract OneBoxToken (Figure 2) called the
-_moveDelegates function to update the voting information of the corresponding address, but the cap of
+laborates with leading DeFi projects to secure their products. The team is founded by top-notch security
 
-minting has not been checked.
+researchers and experienced experts from both academia and industry. They have published multiple
 
-mint to, _ amount onlyOwner
-_mint(_to, _amount);
-_moveDelegates( a), _delegates[_to], _amount);
+blockchain security papers in prestigious conferences, reported several zero-day attacks of DeFi applica-
 
-Figure 2 Source code of mint function in OneBoxToken contract (unfixed)
+tions, and released detailed analysis reports of high-impact security incidents. They can be reached at
 
-> Fix recommendations: Delete the mint function in the parent contract BEP20; rewrite the _mint function
-in the main contract OneBoxToken, and add the logic of checking the cap of minting.
+Email, Twitter and Medium.
 
-> Fix results: Fixed. In the new version of the contract, two mint functions have been merged into one, the
-_mint function is rewritten in the main contract, and the _moveDelegates function is called internally to
-transfer voting information.
+ii
 
-_mint( account, amount)
-. mint(account, amount);
+https://www.blocksecteam.com
+mailto:contact@blocksecteam.com
+https://twitter.com/BlockSecTeam
+https://blocksecteam.medium.com/
 
-_moveDelegates( (8), _delegates[account], amount);
 
-Figure 3 Source code of _mint function
+Chapter 1 Introduction
 
+1.1 About Target Contracts
 
-PIBEOSIN
+Information Description
+Type Smart Contract
+Language Solidity
+Approach Semi-automatic and manual verification
 
-Beosin, Blockchain Security
+For the current contracts covered in this audit, the asset deposited in the vault is the lp token of the
 
-[OneBoxToken-2 Medium] The voting information is not updated synchronously when the
+Diffusion DEX 1. The vault will deposit the lp token into the Chef contract (out of the scope for this audit)
 
-token is transferred
+and earn the DIFF token. The DIFF token will be exchanged to the underlying tokens. The underlying
 
-> Description: This contract implements the transfer and fransferFrom functions for users to transfer
-tokens. But the transfer logic processing function _fransfer function does not transfer the vote of the
+tokens will be converted into the Diffusion lp token by adding liquidity into the DEX pool. The Diffusion
 
-corresponding address.
+lp token will again be deposited into the vault, enjoying the compound earnings. This architecture can
 
-e(recipient !=
+support different vaults and strategies. For the current version of this audit, it only supports the strategy of
 
-_balances[sender] = _balances[sender].sub (amount,
-_balances[recipient] = _balances[recipient] .add(amount);
-Transfer(sender, recipient, amount);
+Diffusion DEX.
 
-Figure 4 Source code of _transfer function in BEP2O contract
+The repository that has been audited is on github 2. The auditing process is iterative. Specifically, we
 
-> Fix recommendations: Rewrite the _fransfer function in the main contract OneBoxToken, and call
-_moveDelegates internally to transfer voting information.
-> Fix results: Fixed. In the new version of the contract, the _fransfer function has been rewritten in the
+will audit the commits that fix the discovered issues. If there are new issues, we will continue this process.
 
-main contract, and the _moveDelegates function is called internally to transfer voting information.
+Our audit report is responsible for the only initial version (Version 1), as well as new codes (in the following
 
-_transfer(
+versions) to fix issues in the audit report.
 
-. transfer (sender ,‚recipient, amount);
+Project Version Commit Hash
+Earnmos Vault and StratDif-
+fusion Contracts
 
-_moveDelegates(_delegates[sender], _delegates[recipient], amount);
+Version 1 a61800e7b2370ba0fa361a6bad56b3d6848a89ab
 
-Figure 5 Source code of _transfer function in OneBoxToken contract
-[OneBoxToken-3 Info] Compiler warning
+1.2 Disclaimer
 
-> Description: This contract specifies that the compiler version is 0.6.12, and the compiler warning shown
+This audit report does not constitute investment advice or a personal recommendation. It does not
 
-in Figure 6 appears when the contract is compiled with this version of the compiler.
+consider, and should not be interpreted as considering or having any bearing on, the potential economics
 
+of a token, token sale or any other product, service or other asset. Any entity should not rely on this report
 
-> Fix recommendations: Follow the compiler warning, modify the code, and eliminate the
+in any way, including for the purpose of making any decisions to buy or sell any token, product, service or
 
-warning.
+other asset.
 
-> Fixresults: Fixed.
+This audit report is not an endorsement of any particular project or team, and the report does not
 
-PIBEOSIN
+guarantee the security of any particular project. This audit does not give any warranties on discovering
 
-Beosin, Blockchain Security
+all security issues of the smart contracts, i.e., the evaluation result does not guarantee the nonexistence
 
-Ibox/token.sol: Warning: SPDX license identifier not
-provided in source file. Before publishing, consider
-adding a comment containing "SPDX-License-Identifier:
-<SPDX-License>" to each source file. Use "SPDX-
-License-Identifier: UNLICENSED" for non-open-source
-code. Please see https: //spdx.org for more
+of any further findings of security issues. As one audit cannot be considered comprehensive, we always
 
-informstion.
+recommend proceeding with independent audits and a public bug bounty program to ensure the security
 
-1box/token.sol:1184:5: Warning: Documentation tag on
-non-public state wariables will be disallowed in
-8.7.8. You will need to use the @dew tag explicitly.
+of smart contracts.
 
-//F Anotice A record of each accounts delegate
+The scope of this audit is limited to the code mentioned in Section 1.1. Unless explicitly specified,
 
-Figure 6 Contract compilation warning
+the security of the language itself (e.g., the solidity language), the underlying compiling toolchain and the
 
-compiler
+1https://app.diffusion.fi
 
+2https://github.com/earnmos/earnmos
 
-BEOSIN
-Beosin, Blockchain Security
+1
 
-Other audit items explained
+https://app.diffusion.fi
+https://github.com/earnmos/earnmos
 
-1. Basic Token Information
 
-Token name 1BOX Token
+computing infrastructure are out of the scope.
 
-Token symbol
+1.3 Procedure of Auditing
 
-Token decimals
+We perform the audit according to the following procedure.
 
-Token total supply Initially 300 million, can be minted, and the cap is 1 billion
+- Vulnerability Detection We first scan smart contracts with automatic code analyzers, and then
 
-Token type BEP-20
-Table 2 - 1BOX Token Information
+manually verify (reject or confirm) the issues reported by them.
 
-2. Token distribution instructions
+- Semantic Analysis We study the business logic of smart contracts and conduct further investiga-
 
-For the tokens of this contract, 300 million tokens will be allocated to the deployer when the contract
-is deployed. After the contract is deployed, the contract owner can manage the minting authority, and
-the address with the mint authority can call the mint function of the contract to mint the token to the
-specified address. The cap of tokens is 1 billion.
+tion on the possible vulnerabilities using an automatic fuzzing tool (developed by our research team).
 
-3. Voting mechanism
+We also manually analyze possible attack scenarios with independent auditors to cross-check the
 
-In this contract, the user can call the delegate function to delegate voting to the specified address (or
-use the delegateBySig function to delegate based on the signature data), and the voting information
+result.
 
-will be updated simultaneously when the token transfer is made by the delegated user.
+- Recommendation We provide some useful advice to developers from the perspective of good
 
+programming practice, including gas optimization, code style, and etc.
 
-BEOSIN
+We show the main concrete checkpoints in the following.
 
-Blockchain Security
+1.3.1 Software Security
 
-Appendix 1 Description of Vulnerability Level
+∗ Reentrancy
 
-Vulnerability Level
+∗ DoS
 
-Description
+∗ Access control
 
-Example
+∗ Data handling and data flow
 
-Critical
+∗ Exception handling
 
-Vulnerabilities that lead to the complete
-destruction of the project and cannot be
-recovered. It is strongly recommended to fix.
+∗ Untrusted external call and control flow
 
-Vulnerabilities that lead to major abnormalities
-in the operation of the contract due to contract
-operation errors. It is strongly recommended to
+∗ Initialization consistency
 
-fix.
+∗ Events operation
 
-Malicious tampering of core
-contract privileges and theft of
-contract assets.
+∗ Error-prone randomness
 
-Unstandardized docking of the
-USDT interface, causing the
-user's assets to be unable to
+∗ Improper use of the proxy system
 
-withdraw.
+1.3.2 DeFi Security
 
-Vulnerabilities that cause the contract operation
-result to be inconsistent with the design but will
-not harm the core business. It is recommended to
+∗ Semantic consistency
 
-fix.
+∗ Functionality consistency
 
-The rewards that users received
+∗ Access control
 
-do not match expectations.
+∗ Business logic
 
-Vulnerabilities that have no impact on the
-operation of the contract, but there are potential
-security risks, which may affect other functions.
-The project party needs to confirm and
-determine whether the fix is needed according to
+∗ Token operation
 
-the business scenario as appropriate.
+∗ Emergency mechanism
 
-Inaccurate annual interest rate
+∗ Oracle security
 
-data queries.
+∗ Whitelist and blacklist
 
-There is no impact on the normal operation of
+∗ Economic impact
 
-the contract, but improvements are still
+∗ Batch transfer
 
-recommended to comply with widely accepted
+1.3.3 NFT Security
 
-common project specifications.
+∗ Duplicated item
 
-ki needed to trigger
+2
 
-corresponding events after
 
-modifying the core configuration.
 
+∗ Verification of the token receiver
 
-BEOSIN
-Beosin, Blockchain Security
+∗ Off-chain metadata security
 
-Appendix 2 Audit Categories and Details
+1.3.4 Additional Recommendation
 
-No. Categories Subitems
+∗ Gas optimization
 
-Compiler Version Security
+∗ Code quality and style
+�
 
-Deprecated Items
+Note The previous checkpoints are the main ones. We may use more checkpoints during the auditing
 
-1 Coding Conventions Redundant Code
+process according to the functionality of the project.
 
-require/assert Usage
+1.4 Security Model
 
-Gas Consumption
+To evaluate the risk, we follow the standards or suggestions that are widely adopted by both industry
 
-Integer Overflow/Underflow
+and academy, including OWASP Risk Rating Methodology 3 and Common Weakness Enumeration 4.
 
-Reentrancy
+The overall severity of the risk is determined by likelihood and impact. Specifically, likelihood is used to
 
-Pseudo-random Number Generator
-(PRNG)
+estimate how likely a particular vulnerability can be uncovered and exploited by an attacker, while impact
 
-Transaction-Ordering Dependence
+is used to measure the consequences of a successful exploit.
 
-DoS (Denial of Service)
+In this report, both likelihood and impact are categorized into two ratings, i.e., high and low respec-
 
-? General Vulnerability Function Call Permissions
+tively, and their combinations are shown in Table 1.1.
 
-call/delegatecall Security
+Table 1.1: Vulnerability Severity Classification
 
-Returned Value Security
+Im
+pa
 
-tx.origin Usage
+ct
 
-Replay Attack
+High High Medium
 
-Overriding Variables
+Low Medium Low
 
-Business Logics
+High Low
 
-3 Business Security
-Business Implementations
+Likelihood
 
-1. Coding Conventions
-1.1. Compiler Version Security
+Accordingly, the severity measured in this report are classified into three categories: High, Medium,
 
-The old version of the compiler may cause various known security issues. Developers are advised to
-specify the contract code to use the latest compiler version and eliminate the compiler alerts.
-1.2. Deprecated Items
+Low. For the sake of completeness, Undetermined is also used to cover circumstances when the risk
 
-The Solidity smart contract development language is in rapid iteration. Some keywords have been
-deprecated by newer versions of the compiler, such as throw, years, etc. To eliminate the potential pitfalls they
-may cause, contract developers should not use the keywords that have been deprecated by the current
+cannot be well determined.
 
-compiler version.
+Furthermore, the status of a discovered issue will fall into one of the following four categories:
 
+- Undetermined No response yet.
 
-BEOSIN
-Beosin, Blockchain Security
+- Acknowledged The issue has been received by the client, but not confirmed yet.
 
-1.3. Redundant Code
-Redundant code in smart contracts can reduce code readability and may require more gas consumption
-for contract deployment. It is recommended to eliminate redundant code.
-1.4. SafeMath Features
-Check whether the functions within the SafeMath library are correctly used in the contract to perform
-mathematical operations, or perform other overflow prevention checks.
-1.5. require/assert Usage
-Solidity uses state recovery exceptions to handle errors. This mechanism will undo all changes made to
-the state in the current call (and all its subcalls) and flag the errors to the caller. The functions assert and
-require can be used to check conditions and throw exceptions when the conditions are not met. The assert
-function can only be used to test for internal errors and check non-variables. The require function is used to
-confirm the validity of conditions, such as whether the input variables or contract state variables meet the
-conditions, or to verify the return value of external contract calls.
-1.6. Gas Consumption
-The smart contract virtual machine needs gas to execute the contract code. When the gas is insufficient,
-the code execution will throw an out of gas exception and cancel all state changes. Contract developers are
-required to control the gas consumption of the code to avoid function execution failures due to insufficient gas.
-1.7. Visibility Specifiers
-Check whether the visibility conforms to design requirement.
-1.8. Fallback Usage
-Check whether the Fallback function has been used correctly in the current contract.
-2. General Vulnerability
-2.1. Integer overflow
-Integer overflow is a security problem in many languages, and they are especially dangerous in smart
-contracts. Solidity can handle up to 256-bit numbers (2**256-1). If the maximum number is increased by 1, it
-will overflow to 0. Similarly, when the number is a uint type, O0 minus 1 will underflow to get the maximum
-number value. Overflow conditions can lead to incorrect results, especially if its possible results are not
-expected, which may affect the reliability and safety of the program. For the compiler version after Solidity
-0.8.0, smart contracts will perform overflow checking on mathematical operations by default. In the previous
-compiler versions, developers need to add their own overflow checking code, and SafeMath library is
-recommended to use.
-2.2. Reentrancy
-The reentrancy vulnerability is the most typical Binance Smart Chain smart contract vulnerability, which
-has caused the DAO to be attacked. The risk of reentry attack exists when there is an error in the logical order
-of calling the call.value() function to send assets.
+- Confirmed The issue has been recognized by the client, but not fixed yet.
 
-2.3 Pseudo-random Number Generator (PRNG)
+- Fixed The issue has been confirmed and fixed by the client.
 
+3https://owasp.org/www-community/OWASP_Risk_Rating_Methodology
 
-BEOSIN
-Beosin, Blockchain Security
+4https://cwe.mitre.org/
 
-Random numbers may be used in smart contracts. In solidity, it is common to use block information as a
-random factor to generate, but such use is insecure. Block information can be controlled by miners or obtained
-by attackers during transactions, and such random numbers are to some extent predictable or collidable.
+3
 
-2.4. Transaction-Ordering Dependence
+https://owasp.org/www-community/OWASP_Risk_Rating_Methodology
+https://cwe.mitre.org/
 
-In the process of transaction packing and execution, when faced with transactions of the same difficulty,
-miners tend to choose the one with higher gas cost to be packed first, so users can specify a higher gas cost to
-have their transactions packed and executed first.
 
-2.5. DoS(Denial of Service)
+Chapter 2 Findings
 
-DoS, or Denial of Service, can prevent the target from providing normal services. Due to the
-immutability of smart contracts, this type of attack can make it impossible to ever restore the contract to its
-normal working state. There are various reasons for the denial of service of a smart contract, including
-malicious revert when acting as the recipient of a transaction, gas exhaustion caused by code design flaws, etc.
-2.6. Function Call Permissions
+In total, we find one potential issue. We have one recommendation.
 
-If smart contracts have high-privilege functions, such as coin minting, self-destruction, change owner,
-etc., permission restrictions on function calls are required to avoid security problems caused by permission
-leakage.
+- High Risk: 0
 
-2.7. call/delegatecall Security
+- Medium Risk: 0
 
-Solidity provides the call/delegatecall function for function calls, which can cause call injection
-vulnerability if not used properly. For example, the parameters of the call, if controllable, can control this
-contract to perform unauthorized operations or call dangerous functions of other contracts.
+- Low Risk: 1
 
-2.8. Returned Value Security
+- Recommendations: 1
 
-In Solidity, there are transfer(), send(), call.value() and other methods. The transaction will be rolled back
-if the transfer fails, while send and call.value will return false if the transfer fails. If the return is not correctly
-judged, the unanticipated logice may be executed. In addition, in the implementation of the
-transfer/transferFrom function of the token contract, it is also necessary to avoid the transfer failure and return
-false, so as not to create fake recharge loopholes.
+ID Severity Description Category Status
+1 Low Possible price manipulation attack DeFi Security Confirmed
 
-2.9. tx.origin Usage
+2 -
+Ensure the security of the private key of the
+owner
 
-The tx.origin represents the address of the initial creator of the transaction. If tx.origin is used for
-permission judgment, errors may occur; in addition, if the contract needs to determine whether the caller is the
-contract address, then tx.origin should be used instead of extcodesize.
+Recommendation Confirmed
 
-2.10. Replay Attack
+The details are provided in the following sections.
 
-A replay attack means that if two contracts use the same code implementation, and the identity
-authentication is in the transmission of parameters, the transaction information can be replayed to the other
-contract to execute the transaction when the user executes a transaction to one contract.
+2.1 DeFi Security
 
-2.11. Overriding Variables
+2.1.1 Possible price manipulation attack
 
+Severity Low
 
-BEOSIN
-Beosin, Blockchain Security
+Status Confirmed
 
-There are complex variable types in Solidity, such as structures, dynamic arrays, etc. When using a lower
-version of the compiler, improperly assigning values to it may result in overwriting the values of existing state
+Introduced by Version 1
 
-variables, causing logical exceptions during contract execution.
+Description The function harvest of StratDiffusion swaps the DIFF token for the underlying tokens
 
+(line 155 and 164). It’s susceptible to the price manipulation attack.
 
-BEOSIN
-Beosin, Blockchain Security
+140 function harvest() public override whenNotPaused {
+141 if (balanceOfPool() > 0) {
+142 // claim diff
+143 miniChef.harvest(pid, address(this));
+144
+145 uint256 diffBal = diff.balanceOf(address(this));
+146 if (diffBal > 0) {
+147 // charge fees
+148 uint256 harvestFee = diffBal.mul(harvestFeeRate).div(
+149 FEE_PRECISION
+150 );
+151 diff.safeTransfer(feeRecipient, harvestFee);
+152
+153 // swap diff
+154 uint256 diffBalHalf = diffBal.sub(harvestFee).div(2);
+155 if (lpToken0 != diff) {
+156 uniRouter.swapExactTokensForTokens(
+157 diffBalHalf,
+158 0,
+159 diffToLpToken0,
+160 address(this),
+161 now
+162 );
 
-Appendix 3 Disclaimer
+4
 
-This report is made in response to the project code. No description, expression or wording in this report
-shall be construed as an endorsement, affirmation or confirmation of the project. This audit is only applied to
-the type of auditing specified in this report and the scope of given in the results table. Other unknown security
-vulnerabilities are beyond auditing responsibility. Beosin (Chengdu LianAn) Technology only issues this
-report based on the attacks or vulnerabilities that already existed or occurred before the issuance of this report.
-For the emergence of new attacks or vulnerabilities that exist or occur in the future, Beosin (Chengdu LianAn)
-Technology lacks the capability to judge its possible impact on the security status of smart contracts, thus
-taking no responsibility for them. The security audit analysis and other contents of this report are based solely
-on the documents and materials that the contract provider has provided to Beosin (Chengdu LianAn)
-Technology before the issuance of this report, and the contract provider warrants that there are no missing,
-tampered, deleted; if the documents and materials provided by the contract provider are missing, tampered,
-deleted, concealed or reflected in a situation that is inconsistent with the actual situation, or if the documents
-and materials provided are changed after the issuance of this report, Beosin (Chengdu LianAn) Technology
-assumes no responsibility for the resulting loss or adverse effects. The audit report issued by Beosin (Chengdu
-LianAn) Technology is based on the documents and materials provided by the contract provider, and relies on
-the technology currently possessed by Beosin (Chengdu LianAn). Due to the technical limitations of any
-organization, this report conducted by Beosin (Chengdu LianAn) still has the possibility that the entire risk
-cannot be completely detected. Beosin (Chengdu LianAn) disclaims any liability for the resulting losses.
 
-The final interpretation of this statement belongs to Beosin (Chengdu LianAn).
 
+163 }
+164 if (lpToken1 != diff) {
+165 uniRouter.swapExactTokensForTokens(
+166 diffBalHalf,
+167 0,
+168 diffToLpToken1,
+169 address(this),
+170 now
+171 );
+172 }
+173
+174 // Adds liquidity and gets more want tokens.
+175 uniRouter.addLiquidity(
+176 address(lpToken0),
+177 address(lpToken1),
+178 lpToken0.balanceOf(address(this)),
+179 lpToken1.balanceOf(address(this)),
+180 1,
+181 1,
+182 address(this),
+183 now
+184 );
+185
+186 // reinvest
+187 deposit();
+188
+189 emit Harvested(diffBal, harvestFee);
+190 }
+191 }
+192 }
 
-P,3
+Listing 2.1: StratDiffusion.sol
 
-Beosin
+Specifically, the DIFF token will be transferred into the strategy contract, and then swapped to the
 
-BEOSIN
+underlying tokens in the DEX pools. However, the price of the DIFF could be manipulated in the DEX pool
 
-Blockchain Security
+so that it’s price is very low and the underlying token exchanged will be less than expected. Besides, there
 
-Official Website
-https://lianantech.com
-E-mail
-market@lianantech.com
+is no slippage protection when swapping the DIFF for the underlying token. A possible attack is described
 
-Twitter
+in the following.
 
-a [)
--ComM/Dec
-Ja DN\
+- The attacker borrows a large number of DIFF tokens using the flash loan.
 
-N |
-YA |
+- Then the attacker swaps the DIFF token to the underlying token in DEX pools.
 
-Ya
+- Then the attacker invokes the harvest() function. The function will get the DIFF token from the Chef
 
-RZ “ Ah prix In »
+contract and then swap the DIFF token to the underlying token. This will further lower the price of
 
+DIFF token.
 
+- The attacker then makes a swap of the underlying token to DIFF token and then return back the DIFF
+
+token borrowed from flash loan.
+
+The deposit() function in the vault contract can also invoke the harvest function. Note that, this
+
+attack only becomes profitable when the number of the DIFF token getting from the Chef contract is large.
+
+If the harvest function is invoked in a high frequency (e.g., through a bot from the project), the accumulated
+
+DIFF token in the Chef contact will be small. Due to this reason, we treat this as a low severity issue.
+
+5
+
+
+
+Impact This can make the exchanged underlying token less than expected.
+
+Suggestion Ensure that only the EOA account can invoke the deposit function in the vault contract and
+
+the harvest function in the strategy. A slippage protection could be leveraged in the function. Besides, the
+
+project can monitor the accumulated DIFF token in the Chef contract and invoke the harvest function when
+
+the accumulated DIFF token exceeds a threshold.
+
+Feedback from the Project We didn’t put any limitation for the harvest() function because we want to
+
+decentralize this process. We allow anybody in the market to provide bots to call the Harvest() function.
+
+This will make the process more reliable and more profitable strategy compared to using some limitation
+
+to make it a permission function. Second, by doing so, we believe that the harvest will be executed very
+
+frequently and it will swap only a very small amount of the reward token for each time. It’s not very
+
+economic to attack with a very small swap amount Third, by doing the above, we believe that all the bots
+
+will increase the gas to win the chance to call the Harvest() function. This will increase the cost of the
+
+attackers which will make their attack not profitable.
+
+2.2 Additional Recommendation
+
+2.2.1 Ensure the security of the private key of the owner
+
+Status Confirmed
+
+Description Since the contract owner can get all the want tokens in the vault, it’s critical to ensure the
+
+security of the owner’s private key. For instance, the multi-sig wallet can be used for the owner, and the
+
+hardware-based private key protection schema (e.g., TEE based solution) can be leveraged.
+
+Impact NA.
+
+Suggestion Ensure the security of the private key of the contract owner.
+
+Feedback from the Project We will have a multi-sig wallet for the owner in the future.
+
+6
+
+
+	1 Introduction
+	1.1 About Target Contracts
+	1.2 Disclaimer
+	1.3 Procedure of Auditing
+	1.3.1 Software Security
+	1.3.2 DeFi Security
+	1.3.3 NFT Security
+	1.3.4 Additional Recommendation
+
+	1.4 Security Model
+
+	2 Findings
+	2.1 DeFi Security
+	2.1.1 Possible price manipulation attack
+
+	2.2 Additional Recommendation
+	2.2.1 Ensure the security of the private key of the owner
+
+
+
+		2022-05-03T20:34:51+0800
+	BlockSec Audit Team
