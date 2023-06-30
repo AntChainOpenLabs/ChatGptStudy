@@ -1,9 +1,13 @@
+############
+# 获取ArmorLabs内容
+############
+
 import os
 from pdf import *
 import json
 
 ArmorLabs_pdf_path = "../../SolBugReports/Armor Labs"
-txt_path = "../txt/ArmorLabs"
+txt_path = "txt/ArmorLabs"
 
 Benign_sample_path = "../json/ArmorLabs/Benign_sample.json"
 Benign_sample_json = []
