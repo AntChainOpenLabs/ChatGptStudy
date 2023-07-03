@@ -73,10 +73,11 @@ def read_pdf(dir_path, txt_path, match_func, mode= "parse_text" ):
     for root, dirs, files in os.walk(dir_path):
         for file_name in files:
             # 拼接文件的完整路径
+            # print(file_name,dirs)
             if file_name.endswith(".pdf"):
                 file_path = os.path.join(root, file_name)
                 pdf_name = file_name
-                to_file = txt_path + "\\" + pdf_name + ".txt"
+                to_file = txt_path + "\\" + root.split("\\")[-1] + "_" + pdf_name + ".txt"
                 if not os.path.exists(to_file): # 如果不存在该pdf的转换
                     pdf2txt(file_path, to_file,mode)
                 with open(to_file,"r",encoding="utf-8") as f:
@@ -86,14 +87,14 @@ def read_pdf(dir_path, txt_path, match_func, mode= "parse_text" ):
 
 # 进行标题模糊匹配，确定是否是需要的漏洞
 def suspected_vulnerability(bug_title):
-    bug_title = bug_title.split(" ")
+    bug_title = bug_title.lower().split(" ")
     # Price oracle manipulation
     # TODO 进行进一步完善
     if "price" in bug_title or "oracle" in bug_title or "manipulation" in bug_title  or "AMM" in bug_title:
         return True
     # ID-related violations
     # TODO 进行进一步完善
-    if "ID-related" in bug_title or "violations" in bug_title in bug_title:
+    if "ID-related" in bug_title or "violations" in bug_title  or "fake" in bug_title or "arbitrary" in bug_title or "arbitrarily" or "access" in bug_title:
         return True
 
     return False
