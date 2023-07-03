@@ -94,7 +94,7 @@ def suspected_vulnerability(bug_title):
         return True
     # ID-related violations
     # TODO 进行进一步完善
-    if "ID-related" in bug_title or "violations" in bug_title  or "fake" in bug_title or "arbitrary" in bug_title or "arbitrarily" or "access" in bug_title:
+    if "ID-related" in bug_title or "violations" in bug_title  or "fake" in bug_title or "arbitrary" in bug_title or "arbitrarily" in bug_title or "access" in bug_title:
         return True
 
     return False
