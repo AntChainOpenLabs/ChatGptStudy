@@ -83,7 +83,7 @@ def read_pdf(dir_path, txt_path, match_func, mode= "parse_text" ):
                 with open(to_file,"r",encoding="utf-8") as f:
                     content = f.read()
                     #根据匹配模式截取想要的内容
-                    match_func(content,file_name)
+                    match_func(content, root.split("\\")[-1] + "_" + file_name)
 
 # 进行标题模糊匹配，确定是否是需要的漏洞
 def suspected_vulnerability(bug_title):
