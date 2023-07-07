@@ -23,20 +23,16 @@ def cyberscope_match_func(content , file_name):
     lines = content.split("\n")
     len_lines = len(lines)
     index = 0
+    title_premix = ["MT","BT","ELFM","ST","OCTD","ULTW","BC","OTUT",]
     # ps ：不同pdf格式不同，可能有多级标题，根据具体格式书写
     while index < len_lines:
         # 找到题目 , 根据不同pdf格式进行替换，
-        # 匹配 ”2.1.1 “形式开头的为 标题的开始
-        if "Description" in lines[index]:
-            index += 1
-            while index < len_lines and "Recommendation" not in lines[index]:
-                content = lines[index]
-                # 进行title判断是否是需要的漏洞类型
-                if suspected_vulnerability(content):
-                    matched_bug.append(file_name + "  :  "+ content)
-                index += 1
-        else:
-            index += 1
+        if " - " in lines[index]:
+            title = lines[index].split(' - ', 1)[1]
+            # 进行title判断是否是需要的漏洞类型
+            if suspected_vulnerability(title):
+                matched_bug.append(file_name + "  :  " + title)
+        index += 1
 
 
 
@@ -47,10 +43,10 @@ if __name__ == "__main__":
     print("--------------start")
     read_pdf(blocksec_pdf_path,txt_path,cyberscope_match_func,"parse_text")
     print("--------------end")
-    f = open(write_file,"w+")
+    f = open(write_file,"w")
     print("have bugs " + str(len(matched_bug)))
     f.write("have bugs " + str(len(matched_bug)) + "\n")
     for s in matched_bug:
         print(s.encode('gbk', 'ignore'))
-        f.write(str(s.encode('gbk', 'ignore')))
+        f.write(str(s.encode('gbk', 'ignore'))[2:-2])
         f.write("\n")
