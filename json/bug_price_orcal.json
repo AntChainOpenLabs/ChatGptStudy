@@ -408,6 +408,78 @@
         ]
     },
     {
+    "Code":"function getPriceByWBTCDAI() public view returns(uint256){\n address[] memory WbtcToDaiSwapPath;\n WbtcToDaiSwapPath = new address[](2);\n WbtcToDaiSwapPath[0] = address(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);\n WbtcToDaiSwapPath[1] = address(0x113587939c8967e61Aa2360613951B23AB2Af49a);\n uint256 amount = 1e8*1e18;\n n return uniswapRouter.getAmountsIn(amount, WbtcToDaiSwapPath)[0];\n }",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/SlowMist/SlowMist Audit Report - Shield_en-us.pdf/4.3.1.1 Risk of Oracle Manipulation",
+            "Location":"return uniswapRouter.getAmountsIn(amount, WbtcToDaiSwapPath)[0];",
+            "Type":"Price oracle manipulation",
+            "Description":"the price is obtained from Uniswap's getAmountsIn through the getPriceByWBTCDAI function, but this interface obtains the real-time price of the WBTC/DAI pool, and there is a risk of malicious manipulation",
+            "Repair":" It is recommended to use Uniswap's delayed price feed oracle for acquisition."
+        }
+    ]
+},
+{
+    "Code":"function IOUPrice() public view returns (uint256) {\n uint256 IOUSupply = totalSupply();\n return IOUSupply == 0\n ? 1e18\n : (totalFarmingTokenBalance() * 1e18) / IOUSupply;\n }\n function totalFarmingTokenBalance() public view returns (uint256) {\n return farmingToken().balanceOf(address(this)) + strategy.balanceOf();\n}",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/SlowMist/SlowMist Audit Report - Shield_en-us.pdf/[N4] [Medium] Price manipulation issue",
+            "Location":"totalFarmingTokenBalance function",
+            "Type":"Price oracle manipulation",
+            "Description":"The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
+            "Repair":"It is recommended not to use IOUPrice for other contracts as the calculation of the asset price on-chain."
+        }
+    ]
+},
+{
+    "Code":"function IOUPrice() public view returns (uint256) {\n uint256 IOUSupply = totalSupply();\n return IOUSupply == 0\n ? 1e18\n : (totalFarmingTokenBalance() * 1e18) / IOUSupply;\n }\n function totalFarmingTokenBalance() public view returns (uint256) {\n return farmingToken().balanceOf(address(this)) + strategy.balanceOf();\n }",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/SlowMist/SlowMist Audit Report - Cross Yield V1.0.0_en-us.pdf/[N4] [Medium] Price manipulation issue",
+            "Location":"totalFarmingTokenBalance function",
+            "Type":"Price oracle manipulation",
+            "Description":"The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
+            "Repair":"It is recommended not to use IOUPrice for other contracts as the calculation of the asset price on-chain"
+        }
+    ]
+},
+{
+    "Code":"pragma solidity 0.6.12;\n import 'OpenZeppelin/openzeppelin-contracts@3.4.0/contracts/proxy/Initializable.sol';\n \n import '../../interfaces/IKeep3rV1Oracle.sol';\n import '../../interfaces/IUniswapV2Pair.sol';\n \n contract BaseKP3ROracle is Initializable {\n   uint public constant MIN_TWAP_TIME = 15 minutes;\n   uint public constant MAX_TWAP_TIME = 60 minutes;\n \n   IKeep3rV1Oracle public immutable kp3r;\n   address public immutable factory;\n   address public immutable weth;\n \n   constructor(IKeep3rV1Oracle _kp3r) public {\n     kp3r = _kp3r;\n     factory = _kp3r.factory();\n     weth = _kp3r.WETH();\n   }\n \n   function price0TWAP(address pair) public view returns (uint) {\n     uint length = kp3r.observationLength(pair);\n     require(length > 0, 'no length-1 observation');\n     (uint lastTime, uint lastPx0Cumu, ) = kp3r.observations(pair, length - 1);\n     if (lastTime > block.timestamp - MIN_TWAP_TIME) {\n       require(length > 1, 'no length-2 observation');\n       (lastTime, lastPx0Cumu, ) = kp3r.observations(pair, length - 2);\n     }\n     uint elapsedTime = block.timestamp - lastTime;\n     require(elapsedTime >= MIN_TWAP_TIME && elapsedTime <= MAX_TWAP_TIME, 'bad TWAP time');\n     uint currPx0Cumu = currentPx0Cumu(pair);\n     return (currPx0Cumu - lastPx0Cumu) / (block.timestamp - lastTime); \n   }\n \n   function price1TWAP(address pair) public view returns (uint) {\n     uint length = kp3r.observationLength(pair);\n     require(length > 0, 'no length-1 observation');\n     (uint lastTime, , uint lastPx1Cumu) = kp3r.observations(pair, length - 1);\n     if (lastTime > block.timestamp - MIN_TWAP_TIME) {\n       require(length > 1, 'no length-2 observation');\n       (lastTime, , lastPx1Cumu) = kp3r.observations(pair, length - 2);\n     }\n     uint elapsedTime = block.timestamp - lastTime;\n     require(elapsedTime >= MIN_TWAP_TIME && elapsedTime <= MAX_TWAP_TIME, 'bad TWAP time');\n     uint currPx1Cumu = currentPx1Cumu(pair);\n     return (currPx1Cumu - lastPx1Cumu) / (block.timestamp - lastTime); \n   }\n \n \n   function currentPx0Cumu(address pair) public view returns (uint px0Cumu) {\n     uint32 currTime = uint32(block.timestamp);\n     px0Cumu = IUniswapV2Pair(pair).price0CumulativeLast();\n     (uint reserve0, uint reserve1, uint32 lastTime) = IUniswapV2Pair(pair).getReserves();\n     if (lastTime != block.timestamp) {\n       uint32 timeElapsed = currTime - lastTime; \n       px0Cumu += uint((reserve1 << 112) / reserve0) * timeElapsed; \n     }\n   }\n \n \n   function currentPx1Cumu(address pair) public view returns (uint px1Cumu) {\n     uint32 currTime = uint32(block.timestamp);\n     px1Cumu = IUniswapV2Pair(pair).price1CumulativeLast();\n     (uint reserve0, uint reserve1, uint32 lastTime) = IUniswapV2Pair(pair).getReserves();\n     if (lastTime != currTime) {\n       uint32 timeElapsed = currTime - lastTime;\n       px1Cumu += uint((reserve0 << 112) / reserve1) * timeElapsed; \n     }\n   }\n }",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/Quantstamp/alpha-homora-v-2.pdf/QSP-4 Oracle attack is possible by manipulating a Uniswap pool High Fixed",
+            "Location":"price0TWAP and price1TWAP functions, IUniswapV2Pair(pair).getReserves()",
+            "Type":"Price oracle manipulation",
+            "Description":"Uniswap oracle (https://uniswap.org/docs/v2/core-concepts/oracles/) aggregates prices from all the blocks weighted by block time into cumulative prices whereas Keep3r oracle takes 30-minute samples of Uniswap cumulative prices. The price calculations (i.e., function and ) in calculates the sample provided by Keep3r with a last-minute ( ) spot price from Uniswap. This is fine as long as the accumulation weight is okay, but under heavy congestion and delays the weight (i.e., in function and ) can be too big. And together with the ( ) in , this platform could be attacked by flash loans.",
+            "Repair":"Use only observations on the Keep3r oracle, use more data points, and do not fine-tune the oracle with current prices"
+        }
+    ]
+},
+{
+    "Code":"pragma solidity ^0.5.2;\n interface UniswapV2Library {\n     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);\n }\n \n contract Oracle {\n     function read() external view returns (bytes32) {\n         address _router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;\n \n         uint256 _amountIn = 1e18;\n \n         address[] memory _path = new address[](2);\n         _path[0] = 0x431ad2ff6a9C365805eBaD47Ee021148d6f7DBe0;\n         _path[1] = 0xeb269732ab75A6fD61Ea60b06fE994cD32a83549; \n         \n \n         uint[] memory amounts = UniswapV2Library(_router).getAmountsOut(_amountIn, _path);\n         if (amounts[1] != uint256(0)) {\n             return bytes32(amounts[1]);\n         }\n         return bytes32(uint256(0.1e15));\n     }\n }",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/Quantstamp/illuvium-part-4-staking-v-2.pdf/QSP-1 Missing Validation of the Oracle’s Output High Acknowledged",
+            "Location":"read function",
+            "Type":"Price oracle manipulation",
+            "Description":"The implemented contract in calls the uniswap router to get the swap output value to be used as price estimation. However, depending on its usage, the router output can be manipulated by trading X amount back and forth on that specific Uniswap pair and the oracle call can be placed in between.",
+            "Repair":"Uniswap implemented a special oracle that provide time weighted cumulative price that can be averaged later depending on the project needs"
+        }
+    ]
+},
+{
+    "Code":"function getLpTokenValue ( address _lpToken , uint256 _amount) public view returns (\n uint256 value ) {\n uint256 totalSupply = IERC20(_lpToken) . totalSupply () ;\n address token0 = ISwapPair (_lpToken) . token0 () ;\n address token1 = ISwapPair (_lpToken) . token1 () ;\n uint256 token0Decimal = IERC20p( token0 ) . decimals () ;\n uint256 token1Decimal = IERC20p( token1 ) . decimals () ;\n ( uint256 reserve0 , uint256 reserve1 ) = SwapLibrary . getReserves ( factory , token0 ,token1 ) ;\n  uint256 token0Value = ( getAveragePrice ( token0 ) ) . mul( reserve0 ) . div (10∗∗token0Decimal ) ;\n  uint256 token1Value = ( getAveragePrice ( token1 ) ) . mul( reserve1 ) . div (10∗∗token1Decimal ) ;\n  value = ( token0Value . add( token1Value ) ) . mul(_amount) . div ( totalSupply ) ;\n }",
+    "VulnerabilityDesc":[
+        {
+            "Name":"/PeckShield/PeckShield-Audit-Report-DSG-v1.0.pdf/3.11 Possible Price manipulation For Oracle::getLpTokenValue()",
+            "Location":"value = ( token0Value . add( token1Value ) ) . mul(_amount) . div ( totalSupply ) ;",
+            "Type":"Price oracle manipulation",
+            "Description":" if we examine the implementation of the getLpTokenValue() , the final price of the LP Token is derived from (token0Value.add(token1Value)).mul(_amount).div(totalSupply) (line 174), where each of the tokenValue is calculated by (getAveragePrice(token0)).mul(reserve0) . Although the price of token0 or token1 is the average price from history prices and cannot be manipulated, reserve0 or reserve1 is the token amount in the pool thus can be manipulated by flash loans, which cause the final values of the LP Token not trustworthy.",
+            "Repair":"Revise current execution logic of getLpTokenValue() to defensively detect any manipulation attempts in the LP Token price."
+        }
+    ]
+},
+    {
         "Code":"",
         "VulnerabilityDesc":[
             {
