@@ -373,6 +373,266 @@
         ]
     },
     {
+	    "Code":"pragma solidity 0.8.7;\n contract FunWithNumbers {\n     uint  public tknPerEther = 10;\n     uint  public weiPerEther = 1e18;   \n     mapping(address => uint) public balance;\n     function buyToken() external payable {\n         uint token = msg.value/weiPerEther*tknPerEther;\n         balance[msg.sender] += token;\n     }\n     function sellTokens(uint tokens) public {\n         require(balance[msg.sender] >= tokens);\n         uint eth = tokens/tknPerEther;\n         balance[msg.sender] -= tokens;\n         payable (msg.sender).transfer(eth*weiPerEther);\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_26",
+	            "Location":"uint token = msg.value/weiPerEther*tknPerEther; in buyToken function",
+	            "Type":"precision loss",
+	            "Description":" buyToken function, if the msg.value is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It is going to have a pretty major effect on the code. An effect like leaving the final calculation (multiplication) to be 0. ",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_27",
+	            "Location":"uint eth = tokens/tknPerEther; in sellTokens function",
+	            "Type":"precision loss",
+	            "Description":"in sellToken function, any token less than 10 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity >=0.8.7;\n contract ArithmeticOp { \n     function rightCalculation(uint256 number, uint256 cashback) public pure return(uint256) {\n         return number * cashback / 100;\n     }\n     function wordCalculation(uint256 number, uint256 cashback) public pure return(uint256) {\n         return number / 100 * cashback;\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_28",
+	            "Location":"return number / 100 * cashback; in wordCalculation function",
+	            "Type":"precision loss",
+	            "Description":"wrongCalculation function is subject to precision loss vulnerability for the following reasons:The rightCalculation function is called with arguments 'number' to 50 and 'cashback' to 8. Since the multiplication operation precedes the division operation, the result of this operation is returned as 4. (50 * 8/100 → 400/100 → 4).However, the wrongCalculation function is called with argument \"number\" as 50 and \"cashback\" as argument 8. Since the division operation precedes the multiplication operation, the result of this operation is returned as 0 because the \"uint256\" variable cannot handle floating-point numbers as a result of the first division operation. (50/100 * 8 → 0.5 * 8 → 0).",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^=0.8.7;\n\ncontract VulnerableContract1 {\n    function riskyOperation1(uint256 itemCost, uint256 discount) public pure returns(uint256) {\n        return itemCost / 25 * discount;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_29",
+	            "Location":"return itemCost / 25 * discount; in ",
+	            "Type":"precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^=0.8.7;\ncontract VulnerableContract2 {\n    function riskyOperation2(uint256 ticketPrice, uint256 rebate) public pure returns(uint256) {\n        return ticketPrice / 14 * rebate;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_30",
+	            "Location":"return ticketPrice / 14 * rebate;",
+	            "Type":"precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity 0.8.7;\ncontract VulnerableContract3 {\n    function riskyOperation3(uint256 salary, uint256 tax) public pure returns(uint256) {\n        return salary / 50 * tax;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_31",
+	            "Location":"return salary / 50 * tax;",
+	            "Type":"precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity >=0.8.8;\ncontract VulnerableContract25 {\n    function riskyOperation25(uint256 subscriptionFee, uint256 coupon) public pure returns(uint256) {\n        return subscriptionFee / 26 * coupon;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_32",
+	            "Location":"return subscriptionFee / 26 * coupon;",
+	            "Type":"precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\n contract Token2 {\n     mapping(address => uint) public balances;\n     uint public pricePerToken = 1000;\n     address public owner;\n \n     constructor() {\n         owner = msg.sender;\n     }\n \n     function buyTokens() external payable onlyOwner {\n         uint tokens = msg.value / pricePerToken;\n         balances[msg.sender] += tokens;\n     }\n \n     function sellTokens(uint tokens) external onlyOwner {\n         require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n         uint etherToSend = tokens / pricePerToken;\n         balances[msg.sender] -= tokens;\n         payable(msg.sender).transfer(etherToSend);\n     }\n \n     modifier onlyOwner() {\n         require(msg.sender == owner, \"Not the contract owner\");\n         _;\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_33",
+	            "Location":"uint tokens = msg.value / pricePerToken;",
+	            "Type":"precision loss",
+	            "Description":"in buyTokens function, any msg.value less than 1000 is going to result in 0 ",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_34",
+	            "Location":"uint etherToSend = tokens / pricePerToken;",
+	            "Type":"precision loss",
+	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0  ",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\ncontract Token3 {\n    mapping(address => uint) public balances;\n    uint public pricePerToken = 1000;\n    uint public totalSupply = 1000000;\n\n    constructor() {\n        balances[msg.sender] = totalSupply;\n    }\n\n    function buyTokens() external payable {\n        uint tokens = msg.value / pricePerToken;\n        require(tokens <= balances[msg.sender], \"Not enough tokens in supply\");\n        balances[msg.sender] -= tokens;\n        balances[msg.sender] += tokens;\n    }\n\n    function sellTokens(uint tokens) external {\n        require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n        uint etherToSend = tokens / pricePerToken;\n        balances[msg.sender] -= tokens;\n        payable(msg.sender).transfer(etherToSend);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_35",
+	            "Location":"uint tokens = msg.value / pricePerToken;",
+	            "Type":"precision loss",
+	            "Description":" in buyTokens function, any msg.value less than 1000 is going to result in 0",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_36",
+	            "Location":"uint etherToSend = tokens / pricePerToken;",
+	            "Type":"precision loss",
+	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\ncontract Art3 {\n    uint public artPrice = 10000; \n    mapping(address => uint) public artBalance;\n\n    function buyArt() external payable {\n        uint arts = msg.value / artPrice;\n        artBalance[msg.sender] += arts;\n    }\n\n    function returnArt(uint arts) external {\n        require(artBalance[msg.sender] >= arts);\n        uint refund = arts / artPrice;\n        artBalance[msg.sender] -= arts;\n        payable(msg.sender).transfer(refund);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_37",
+	            "Location":"uint arts = msg.value / artPrice;",
+	            "Type":"precision loss",
+	            "Description":"in buyArt function, any msg.value less than 10000 is going to result in 0 ",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_38",
+	            "Location":"uint refund = arts / artPrice;",
+	            "Type":"precision loss",
+	            "Description":"in returnArt function, any tokens less than 10000 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\ncontract DiscountContract3 {\n    uint public discountPercent = 10; \n\n    function faultyDiscountCalculation(uint originalPrice) public view returns(uint) {\n        return originalPrice / 100 * discountPercent; \n    }\n\n    function properDiscountCalculation(uint originalPrice) public view returns(uint) {\n        return originalPrice * discountPercent / 100; \n    }\n\n    // Some other normal function\n    function adjustDiscountPercent(uint newPercent) public {\n        discountPercent = newPercent;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_39",
+	            "Location":"return originalPrice / 100 * discountPercent; ",
+	            "Type":"precision loss",
+	            "Description":"in faultyDiscountCalculation function, any originalPrice less than 100 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\ncontract CommissionContract2 {\n    uint public commissionRate = 5; \n\n    function incorrectCommissionCalculation1(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16 * commissionRate; \n    }\n\n    function incorrectCommissionCalculation2(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16; \n    }\n\n    // Some other normal function\n    function setCommissionRate(uint newRate) public {\n        commissionRate = newRate;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_40",
+	            "Location":"return totalAmount / 16 * commissionRate; ",
+	            "Type":"precision loss",
+	            "Description":"in incorrectCommissionCalculation1 function, any totalAmount less than 16 is going to result in 0",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_41",
+	            "Location":"return totalAmount / 16; ",
+	            "Type":"precision loss",
+	            "Description":"in incorrectCommissionCalculation2 function, any totalAmount less than 16 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\n contract RoyaltyContract1 {\n    uint public royaltyPercent = 15;\n    mapping(address => uint) public balances;\n\n    function RoyaltyCalculation(uint revenue) public view returns(uint) {\n        return revenue / 10 * royaltyPercent;\n    }\n\n    function deposit() public payable {\n        balances[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(balances[msg.sender] >= amount);\n        balances[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function transfer(address recipient, uint amount) public {\n        require(balances[msg.sender] >= amount);\n        balances[msg.sender] -= amount;\n        balances[recipient] += amount;\n    }\n\n    function setRoyaltyPercent(uint newPercent) public {\n        royaltyPercent = newPercent;\n    }\n\n    function getBalance() public view returns (uint) {\n        return balances[msg.sender];\n    }\n\n    function getTotalBalance() public view returns (uint) {\n        return address(this).balance;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_42",
+	            "Location":"return revenue / 10 * royaltyPercent;",
+	            "Type":"precision loss",
+	            "Description":"in RoyaltyCalculation function, any revenue less than 10 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.8;\ncontract RentContract2 {\n    uint public discountPercent = 5;\n    mapping(address => uint) public rentBalance;\n    function payRent(uint amount) public payable {\n        require(msg.value == amount);\n        rentBalance[msg.sender] += amount;\n    }\n\n    function refundRent(uint amount) public {\n        require(rentBalance[msg.sender] >= amount);\n        rentBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function checkRentBalance() public view returns(uint) {\n        return rentBalance[msg.sender];\n    }\n    function DiscountCalculation(uint totalRent) public view returns(uint) {\n        return totalRent / 155 * discountPercent;\n    }\n    function setDiscountPercent(uint newPercent) public {\n        discountPercent = newPercent;\n    }\n\n    function transferRent(address recipient, uint amount) public {\n        require(rentBalance[msg.sender] >= amount);\n        rentBalance[msg.sender] -= amount;\n        rentBalance[recipient] += amount;\n    }\n\n    function totalRentBalance() public view returns(uint) {\n        return address(this).balance;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_43",
+	            "Location":"return totalRent / 155 * discountPercent;",
+	            "Type":"precision loss",
+	            "Description":"in DiscountCalculation function, any totalRent less than 155 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\n contract EmployeeSalary3 {\n     uint public taxPercent = 30;\n     mapping(address => uint) public employeeSalaries;\n     // Some other normal functions\n     function setSalary(address employee, uint salary) public {\n         employeeSalaries[employee] = salary;\n     }\n \n     function getSalary(address employee) public view returns (uint) {\n         return employeeSalaries[employee];\n     }\n \n     function increaseSalary(address employee, uint increment) public {\n         employeeSalaries[employee] += increment;\n     }\n \n     function decreaseSalary(address employee, uint decrement) public {\n         require(employeeSalaries[employee] > decrement, \"Decrement cannot be more than current salary.\");\n         employeeSalaries[employee] -= decrement;\n     }\n \n     function changeTaxPercent(uint newPercent) public {\n         taxPercent = newPercent;\n     }\n     function TaxCalculation(uint grossSalary) public view returns(uint) {\n         tmp_num = grossSalary / 80 * taxPercent;\n         return tmp_num\n     }\n     function getTotalSalaries() public view returns (uint total) {\n         for (uint i = 0; i < employees.length; i++) {\n             total += employeeSalaries[employees[i]];\n         }\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_44",
+	            "Location":"tmp_num = grossSalary / 80 * taxPercent;",
+	            "Type":"precision loss",
+	            "Description":"in TaxCalculation function, any grossSalary less than 80 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\ncontract RealEstateContract {\n    uint public propertyTokenPerEther = 5;\n    uint public weiPerEther = 1e18;\n    mapping(address => uint) public ownershipBalance;\n\n    function acquireProperty() external payable {\n        uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther;\n        ownershipBalance[msg.sender] += propertyToken;\n    }\n\n    function liquidateProperty(uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens);\n        uint eth = propertyTokens / propertyTokenPerEther;\n        ownershipBalance[msg.sender] -= propertyTokens;\n        payable (msg.sender).transfer(eth * weiPerEther);\n    }\n\n    // Additional normal functions\n    function adjustPropertyTokenPerEther(uint newRate) public {\n        propertyTokenPerEther = newRate;\n    }\n\n    function getPropertyOwnershipBalance(address owner) public view returns(uint) {\n        return ownershipBalance[owner];\n    }\n\n    function transferProperty(address to, uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= propertyTokens;\n        ownershipBalance[to] += propertyTokens;\n    }\n\n    function propertyTokensInCirculation() public view returns(uint total) {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            total += ownershipBalance[propertyOwners[i]];\n        }\n    }\n\n    function addToPropertyOwners(address owner) public {\n        propertyOwners.push(owner);\n    }\n\n    function removePropertyOwner(address owner) public {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            if (propertyOwners[i] == owner) {\n                propertyOwners[i] = propertyOwners[propertyOwners.length - 1];\n                propertyOwners.pop();\n                break;\n            }\n        }\n    }\n\n    function getPropertyOwners() public view returns(address[] memory) {\n        return propertyOwners;\n    }\n\n    function deposit() public payable {\n        ownershipBalance[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(ownershipBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_45",
+	            "Location":"uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther; in acquireProperty function",
+	            "Type":"precision loss",
+	            "Description":"in acquireProperty function, any msg.value less than weiPerEther is going to result in 0",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_46",
+	            "Location":"uint eth = propertyTokens / propertyTokenPerEther; in liquidateProperty function",
+	            "Type":"precision loss",
+	            "Description":"in liquidateProperty function, any propertyTokens less than propertyTokenPerEther is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract CryptoExchangeContract {\n    uint public cryptoTokenPerUSD = 20;\n    uint public weiPerEther = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public walletBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function buyCryptoToken() external payable {\n        uint ethPrice = getLatestPrice();\n        uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD);\n        walletBalance[msg.sender] += cryptoToken;\n    }\n\n    function sellCryptoToken(uint cryptoTokens) public {\n        require(walletBalance[msg.sender] >= cryptoTokens);\n        uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice();\n        walletBalance[msg.sender] -= cryptoTokens;\n        payable(msg.sender).transfer(eth);\n    }\n\n    function getLatestPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function setCryptoTokenPerUSD(uint newRate) public {\n        cryptoTokenPerUSD = newRate;\n    }\n\n    function getWalletBalance(address walletAddress) public view returns (uint) {\n        return walletBalance[walletAddress];\n    }\n\n    function transferCryptoTokens(address to, uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        walletBalance[to] += amount;\n    }\n\n    function depositFunds() public payable {\n        walletBalance[msg.sender] += msg.value;\n    }\n\n    function withdrawFunds(uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalCryptoTokens() public view returns (uint total) {\n        for (uint i = 0; i < walletOwners.length; i++) {\n            total += walletBalance[walletOwners[i]];\n        }\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_47",
+	            "Location":"uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD); in buyCryptoToken function",
+	            "Type":"precision loss",
+	            "Description":"Now, if the amount of ether sent to the buyCryptoToken function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_48",
+	            "Location":"uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice(); in sellCryptoToken function",
+	            "Type":"precision loss",
+	            "Description":" in the sellCryptoToken function, any number of tokens less than cryptoTokenPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+	{
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract DeFiContract {\n    uint public digitalAssetPerUSD = 20;\n    uint public weiPerEth = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public userBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function getCurrentPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function updateDigitalAssetPerUSD(uint newRate) public {\n        digitalAssetPerUSD = newRate;\n    }\n\n    function getAccountBalance(address accountAddress) public view returns (uint) {\n        return userBalance[accountAddress];\n    }\n    function redeemDigitalAsset(uint digitalAssets) public {\n        require(userBalance[msg.sender] >= digitalAssets);\n        uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice();\n        userBalance[msg.sender] -= digitalAssets;\n        payable(msg.sender).transfer(eth);\n    }\n    function transferDigitalAssets(address to, uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        userBalance[to] += amount;\n    }\n\n    function fundAccount() public payable {\n        userBalance[msg.sender] += msg.value;\n    }\n    function purchaseDigitalAsset() external payable {\n        uint ethPrice = getCurrentPrice();\n        uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD);\n        userBalance[msg.sender] += digitalAsset;\n    }\n    function withdrawFromAccount(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalDigitalAssets() public view returns (uint total) {\n        for (uint i = 0; i < accountOwners.length; i++) {\n            total += userBalance[accountOwners[i]];\n        }\n    }\n\n    function burnDigitalAssets(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n    }\n\n    function mintDigitalAssets(uint amount) public {\n        userBalance[msg.sender] += amount;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_49",
+	            "Location":"uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD); in purchaseDigitalAsset function",
+	            "Type":"precision loss",
+	            "Description":"Now, if the amount of ether sent to the purchaseDigitalAsset function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
+	            "Repair":""
+            },
+			{
+                "Name":"precision loss_50",
+	            "Location":"uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice(); in redeemDigitalAsset function",
+	            "Type":"precision loss",
+	            "Description":"in the redeemDigitalAsset function, any number of tokens less than digitalAssetPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
         "Code":"",
         "VulnerabilityDesc":[
             {
