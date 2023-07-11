@@ -402,7 +402,7 @@
                 "Name":"/PeckShield/PeckShield-Audit-Report-DeriV2-v1.0.pdf/3.8 Potential Manipulation of BToken Prices",
                 "Location":"price=(priceCumulativeLast2−priceCumulativeLast1)\\ (timestampLast2− timestampLast1)∗10∗∗(18+qDecimals−bDecimals)\\ Q112;",
                 "Type":"Price oracle manipulation",
-                "Description":"In the Deri-V2 protocol, each base token has a price oracle that is based on the widely used UniswapV2\ntime-weighted average price (TWAP). The TWAP is constructed by reading the cumulative price from\na UniswapV2 pair at the beginning and at the end of the desired interval. The difference in this\ncumulative price can then be divided by the length of the interval to create a TWAP for that period.\nTo elaborate, we show below the getPrice() implementation. It comes to our attention that\nthe interval used to compute the TWAP is not restricted (line 58). As a result, it leaves the room or\npossibility for undesired price manipulation. To mitigate, it is helpful to ensure a minimum interval\nfor the TWAP-based price calculation.",
+                "Description":"AMM price oracle manipulation.In the Deri-V2 protocol, each base token has a price oracle that is based on the widely used UniswapV2\ntime-weighted average price (TWAP). The TWAP is constructed by reading the cumulative price from\na UniswapV2 pair at the beginning and at the end of the desired interval. The difference in this\ncumulative price can then be divided by the length of the interval to create a TWAP for that period.\nTo elaborate, we show below the getPrice() implementation. It comes to our attention that\nthe interval used to compute the TWAP is not restricted (line 58). As a result, it leaves the room or\npossibility for undesired price manipulation. To mitigate, it is helpful to ensure a minimum interval\nfor the TWAP-based price calculation.",
                 "Repair":"Develop an effective mitigation to avoid the price oracle from being manipulated"
             }
         ]
@@ -414,7 +414,7 @@
             "Name":"/SlowMist/SlowMist Audit Report - Shield_en-us.pdf/4.3.1.1 Risk of Oracle Manipulation",
             "Location":"return uniswapRouter.getAmountsIn(amount, WbtcToDaiSwapPath)[0];",
             "Type":"Price oracle manipulation",
-            "Description":"the price is obtained from Uniswap's getAmountsIn through the getPriceByWBTCDAI function, but this interface obtains the real-time price of the WBTC/DAI pool, and there is a risk of malicious manipulation",
+            "Description":"AMM price oracle manipulation.the price is obtained from Uniswap's getAmountsIn through the getPriceByWBTCDAI function, but this interface obtains the real-time price of the WBTC/DAI pool, and there is a risk of malicious manipulation",
             "Repair":" It is recommended to use Uniswap's delayed price feed oracle for acquisition."
         }
     ]
@@ -426,7 +426,7 @@
             "Name":"/SlowMist/SlowMist Audit Report - Shield_en-us.pdf/[N4] [Medium] Price manipulation issue",
             "Location":"totalFarmingTokenBalance function",
             "Type":"Price oracle manipulation",
-            "Description":"The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
+            "Description":"AMM price oracle manipulation.The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
             "Repair":"It is recommended not to use IOUPrice for other contracts as the calculation of the asset price on-chain."
         }
     ]
@@ -438,7 +438,7 @@
             "Name":"/SlowMist/SlowMist Audit Report - Cross Yield V1.0.0_en-us.pdf/[N4] [Medium] Price manipulation issue",
             "Location":"totalFarmingTokenBalance function",
             "Type":"Price oracle manipulation",
-            "Description":"The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
+            "Description":"AMM price oracle manipulation.The IOUPrice is calculated using totalFarmingTokenBalance. Attackers can control totalFarmingTokenBalance to manipulate IOUPrice.",
             "Repair":"It is recommended not to use IOUPrice for other contracts as the calculation of the asset price on-chain"
         }
     ]
@@ -450,7 +450,7 @@
             "Name":"/Quantstamp/alpha-homora-v-2.pdf/QSP-4 Oracle attack is possible by manipulating a Uniswap pool High Fixed",
             "Location":"price0TWAP and price1TWAP functions, IUniswapV2Pair(pair).getReserves()",
             "Type":"Price oracle manipulation",
-            "Description":"Uniswap oracle (https://uniswap.org/docs/v2/core-concepts/oracles/) aggregates prices from all the blocks weighted by block time into cumulative prices whereas Keep3r oracle takes 30-minute samples of Uniswap cumulative prices. The price calculations (i.e., function and ) in calculates the sample provided by Keep3r with a last-minute ( ) spot price from Uniswap. This is fine as long as the accumulation weight is okay, but under heavy congestion and delays the weight (i.e., in function and ) can be too big. And together with the ( ) in , this platform could be attacked by flash loans.",
+            "Description":"AMM price oracle manipulation.Uniswap oracle (https://uniswap.org/docs/v2/core-concepts/oracles/) aggregates prices from all the blocks weighted by block time into cumulative prices whereas Keep3r oracle takes 30-minute samples of Uniswap cumulative prices. The price calculations (i.e., function and ) in calculates the sample provided by Keep3r with a last-minute ( ) spot price from Uniswap. This is fine as long as the accumulation weight is okay, but under heavy congestion and delays the weight (i.e., in function and ) can be too big. And together with the ( ) in , this platform could be attacked by flash loans.",
             "Repair":"Use only observations on the Keep3r oracle, use more data points, and do not fine-tune the oracle with current prices"
         }
     ]
@@ -462,7 +462,7 @@
             "Name":"/Quantstamp/illuvium-part-4-staking-v-2.pdf/QSP-1 Missing Validation of the Oracle’s Output High Acknowledged",
             "Location":"read function",
             "Type":"Price oracle manipulation",
-            "Description":"The implemented contract in calls the uniswap router to get the swap output value to be used as price estimation. However, depending on its usage, the router output can be manipulated by trading X amount back and forth on that specific Uniswap pair and the oracle call can be placed in between.",
+            "Description":"AMM price oracle manipulation.The implemented contract in calls the uniswap router to get the swap output value to be used as price estimation. However, depending on its usage, the router output can be manipulated by trading X amount back and forth on that specific Uniswap pair and the oracle call can be placed in between.",
             "Repair":"Uniswap implemented a special oracle that provide time weighted cumulative price that can be averaged later depending on the project needs"
         }
     ]
@@ -474,7 +474,7 @@
             "Name":"/PeckShield/PeckShield-Audit-Report-DSG-v1.0.pdf/3.11 Possible Price manipulation For Oracle::getLpTokenValue()",
             "Location":"value = ( token0Value . add( token1Value ) ) . mul(_amount) . div ( totalSupply ) ;",
             "Type":"Price oracle manipulation",
-            "Description":" if we examine the implementation of the getLpTokenValue() , the final price of the LP Token is derived from (token0Value.add(token1Value)).mul(_amount).div(totalSupply) (line 174), where each of the tokenValue is calculated by (getAveragePrice(token0)).mul(reserve0) . Although the price of token0 or token1 is the average price from history prices and cannot be manipulated, reserve0 or reserve1 is the token amount in the pool thus can be manipulated by flash loans, which cause the final values of the LP Token not trustworthy.",
+            "Description":" AMM price oracle manipulation.if we examine the implementation of the getLpTokenValue() , the final price of the LP Token is derived from (token0Value.add(token1Value)).mul(_amount).div(totalSupply) (line 174), where each of the tokenValue is calculated by (getAveragePrice(token0)).mul(reserve0) . Although the price of token0 or token1 is the average price from history prices and cannot be manipulated, reserve0 or reserve1 is the token amount in the pool thus can be manipulated by flash loans, which cause the final values of the LP Token not trustworthy.",
             "Repair":"Revise current execution logic of getLpTokenValue() to defensively detect any manipulation attempts in the LP Token price."
         }
     ]
