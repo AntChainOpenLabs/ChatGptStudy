@@ -5,7 +5,7 @@ import os
 output_file = "output.json"
 
 # 文件夹路径
-folder_path = "code4rena2"
+folder_path = "../json/pdf_json/code4rena2"
 
 # 用于保存筛选出来的json
 output_jsons = []

@@ -9,7 +9,7 @@ import json
 ArmorLabs_pdf_path = "../../SolBugReports/Armor Labs"
 txt_path = "txt/ArmorLabs"
 
-Benign_sample_path = "../json/ArmorLabs/Benign_sample.json"
+Benign_sample_path = "../json/pdf_json/ArmorLabs/Benign_sample.json"
 Benign_sample_json = []
 Benign_sample_count = 0
 
