@@ -36,7 +36,12 @@ def parse_text(from_file,to_file):
     text_raw = parser.from_file(from_file)
     print("---------------------------------")
     # print(text_raw['content'].strip())
-    tf.write(text_raw['content'].strip())
+    try :
+        tf.write(text_raw['content'].strip())
+    except :
+        print("parse_text error")
+
+    
     tf.close()
     print("---------------------------------")
 
