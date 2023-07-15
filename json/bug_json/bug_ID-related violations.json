@@ -586,38 +586,38 @@
         ]
     },
     {
-            "Code":"",
-            "VulnerabilityDesc":[
+        "Code":"/**\n     * @notice Deposits ETH.\n     *\n     * @param _amount The amount;\n     * @param _weth The address for WETH.\n     */\n    function depositETH(address _weth, uint256 _amount) external payable whenNotPaused {\n        require(msg.value == _amount, ErrMsg.REQ_BAD_AMOUNT);\n        _deposit(_weth, _amount, msg.sender);\n        IWETH(_weth).deposit{value: _amount}();\n    } \n/**\n     * @notice Executes pending withdraw of ETH to an account.\n     *\n     * @param _account The destination account.\n     * @param _weth The address for WETH.\n     */\n    function withdrawETH(address _account, address _weth) external whenNotPaused {\n        uint256 amount = _withdraw(_account, _weth);\n        IWETH(_weth).withdraw(amount);\n        (bool sent, ) = _account.call{value: amount}(\"\");\n        require(sent, ErrMsg.REQ_NO_WITHDRAW);\n    }\n",
+        "VulnerabilityDesc":[
             {
-                "Name":"",
-                "Location":"",
+                "Name":"/certik/CertiK-Audit-for-Brewlabs-v11.pdf/Lack Of Access Restriction",
+                "Location":"address _weth",
                 "Type":"ID-related violations",
-                "Description":"",
-                "Repair":""
+                "Description":"ID can be arbitrarily set by users or lack of ID validation. ID can also be a project-specified variable (e.g., hash) or an address.The linked lines contain arbitrary address parameters which are intended to represent the wETH address.",
+                "Repair":"Since the wETH address is well-known, consider removing the wETH parameters at the linked lines and utilizing a constant to represent the well-known wETH address instead."
             }
         ]
     },
     {
-           "Code":"",
+           "Code":"/**\n     * @notice Executes pending withdraw of an asset to an account.\n     *\n     * @param _account The destination account.\n     * @param _asset The asset address;\n     */\n    function withdraw(address _account, address _asset) external whenNotPaused {\n        uint256 amount = _withdraw(_account, _asset);\n        IERC20(_asset).safeTransfer(_account, amount);\n    }\n\n    /**\n     * @notice Executes pending withdraw of ETH to an account.\n     *\n     * @param _account The destination account.\n     * @param _weth The address for WETH.\n     */\n    function withdrawETH(address _account, address _weth) external whenNotPaused {\n        uint256 amount = _withdraw(_account, _weth);\n        IWETH(_weth).withdraw(amount);\n        (bool sent, ) = _account.call{value: amount}(\"\");\n        require(sent, ErrMsg.REQ_NO_WITHDRAW);\n    }\n /**\n     * @notice internal withdrawal processing without actual token transfer.\n     *\n     * @param _account The destination account.\n     * @param _asset The asset token address.\n     * @return amount to withdraw\n     */\n    function _withdraw(address _account, address _asset) private returns (uint256) {\n        uint32 assetId = registry.assetAddressToIndex(_asset);\n        require(assetId > 0, ErrMsg.REQ_BAD_ASSET);\n\n        uint256 amount = pendingWithdraws[_account][assetId];\n        require(amount > 0, ErrMsg.REQ_BAD_AMOUNT);\n\n        if (netDeposits[_asset] < amount) {\n            netDeposits[_asset] = 0;\n        } else {\n            netDeposits[_asset] -= amount;\n        }\n        pendingWithdraws[_account][assetId] = 0;\n\n        emit AssetWithdrawn(_account, assetId, amount);\n        return amount;\n    }",
            "VulnerabilityDesc":[
             {
-                "Name":"",
-                "Location":"",
+                "Name":"/certik/CertiK-Audit-for-Celer-Layer2-Finance-v2-v12.pdf/Anyone can induce a withdraw for an arbitrary account",
+                "Location":"_withdraw(_account, _asset); _withdraw(_account, _weth);",
                 "Type":"ID-related violations",
-                "Description":"",
-                "Repair":""
+                "Description":"The external withdraw and withdrawETH functions in the RollupChain contract both take an arbitrary\n_account address parameter instead of utilizing msg.sender , which allows anyone to request a withdraw\nfor a particular account without permission for msg.sender to do so, which may be undesired by the\naccount owning the funds.",
+                "Repair":"Consider removing the _account address parameter and supplying msg.sender in its place in the call to\nthe _withdraw function."
             }
         ]
     },
     {
-           "Code":"",
+           "Code":"pragma solidity ^0.8.10;\nimport \"@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol\";\nimport \"@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol\";\n\ncontract CoolGas is Initializable,ERC20Upgradeable,AccessControlUpgradeable {\n    bytes32 public constant MINTER_ROLE = keccak256(\"MINTER_ROLE\");\n\n    function initialize (string memory name_, string memory symbol_, address  initialHolder_, uint256  initialSupply_) initializer public {\n        __ERC20_init_unchained (name_, symbol_);\n        __AccessControl_init_unchained();\n        __CoolGas_init_unchained(initialHolder_, initialSupply_);\n        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);\n        _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);\n    }\n    function __CoolGas_init_unchained(address  initialHolder_, uint256  initialSupply_) initializer public {\n        _mint(initialHolder_, initialSupply_);\n    }\n    function mint(address account, uint256 amount) public onlyRole(DEFAULT_ADMIN_ROLE) {\n        _mint(account, amount);\n    }\n    function burn(address account, uint256 amount) public onlyRole(DEFAULT_ADMIN_ROLE) {\n        _burn(account, amount);\n    }\n    function mintGas(address account, uint256 amount) external onlyRole(MINTER_ROLE) {\n        _mint(account, amount);\n    }\n}",
            "VulnerabilityDesc":[
             {
-                "Name":"",
-                "Location":"",
+                "Name":"/certik/CertiK-Audit-for-Coolmining.pdf/Lack of Access Control",
+                "Location":"initialize function",
                 "Type":"ID-related violations",
-                "Description":"",
-                "Repair":""
+                "Description":"ID can be arbitrarily set by users or lack of ID validation. ID can also be a project-specified variable (e.g., hash) or an address.The following functions can be called by anyone to update the sensitive stats of the contract or mint\ntokens:\ninitialize() in contract CoolGas",
+                "Repair":"We recommend adding proper access control to this function or checking the status of initialization in the\ndeployment process."
             }
         ]
     }
