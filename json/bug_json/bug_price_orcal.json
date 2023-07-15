@@ -317,8 +317,8 @@
             {
                 "Name":"/blocksec/1660885789323-2.pdf/Possible price manipulation attack",
                 "Location":"if (lpToken0 != diff) ; if (lpToken1 != diff)",
-                "Type":"AMM price oracle manipulation.Price oracle manipulation",
-                "Description":"The function harvest of StratDiffusion swaps the DIFF token for the underlying tokens\n(line 155 and 164). It’s susceptible to the price manipulation attack.Specifically, the DIFF token will be transferred into the strategy contract, and then swapped to the\nunderlying tokens in the DEX pools. However, the price of the DIFF could be manipulated in the DEX pool\nso that it’s price is very low and the underlying token exchanged will be less than expected. Besides, there\nis no slippage protection when swapping the DIFF for the underlying token.",
+                "Type":"Price oracle manipulation",
+                "Description":"AMM price oracle manipulation.The function harvest of StratDiffusion swaps the DIFF token for the underlying tokens\n(line 155 and 164). It’s susceptible to the price manipulation attack.Specifically, the DIFF token will be transferred into the strategy contract, and then swapped to the\nunderlying tokens in the DEX pools. However, the price of the DIFF could be manipulated in the DEX pool\nso that it’s price is very low and the underlying token exchanged will be less than expected. Besides, there\nis no slippage protection when swapping the DIFF for the underlying token.",
                 "Repair":"Ensure that only the EOA account can invoke the deposit function in the vault contract and\nthe harvest function in the strategy. A slippage protection could be leveraged in the function. Besides, the\nproject can monitor the accumulated DIFF token in the Chef contract and invoke the harvest function when\nthe accumulated DIFF token exceeds a threshold."
             }
         ]
