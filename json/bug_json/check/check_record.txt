@@ -1,0 +1,133 @@
+bug_erroneous_accounting
+--------------------------------------------------------------
+1:False 	 [num1_jrk :3184  , num1_yyq 2060  ]
+2:False 	 [num1_jrk :4251  , num1_yyq 3379  ]
+3:False 	 [num1_jrk :4251  , num1_yyq 3379  ]
+4:False 	 [num1_jrk :3565  , num1_yyq 2875  ]
+6:False 	 [num1_jrk :4080  , num1_yyq 2358  ]
+7:False 	 [num1_jrk :12271  , num1_yyq 8055  ]
+8:False 	 [num1_jrk :1759  , num1_yyq 1256  ]
+9:False 	 [num1_jrk :2305  , num1_yyq 1584  ]
+11:False 	 [num1_jrk :3283  , num1_yyq 2204  ]
+12:False 	 [num1_jrk :5462  , num1_yyq 3488  ]
+13:False 	 [num1_jrk :1610  , num1_yyq 1238  ]
+14:False 	 [num1_jrk :5232  , num1_yyq 3240  ]
+15:False 	 [num1_jrk :4719  , num1_yyq 3166  ]
+16:False 	 [num1_jrk :4719  , num1_yyq 3166  ]
+21:False 	 [num1_jrk :4587  , num1_yyq 2742  ]
+25:False 	 [num1_jrk :7224  , num1_yyq 5673  ]
+26:False 	 [num1_jrk :3622  , num1_yyq 2581  ]
+27:False 	 [num1_jrk :6671  , num1_yyq 4451  ]
+28:False 	 [num1_jrk :3159  , num1_yyq 2114  ]
+29:False 	 [num1_jrk :4408  , num1_yyq 2696  ]
+31:False 	 [num1_jrk :1721  , num1_yyq 971  ]
+35:False 	 [num1_jrk :4311  , num1_yyq 2980  ]
+36:False 	 [num1_jrk :4311  , num1_yyq 2980  ]
+37:False 	 [num1_jrk :4311  , num1_yyq 2980  ]
+39:False 	 [num1_jrk :4426  , num1_yyq 2777  ]
+40:False 	 [num1_jrk :1807  , num1_yyq 1123  ]
+45:False 	 [num1_jrk :4192  , num1_yyq 2986  ]
+46:False 	 [num1_jrk :4439  , num1_yyq 2399  ]
+49:False 	 [num1_jrk :1902  , num1_yyq 1390  ]
+52:False 	 [num1_jrk :2516  , num1_yyq 1707  ]
+53:False 	 [num1_jrk :1622  , num1_yyq 1895  ]
+合格 code 长度 :	24
+不合格 code 长度 :	31
+[1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 21, 25, 26, 27, 28, 29, 31, 35, 36, 37, 39, 40, 45, 46, 49, 52, 53]
+--------------------------------------------------------------
+bug_ID-related violations
+--------------------------------------------------------------
+1:False 	 [num1_jrk :5186  , num1_yyq 3743  ]
+2:False 	 [num1_jrk :4786  , num1_yyq 3743  ]
+3:False 	 [num1_jrk :2733  , num1_yyq 2050  ]
+4:False 	 [num1_jrk :8147  , num1_yyq 3889  ]
+6:False 	 [num1_jrk :1821  , num1_yyq 947  ]
+7:False 	 [num1_jrk :2608  , num1_yyq 1847  ]
+8:False 	 [num1_jrk :1774  , num1_yyq 1230  ]
+9:False 	 [num1_jrk :2346  , num1_yyq 1269  ]
+10:False 	 [num1_jrk :2357  , num1_yyq 1278  ]
+11:False 	 [num1_jrk :2335  , num1_yyq 1260  ]
+12:False 	 [num1_jrk :2860  , num1_yyq 1681  ]
+13:False 	 [num1_jrk :1508  , num1_yyq 943  ]
+14:False 	 [num1_jrk :6007  , num1_yyq 3444  ]
+16:False 	 [num1_jrk :3277  , num1_yyq 2096  ]
+17:False 	 [num1_jrk :4470  , num1_yyq 2174  ]
+19:False 	 [num1_jrk :7032  , num1_yyq 3556  ]
+21:False 	 [num1_jrk :2564  , num1_yyq 1483  ]
+22:False 	 [num1_jrk :6977  , num1_yyq 3617  ]
+25:False 	 [num1_jrk :4386  , num1_yyq 2343  ]
+27:False 	 [num1_jrk :3758  , num1_yyq 2318  ]
+29:False 	 [num1_jrk :1879  , num1_yyq 961  ]
+36:False 	 [num1_jrk :2105  , num1_yyq 1301  ]
+37:False 	 [num1_jrk :2552  , num1_yyq 1958  ]
+44:False 	 [num1_jrk :3201  , num1_yyq 1757  ]
+合格 code 长度 :	23
+不合格 code 长度 :	24
+[1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 22, 25, 27, 29, 36, 37, 44]
+--------------------------------------------------------------
+bug_precision
+--------------------------------------------------------------
+3:False 	 [num1_jrk :1684  , num1_yyq 1547  ]
+合格 code 长度 :	47
+不合格 code 长度 :	1
+[3]
+--------------------------------------------------------------
+bug_price_orcal
+--------------------------------------------------------------
+1:False 	 [num1_jrk :2299  , num1_yyq 1247  ]
+2:False 	 [num1_jrk :3205  , num1_yyq 1914  ]
+3:False 	 [num1_jrk :2933  , num1_yyq 2050  ]
+4:False 	 [num1_jrk :3788  , num1_yyq 2802  ]
+5:False 	 [num1_jrk :5194  , num1_yyq 3743  ]
+6:False 	 [num1_jrk :2696  , num1_yyq 2033  ]
+7:False 	 [num1_jrk :3267  , num1_yyq 1944  ]
+10:False 	 [num1_jrk :4029  , num1_yyq 2283  ]
+11:False 	 [num1_jrk :4029  , num1_yyq 2283  ]
+12:False 	 [num1_jrk :4029  , num1_yyq 2283  ]
+13:False 	 [num1_jrk :1978  , num1_yyq 1196  ]
+14:False 	 [num1_jrk :5370  , num1_yyq 3336  ]
+15:False 	 [num1_jrk :4029  , num1_yyq 2283  ]
+16:False 	 [num1_jrk :4029  , num1_yyq 2283  ]
+17:False 	 [num1_jrk :3392  , num1_yyq 2140  ]
+20:False 	 [num1_jrk :4614  , num1_yyq 2563  ]
+21:False 	 [num1_jrk :2021  , num1_yyq 1304  ]
+23:False 	 [num1_jrk :1515  , num1_yyq 788  ]
+24:False 	 [num1_jrk :5978  , num1_yyq 4228  ]
+合格 code 长度 :	36
+不合格 code 长度 :	19
+[1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 23, 24]
+--------------------------------------------------------------
+bug_reentrancy
+--------------------------------------------------------------
+1:False 	 [num1_jrk :2491  , num1_yyq 1651  ]
+3:False 	 [num1_jrk :2271  , num1_yyq 1517  ]
+4:False 	 [num1_jrk :3191  , num1_yyq 1924  ]
+5:False 	 [num1_jrk :2873  , num1_yyq 1829  ]
+6:False 	 [num1_jrk :16360  , num1_yyq 9045  ]
+7:False 	 [num1_jrk :2230  , num1_yyq 1632  ]
+8:False 	 [num1_jrk :5247  , num1_yyq 3335  ]
+9:False 	 [num1_jrk :5247  , num1_yyq 3335  ]
+10:False 	 [num1_jrk :5247  , num1_yyq 3335  ]
+14:False 	 [num1_jrk :8264  , num1_yyq 5117  ]
+15:False 	 [num1_jrk :19307  , num1_yyq 13989  ]
+16:False 	 [num1_jrk :5782  , num1_yyq 3933  ]
+17:False 	 [num1_jrk :4076  , num1_yyq 2332  ]
+18:False 	 [num1_jrk :4076  , num1_yyq 2332  ]
+19:False 	 [num1_jrk :1974  , num1_yyq 1452  ]
+20:False 	 [num1_jrk :3264  , num1_yyq 2164  ]
+22:False 	 [num1_jrk :6550  , num1_yyq 4535  ]
+23:False 	 [num1_jrk :6550  , num1_yyq 4535  ]
+24:False 	 [num1_jrk :3414  , num1_yyq 1900  ]
+26:False 	 [num1_jrk :7512  , num1_yyq 6546  ]
+27:False 	 [num1_jrk :17522  , num1_yyq 11104  ]
+28:False 	 [num1_jrk :2665  , num1_yyq 1738  ]
+29:False 	 [num1_jrk :2256  , num1_yyq 1548  ]
+30:False 	 [num1_jrk :12864  , num1_yyq 8105  ]
+31:False 	 [num1_jrk :11376  , num1_yyq 7225  ]
+32:False 	 [num1_jrk :5406  , num1_yyq 4228  ]
+33:False 	 [num1_jrk :4790  , num1_yyq 3080  ]
+34:False 	 [num1_jrk :3913  , num1_yyq 2671  ]
+合格 code 长度 :	27
+不合格 code 长度 :	28
+[1, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34]
+--------------------------------------------------------------

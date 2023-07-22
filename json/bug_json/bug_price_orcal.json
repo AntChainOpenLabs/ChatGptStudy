@@ -474,7 +474,7 @@
                 "Name":"/PeckShield/PeckShield-Audit-Report-DSG-v1.0.pdf/3.11 Possible Price manipulation For Oracle::getLpTokenValue()",
                 "Location":"value = ( token0Value . add( token1Value ) ) . mul(_amount) . div ( totalSupply ) ;",
                 "Type":"Price oracle manipulation",
-                "Description":" AMM price oracle manipulation.if we examine the implementation of the getLpTokenValue() , the final price of the LP Token is derived from (token0Value.add(token1Value)).mul(_amount).div(totalSupply) (line 174), where each of the tokenValue is calculated by (getAveragePrice(token0)).mul(reserve0) . Although the price of token0 or token1 is the average price from history prices and cannot be manipulated, reserve0 or reserve1 is the token amount in the pool thus can be manipulated by flash loans, which cause the final values of the LP Token not trustworthy.",
+                "Description":"AMM price oracle manipulation.if we examine the implementation of the getLpTokenValue() , the final price of the LP Token is derived from (token0Value.add(token1Value)).mul(_amount).div(totalSupply) (line 174), where each of the tokenValue is calculated by (getAveragePrice(token0)).mul(reserve0) . Although the price of token0 or token1 is the average price from history prices and cannot be manipulated, reserve0 or reserve1 is the token amount in the pool thus can be manipulated by flash loans, which cause the final values of the LP Token not trustworthy.",
                 "Repair":"Revise current execution logic of getLpTokenValue() to defensively detect any manipulation attempts in the LP Token price."
             }
         ]

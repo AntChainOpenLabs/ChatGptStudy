@@ -631,17 +631,5 @@
 	            "Repair":""
             }
         ]
-    },
-    {
-        "Code":"",
-        "VulnerabilityDesc":[
-            {
-                "Name":"",
-                "Location":"",
-                "Type":"Precision Loss",
-                "Description":"",
-                "Repair":""
-            }
-        ]
     }
 ]
