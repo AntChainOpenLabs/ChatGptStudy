@@ -4,7 +4,7 @@ import jsonpath
 import tiktoken
 import os
 
-def num_tokens_from_string(string: str, encoding_name: str="p50k_base") -> int:
+def num_tokens_from_string(string: str, encoding_name: str="r50k_base") -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
