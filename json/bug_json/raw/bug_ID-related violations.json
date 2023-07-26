@@ -620,6 +620,18 @@
                 "Repair":"We recommend adding proper access control to this function or checking the status of initialization in the\ndeployment process."
             }
         ]
-    }
+    },
+    {
+        "Code":"if (pair.factory() == v2Factory) {\nuint256 reserve0 = IBEP20(token0).balance0f( aggregator);\nuint256 reserve1 = IBEP20(token1).balance0f(_aggregator);\nprice =(reserve1 *10**decimalsIn) / reserve0;\n else if (pair.factory() == v3Factory){\nIUniswapV3Pool pool = IUniswapV3Pool( aggregator);\n(uint160 sqrtPricex96,,,,)= poo.sloto();}",
+        "VulnerabilityDesc":[
+         {
+             "Name":"",
+             "Location":"if (pair.factory() == v2Factory) {\nuint256 reserve0 = IBEP20(token0).balance0f( aggregator);\nuint256 reserve1 = IBEP20(token1).balance0f(_aggregator);\nprice =(reserve1 *10**decimalsIn) / reserve0;\n else if (pair.factory() == v3Factory){\nIUniswapV3Pool pool = IUniswapV3Pool( aggregator);\n(uint160 sqrtPricex96,,,,)= poo.sloto();}",
+             "Type":"ID-related violations",
+             "Description":"inside the OracleManager.sol, the function getTokenPrice should not use spot price both for the univ2 likeaggregator and univ3 like aggregator. ",
+             "Repair":""
+         }
+     ]
+ }
     
 ]

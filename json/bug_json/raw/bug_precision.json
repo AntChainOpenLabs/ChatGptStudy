@@ -17,7 +17,7 @@
             {
                 "Name": "precision_2",
                 "Location": "Governor contract",
-                "Type": "Precision issue",
+                "Type": "Precision loss",
                 "Description": "Precision is not enough for proposalThreshold and quorum. Collections with at least 20000 NFTs in total supply may have some trouble.",
                 "Repair": "Increase division to a more precise value such as 1e18 to allow high total supply NFT to always set threshold as 1"
             }
@@ -41,7 +41,7 @@
             {
                 "Name": "precision_4",
                 "Location": "YaxisVaultAdapter.sol#withdraw()",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "The actual token withdrawn from 'vault.withdraw()' will most certainly be less than the '_amount', due to precision loss in '_tokensToShares()' and 'vault.withdraw()'. As a result, 'IDetailedERC20(_token).safeTransfer(_recipient, _amount)' will revert due to insufficient balance.",
                 "Repair": "Change the code as described above to increment 'totalCredit' instead of overwrite it."
             }
@@ -53,7 +53,7 @@
             {
                 "Name": "precision_5",
                 "Location": "if(delegationBoost.adjusted_balance_of(pledgeParams.receiver) + amount > pledgeParams.targetVotes) revert Errors.TargetVotesOverflow();",
-                "Type": "Loss of Precision",
+                "Type": "Precision loss",
                 "Description": "Due to loss of precision, targetVotes may not reach.",
                 "Repair": "Use bias instead of amount in the check"
             }
@@ -65,7 +65,7 @@
             {
                 "Name": "precision_6",
                 "Location": "IndexTemplate.sol",
-                "Type": "Precision loss while converting between `the amount of shares` and `the amount of underlying tokens`",
+                "Type": "Precision loss",
                 "Description": "IndexTemplate.sol#() will most certainly fail",
 
                 "Repair": "Change the code to use vault.underlyingValue(address(this)) instead of _value + _cds to compensate for the precision loss"
@@ -78,7 +78,7 @@
             {
                 "Name": "precision_7",
                 "Location": "uint256 amountToDeposit = (tokenSupply * percentages[i]) / 10000;",
-                "Type": "Low precision percentages",
+                "Type": "Precision loss",
                 "Description": "The rebalance function will fail due to low precision of percentages as they are in base points, i.e, the lowest unit is 1 = 0.01%. This will leave dust in the contract in most cases as the tokens have much higher precision.",
                 "Repair": "Remove the final zero balance check, or make sure that the last market that is actually deposited to receives all remaining tokens"
             }
@@ -90,7 +90,7 @@
             {
                 "Name": "precision_8",
                 "Location": "uint256 yTokenAmount = ((tokenAmounts[i] * (10**yToken.decimals())) / yToken.pricePerShare());",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "The actual token withdrew from yToken.withdraw() will most certainly be less than the tokenAmounts[i], due to precision loss in the calculation of yTokenAmount. As a result, IERC20(_vaultTokens[i]).safeTransfer(to, actualTokenAmounts[i]); in LpIssuer.sol#withdraw() will revert due to insufficient balance.",
                 "Repair": "Change the code to withdraw the actual token amount from the YearnVault contract instead of relying on the calculated token amount."
             }
@@ -102,7 +102,7 @@
             {
                 "Name": "precision_9",
                 "Location": "uint256 dilutionLPRequested = (FullMath.mulDiv(borrowRate, _totalLiquidityBorrowed, 1e18) * timeElapsed) / 365 days;",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "Division before multiplication incurs unnecessary precision loss",
                 "Repair": "Normalize and scale totalLiquidityBorrowed by token precision before multiplication instead of division by 1e18"
             }
@@ -114,7 +114,7 @@
             {
                 "Name": "precision_10",
                 "Location": "accumulator = (accumulator * ACC_TOKEN_PRECISION) / totalSharesStaked[_baseToken];",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "Users will lose a majority or even all of the rewards when the amount of total shares is too large, due to precision loss.",
                 "Repair": "1. Consider lowering the BASE_DIVISOR so that the initial share price can be higher; 2. Consider making ACC_TOKEN_PRECISION larger to prevent precision loss;"
             }
@@ -126,7 +126,7 @@
             {
                 "Name": "precision_11",
                 "Location": " if (price1 > price2) {\n            nowPrice = (price2 * 10000) / price1;\n        } else {\n            nowPrice = (price1 * 10000) / price2;\n        }\n\n        int256 decimals10 = int256(10**(18 - priceFeed1.decimals()));\n        nowPrice = nowPrice * decimals10;\n\n        return (\n            roundID1,\n            nowPrice / 1000000,\n            startedAt1,\n            timeStamp1,\n            answeredInRound1\n        );\n    }",
-                "Type": "Loss of precision",
+                "Type": "Precision loss",
                 "Description": "The first multiplication is first divided by 1e6 and then re-multiplied by uint256 decimals = 10**(18-(priceFeed.decimals())); which leads to loss of precision. This behavior will make the relative price between the assets incorrect.",
                 "Repair": "Use a formula that transforms the relative price to 1e18, and avoid dividing and multiplying by different values that lead to loss of precision"
             }
@@ -282,7 +282,7 @@
             {
                 "Name": "precision_24",
                 "Location": "function burn(uint256 _value)",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "The burn function reduces the balance of the sender and the total supply of tokens. However, this could potentially lead to precision loss if _value is not a multiple of 10.",
                 "Repair": "To fix the precision loss issue, we need to ensure that the _value to be burned is a multiple of 10."
             }
@@ -294,81 +294,9 @@
             {
                 "Name": "precision_25",
                 "Location": "function tokenRatio(address tokenA, address tokenB)",
-                "Type": "Precision Loss",
+                "Type": "Precision loss",
                 "Description": "This contract is vulnerable to precision loss. If the balance of tokenB is larger than the balance of tokenA, the result will be 0 due to the way integer division works in Solidity.",
                 "Repair": "To prevent this, we can return a fixed point number instead of an integer. We can multiply the numerator by a large number (like 1e18) before division and then handle the result as a fixed point number (with 18 decimal places)."
-            }
-        ]
-    },
-    {
-        "Code":"function stake(uint256_tokenId,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup = 1ockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    uint256 lastIndex = userStakes[msg.sender].length.sub(1); \r\n    Stake storage __stake = userStakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    stake.duration=_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration*28800); \r\n    __stake.end=block.number.add(_lockup.duration*10); \r\n    __stake.tokenIds.push(_tokenId);\r\n    __stake.tokenIndex[_tokenId] =__stake.tokenIds.length.sub(1); \r\n    __stake.amount=1;\r\n    __stake.rewardDebt = _lockup.accTokenPerShare; \r\n\r\n    _lockup.totalstaked =_lockup.totalstaked.add(1); \r\n    tokenIndexInStakes[_tokenId] = lastIndex;\r\n    __stake(msg.sender,_tokenId,_type); \r\n}",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
-                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare;",
-                "Type":"Precision Loss",
-                "Description":"The stake functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
-                "Repair":""
-            }
-        ]
-    },
-    {
-        "Code":"function stakeBatch(uint256[] memory _tokenIds,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\");\r\n\tclaimReward();\r\n\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userStakes[msg.sender].length.sub(1); \r\n    Stake storage_stake = userstakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    __stake.duration =_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration *28800); \r\n    __stake.end = block.number.add(_lockup.duration * 10); \r\n    for (uint i =0;i <_tokenIds.length;i++){\r\n\t\tuint256 _tokenId = _tokenIds[i]; \r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] =__stake.tokenIds.length,sub(1); \r\n        __stake.amount=_stake.amount.add(1);\r\n\r\n        _lockup.totalStaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        _stake(msg.sender, _tokenId, _type);\r\n    }\r\n    __stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); \r\n",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
-                "Location":"__stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); ",
-                "Type":"Precision Loss",
-                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
-                "Repair":""
-            }
-        ]
-    },
-    {
-        "Code":"function stakeAll(uint8 _type) external {\r\n    require(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userstakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userstakes[msg.sender].1ength.sub(1);\r\n    Stake storage __stake=userStakes[nsg.sender][1astIndex]; \r\n    __stake.stakeType = _type;\r\n    __stake.duration = _lockup.duration;\r\n    \/\/_stake.end=block.number.add(_lockup.duration\"28800); \r\n    __stake.end-block.number.add(_lockup.duration10);\r\n\r\n    uint256 balance = stakingNFT.balanceof(msg.sender); \r\n    for (uint i = e;i<balance; i++) {\r\n\t\tuint256 _tokenId=stakingNFT.tokenofOwnerByIndex(msg.sender,balance - 1-1);\r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] = _stake.tokenIds.length.sub(1); \r\n        __stake.amount=__stake.amount.add(1);\r\n        \r\n        _lockup.totalstaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        \r\n        _stake(msg.sender,_tokenId,_type);\r\n    }\r\n    __stake.rewardDebt = _lockup.accTokenPerShare.mul(balance); \r\n}",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
-                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare.mul(balance);",
-                "Type":"Precision Loss",
-                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
-                "Repair":""
-            }
-        ]
-    },
-    {
-        "Code":"uint currentBlock =block.number >=_activity.startBlock.add(_activity.totalRewardBlock)?_activity.startBlock.add(_activity.totalRewardBlock): block.number; \r\nuint crossBlock =currentBlock>_pool.lastRewardBlock?currentBlock.sub(_pool.lastRewardBlock):0;\r\n\r\nif (crossBlock > 0) {\r\n\r\n    uint accReward = crossBlock.mul(_activity.rewardPerBlock);\r\n\r\n    pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); \r\n    pool.1astkewardBlock = currentBlock;\r\n\r\n}",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/W3Swap-Farm_202207092336.pdf/Rewards may ",
-                "Location":"pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); ",
-                "Type":"Precision Loss",
-                "Description":"In the MultiStaker contract, since the precision of the reward token is used to calculate the reward, if the precision of the reward token is smaller than the precision of the stake token, the user's reward may be zero",
-                "Repair":""
-            }
-        ]
-    },
-    {
-        "Code":"function addTotalSupply(uint256 _amount) public onlyowner {\r\n\ttotalSupply = totalSupply.add(_amount.mul(decim));\r\n    balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/WFEx_202108051800.pdf/Logic problems",
-                "Location":"balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
-                "Type":"Precision Loss",
-                "Description":"When calling the addTotalSupply function, the precision should be added when calculating the balance of the owner.",
-                "Repair":""
-            }
-        ]
-    },
-    {
-        "Code":"uint balance1Adjusted;\r\n\r\n\/\/ Dynamic fees \r\nif(stable){\r\n    balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4));\r\nelse{\r\n    balance0Adjusted = balancee.mul(10000).sub(amounteIn.mul(25)); \/\/ 25--0.25% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(25));\r\n}\r\n\/\/ The curve,either x3y+y3x for stable pools,or x\"y for volatile pools\r\nrequire(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
-        "VulnerabilityDesc":[
-            {
-                "Name":"/Beosin/Whale Loans_202206281847.pdf/Incorrect k value judgment",
-                "Location":"balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4)); require(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
-                "Type":"Precision Loss",
-                "Description":"In the swap function of the WhaleswapPair contract, when making the k-value judgment, the k-value check will pass after borrowing a large amount of funds from the pair contract, as balance0Adjusted and balance1Adjusted have undergone precision expansion before calculating the k-value, while _reserve0 and _reserve1 have not undergone precision expansion before calculating the k-value.",
-                "Repair":"It is recommended that _reserve0 and _reserve1 perform precision expansion before calculating the k value"
             }
         ]
     },
@@ -378,14 +306,19 @@
             {
                 "Name":"precision loss_26",
 	            "Location":"uint token = msg.value/weiPerEther*tknPerEther; in buyToken function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":" buyToken function, if the msg.value is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It is going to have a pretty major effect on the code. An effect like leaving the final calculation (multiplication) to be 0. ",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity 0.8.7;\n contract FunWithNumbers {\n     uint  public tknPerEther = 10;\n     uint  public weiPerEther = 1e18;   \n     mapping(address => uint) public balance;\n     function buyToken() external payable {\n         uint token = msg.value/weiPerEther*tknPerEther;\n         balance[msg.sender] += token;\n     }\n     function sellTokens(uint tokens) public {\n         require(balance[msg.sender] >= tokens);\n         uint eth = tokens/tknPerEther;\n         balance[msg.sender] -= tokens;\n         payable (msg.sender).transfer(eth*weiPerEther);\n     }\n }",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_27",
 	            "Location":"uint eth = tokens/tknPerEther; in sellTokens function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in sellToken function, any token less than 10 is going to result in 0",
 	            "Repair":""
             }
@@ -397,7 +330,7 @@
             {
                 "Name":"precision loss_28",
 	            "Location":"return number / 100 * cashback; in wordCalculation function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"wrongCalculation function is subject to precision loss vulnerability for the following reasons:The rightCalculation function is called with arguments 'number' to 50 and 'cashback' to 8. Since the multiplication operation precedes the division operation, the result of this operation is returned as 4. (50 * 8/100 → 400/100 → 4).However, the wrongCalculation function is called with argument \"number\" as 50 and \"cashback\" as argument 8. Since the division operation precedes the multiplication operation, the result of this operation is returned as 0 because the \"uint256\" variable cannot handle floating-point numbers as a result of the first division operation. (50/100 * 8 → 0.5 * 8 → 0).",
 	            "Repair":""
             }
@@ -409,7 +342,7 @@
             {
                 "Name":"precision loss_29",
 	            "Location":"return itemCost / 25 * discount; in ",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
 	            "Repair":""
             }
@@ -421,7 +354,7 @@
             {
                 "Name":"precision loss_30",
 	            "Location":"return ticketPrice / 14 * rebate;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
 	            "Repair":""
             }
@@ -433,7 +366,7 @@
             {
                 "Name":"precision loss_31",
 	            "Location":"return salary / 50 * tax;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
 	            "Repair":""
             }
@@ -445,7 +378,7 @@
             {
                 "Name":"precision loss_32",
 	            "Location":"return subscriptionFee / 26 * coupon;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
 	            "Repair":""
             }
@@ -457,14 +390,19 @@
             {
                 "Name":"precision loss_33",
 	            "Location":"uint tokens = msg.value / pricePerToken;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in buyTokens function, any msg.value less than 1000 is going to result in 0 ",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\n contract Token2 {\n     mapping(address => uint) public balances;\n     uint public pricePerToken = 1000;\n     address public owner;\n \n     constructor() {\n         owner = msg.sender;\n     }\n \n     function buyTokens() external payable onlyOwner {\n         uint tokens = msg.value / pricePerToken;\n         balances[msg.sender] += tokens;\n     }\n \n     function sellTokens(uint tokens) external onlyOwner {\n         require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n         uint etherToSend = tokens / pricePerToken;\n         balances[msg.sender] -= tokens;\n         payable(msg.sender).transfer(etherToSend);\n     }\n \n     modifier onlyOwner() {\n         require(msg.sender == owner, \"Not the contract owner\");\n         _;\n     }\n }",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_34",
 	            "Location":"uint etherToSend = tokens / pricePerToken;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0  ",
 	            "Repair":""
             }
@@ -476,14 +414,19 @@
             {
                 "Name":"precision loss_35",
 	            "Location":"uint tokens = msg.value / pricePerToken;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":" in buyTokens function, any msg.value less than 1000 is going to result in 0",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Token3 {\n    mapping(address => uint) public balances;\n    uint public pricePerToken = 1000;\n    uint public totalSupply = 1000000;\n\n    constructor() {\n        balances[msg.sender] = totalSupply;\n    }\n\n    function buyTokens() external payable {\n        uint tokens = msg.value / pricePerToken;\n        require(tokens <= balances[msg.sender], \"Not enough tokens in supply\");\n        balances[msg.sender] -= tokens;\n        balances[msg.sender] += tokens;\n    }\n\n    function sellTokens(uint tokens) external {\n        require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n        uint etherToSend = tokens / pricePerToken;\n        balances[msg.sender] -= tokens;\n        payable(msg.sender).transfer(etherToSend);\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_36",
 	            "Location":"uint etherToSend = tokens / pricePerToken;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0",
 	            "Repair":""
             }
@@ -495,14 +438,19 @@
             {
                 "Name":"precision loss_37",
 	            "Location":"uint arts = msg.value / artPrice;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in buyArt function, any msg.value less than 10000 is going to result in 0 ",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Art3 {\n    uint public artPrice = 10000; \n    mapping(address => uint) public artBalance;\n\n    function buyArt() external payable {\n        uint arts = msg.value / artPrice;\n        artBalance[msg.sender] += arts;\n    }\n\n    function returnArt(uint arts) external {\n        require(artBalance[msg.sender] >= arts);\n        uint refund = arts / artPrice;\n        artBalance[msg.sender] -= arts;\n        payable(msg.sender).transfer(refund);\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_38",
 	            "Location":"uint refund = arts / artPrice;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in returnArt function, any tokens less than 10000 is going to result in 0 ",
 	            "Repair":""
             }
@@ -514,7 +462,7 @@
             {
                 "Name":"precision loss_39",
 	            "Location":"return originalPrice / 100 * discountPercent; ",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in faultyDiscountCalculation function, any originalPrice less than 100 is going to result in 0 ",
 	            "Repair":""
             }
@@ -526,14 +474,19 @@
             {
                 "Name":"precision loss_40",
 	            "Location":"return totalAmount / 16 * commissionRate; ",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in incorrectCommissionCalculation1 function, any totalAmount less than 16 is going to result in 0",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract CommissionContract2 {\n    uint public commissionRate = 5; \n\n    function incorrectCommissionCalculation1(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16 * commissionRate; \n    }\n\n    function incorrectCommissionCalculation2(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16; \n    }\n\n    // Some other normal function\n    function setCommissionRate(uint newRate) public {\n        commissionRate = newRate;\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_41",
 	            "Location":"return totalAmount / 16; ",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in incorrectCommissionCalculation2 function, any totalAmount less than 16 is going to result in 0",
 	            "Repair":""
             }
@@ -545,7 +498,7 @@
             {
                 "Name":"precision loss_42",
 	            "Location":"return revenue / 10 * royaltyPercent;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in RoyaltyCalculation function, any revenue less than 10 is going to result in 0",
 	            "Repair":""
             }
@@ -557,7 +510,7 @@
             {
                 "Name":"precision loss_43",
 	            "Location":"return totalRent / 155 * discountPercent;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in DiscountCalculation function, any totalRent less than 155 is going to result in 0",
 	            "Repair":""
             }
@@ -569,7 +522,7 @@
             {
                 "Name":"precision loss_44",
 	            "Location":"tmp_num = grossSalary / 80 * taxPercent;",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in TaxCalculation function, any grossSalary less than 80 is going to result in 0",
 	            "Repair":""
             }
@@ -581,14 +534,19 @@
             {
                 "Name":"precision loss_45",
 	            "Location":"uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther; in acquireProperty function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in acquireProperty function, any msg.value less than weiPerEther is going to result in 0",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract RealEstateContract {\n    uint public propertyTokenPerEther = 5;\n    uint public weiPerEther = 1e18;\n    mapping(address => uint) public ownershipBalance;\n\n    function acquireProperty() external payable {\n        uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther;\n        ownershipBalance[msg.sender] += propertyToken;\n    }\n\n    function liquidateProperty(uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens);\n        uint eth = propertyTokens / propertyTokenPerEther;\n        ownershipBalance[msg.sender] -= propertyTokens;\n        payable (msg.sender).transfer(eth * weiPerEther);\n    }\n\n    // Additional normal functions\n    function adjustPropertyTokenPerEther(uint newRate) public {\n        propertyTokenPerEther = newRate;\n    }\n\n    function getPropertyOwnershipBalance(address owner) public view returns(uint) {\n        return ownershipBalance[owner];\n    }\n\n    function transferProperty(address to, uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= propertyTokens;\n        ownershipBalance[to] += propertyTokens;\n    }\n\n    function propertyTokensInCirculation() public view returns(uint total) {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            total += ownershipBalance[propertyOwners[i]];\n        }\n    }\n\n    function addToPropertyOwners(address owner) public {\n        propertyOwners.push(owner);\n    }\n\n    function removePropertyOwner(address owner) public {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            if (propertyOwners[i] == owner) {\n                propertyOwners[i] = propertyOwners[propertyOwners.length - 1];\n                propertyOwners.pop();\n                break;\n            }\n        }\n    }\n\n    function getPropertyOwners() public view returns(address[] memory) {\n        return propertyOwners;\n    }\n\n    function deposit() public payable {\n        ownershipBalance[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(ownershipBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_46",
 	            "Location":"uint eth = propertyTokens / propertyTokenPerEther; in liquidateProperty function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in liquidateProperty function, any propertyTokens less than propertyTokenPerEther is going to result in 0",
 	            "Repair":""
             }
@@ -600,14 +558,19 @@
             {
                 "Name":"precision loss_47",
 	            "Location":"uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD); in buyCryptoToken function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"Now, if the amount of ether sent to the buyCryptoToken function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract CryptoExchangeContract {\n    uint public cryptoTokenPerUSD = 20;\n    uint public weiPerEther = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public walletBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function buyCryptoToken() external payable {\n        uint ethPrice = getLatestPrice();\n        uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD);\n        walletBalance[msg.sender] += cryptoToken;\n    }\n\n    function sellCryptoToken(uint cryptoTokens) public {\n        require(walletBalance[msg.sender] >= cryptoTokens);\n        uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice();\n        walletBalance[msg.sender] -= cryptoTokens;\n        payable(msg.sender).transfer(eth);\n    }\n\n    function getLatestPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function setCryptoTokenPerUSD(uint newRate) public {\n        cryptoTokenPerUSD = newRate;\n    }\n\n    function getWalletBalance(address walletAddress) public view returns (uint) {\n        return walletBalance[walletAddress];\n    }\n\n    function transferCryptoTokens(address to, uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        walletBalance[to] += amount;\n    }\n\n    function depositFunds() public payable {\n        walletBalance[msg.sender] += msg.value;\n    }\n\n    function withdrawFunds(uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalCryptoTokens() public view returns (uint total) {\n        for (uint i = 0; i < walletOwners.length; i++) {\n            total += walletBalance[walletOwners[i]];\n        }\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_48",
 	            "Location":"uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice(); in sellCryptoToken function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":" in the sellCryptoToken function, any number of tokens less than cryptoTokenPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
 	            "Repair":""
             }
@@ -619,16 +582,93 @@
             {
                 "Name":"precision loss_49",
 	            "Location":"uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD); in purchaseDigitalAsset function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"Now, if the amount of ether sent to the purchaseDigitalAsset function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
 	            "Repair":""
-            },
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract DeFiContract {\n    uint public digitalAssetPerUSD = 20;\n    uint public weiPerEth = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public userBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function getCurrentPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function updateDigitalAssetPerUSD(uint newRate) public {\n        digitalAssetPerUSD = newRate;\n    }\n\n    function getAccountBalance(address accountAddress) public view returns (uint) {\n        return userBalance[accountAddress];\n    }\n    function redeemDigitalAsset(uint digitalAssets) public {\n        require(userBalance[msg.sender] >= digitalAssets);\n        uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice();\n        userBalance[msg.sender] -= digitalAssets;\n        payable(msg.sender).transfer(eth);\n    }\n    function transferDigitalAssets(address to, uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        userBalance[to] += amount;\n    }\n\n    function fundAccount() public payable {\n        userBalance[msg.sender] += msg.value;\n    }\n    function purchaseDigitalAsset() external payable {\n        uint ethPrice = getCurrentPrice();\n        uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD);\n        userBalance[msg.sender] += digitalAsset;\n    }\n    function withdrawFromAccount(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalDigitalAssets() public view returns (uint total) {\n        for (uint i = 0; i < accountOwners.length; i++) {\n            total += userBalance[accountOwners[i]];\n        }\n    }\n\n    function burnDigitalAssets(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n    }\n\n    function mintDigitalAssets(uint amount) public {\n        userBalance[msg.sender] += amount;\n    }\n}",
+	    "VulnerabilityDesc":[
 			{
                 "Name":"precision loss_50",
 	            "Location":"uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice(); in redeemDigitalAsset function",
-	            "Type":"precision loss",
+	            "Type":"Precision loss",
 	            "Description":"in the redeemDigitalAsset function, any number of tokens less than digitalAssetPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
 	            "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stake(uint256_tokenId,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup = 1ockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    uint256 lastIndex = userStakes[msg.sender].length.sub(1); \r\n    Stake storage __stake = userStakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    stake.duration=_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration*28800); \r\n    __stake.end=block.number.add(_lockup.duration*10); \r\n    __stake.tokenIds.push(_tokenId);\r\n    __stake.tokenIndex[_tokenId] =__stake.tokenIds.length.sub(1); \r\n    __stake.amount=1;\r\n    __stake.rewardDebt = _lockup.accTokenPerShare; \r\n\r\n    _lockup.totalstaked =_lockup.totalstaked.add(1); \r\n    tokenIndexInStakes[_tokenId] = lastIndex;\r\n    __stake(msg.sender,_tokenId,_type); \r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare;",
+                "Type":"Precision loss",
+                "Description":"The stake functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stakeBatch(uint256[] memory _tokenIds,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\");\r\n\tclaimReward();\r\n\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userStakes[msg.sender].length.sub(1); \r\n    Stake storage_stake = userstakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    __stake.duration =_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration *28800); \r\n    __stake.end = block.number.add(_lockup.duration * 10); \r\n    for (uint i =0;i <_tokenIds.length;i++){\r\n\t\tuint256 _tokenId = _tokenIds[i]; \r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] =__stake.tokenIds.length,sub(1); \r\n        __stake.amount=_stake.amount.add(1);\r\n\r\n        _lockup.totalStaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        _stake(msg.sender, _tokenId, _type);\r\n    }\r\n    __stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); \r\n",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); ",
+                "Type":"Precision loss",
+                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stakeAll(uint8 _type) external {\r\n    require(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userstakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userstakes[msg.sender].1ength.sub(1);\r\n    Stake storage __stake=userStakes[nsg.sender][1astIndex]; \r\n    __stake.stakeType = _type;\r\n    __stake.duration = _lockup.duration;\r\n    \/\/_stake.end=block.number.add(_lockup.duration\"28800); \r\n    __stake.end-block.number.add(_lockup.duration10);\r\n\r\n    uint256 balance = stakingNFT.balanceof(msg.sender); \r\n    for (uint i = e;i<balance; i++) {\r\n\t\tuint256 _tokenId=stakingNFT.tokenofOwnerByIndex(msg.sender,balance - 1-1);\r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] = _stake.tokenIds.length.sub(1); \r\n        __stake.amount=__stake.amount.add(1);\r\n        \r\n        _lockup.totalstaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        \r\n        _stake(msg.sender,_tokenId,_type);\r\n    }\r\n    __stake.rewardDebt = _lockup.accTokenPerShare.mul(balance); \r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare.mul(balance);",
+                "Type":"Precision loss",
+                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"uint currentBlock =block.number >=_activity.startBlock.add(_activity.totalRewardBlock)?_activity.startBlock.add(_activity.totalRewardBlock): block.number; \r\nuint crossBlock =currentBlock>_pool.lastRewardBlock?currentBlock.sub(_pool.lastRewardBlock):0;\r\n\r\nif (crossBlock > 0) {\r\n\r\n    uint accReward = crossBlock.mul(_activity.rewardPerBlock);\r\n\r\n    pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); \r\n    pool.1astkewardBlock = currentBlock;\r\n\r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/W3Swap-Farm_202207092336.pdf/Rewards may ",
+                "Location":"pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); ",
+                "Type":"Precision loss",
+                "Description":"In the MultiStaker contract, since the precision of the reward token is used to calculate the reward, if the precision of the reward token is smaller than the precision of the stake token, the user's reward may be zero",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function addTotalSupply(uint256 _amount) public onlyowner {\r\n\ttotalSupply = totalSupply.add(_amount.mul(decim));\r\n    balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/WFEx_202108051800.pdf/Logic problems",
+                "Location":"balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
+                "Type":"Precision loss",
+                "Description":"When calling the addTotalSupply function, the precision should be added when calculating the balance of the owner.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"uint balance1Adjusted;\r\n\r\n\/\/ Dynamic fees \r\nif(stable){\r\n    balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4));\r\nelse{\r\n    balance0Adjusted = balancee.mul(10000).sub(amounteIn.mul(25)); \/\/ 25--0.25% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(25));\r\n}\r\n\/\/ The curve,either x3y+y3x for stable pools,or x\"y for volatile pools\r\nrequire(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/Whale Loans_202206281847.pdf/Incorrect k value judgment",
+                "Location":"balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4)); require(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
+                "Type":"Precision loss",
+                "Description":"In the swap function of the WhaleswapPair contract, when making the k-value judgment, the k-value check will pass after borrowing a large amount of funds from the pair contract, as balance0Adjusted and balance1Adjusted have undergone precision expansion before calculating the k-value, while _reserve0 and _reserve1 have not undergone precision expansion before calculating the k-value.",
+                "Repair":"It is recommended that _reserve0 and _reserve1 perform precision expansion before calculating the k value"
             }
         ]
     }

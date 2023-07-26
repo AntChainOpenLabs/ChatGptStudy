@@ -41,10 +41,12 @@ def read_json_to_check_code_token(path , filename):
     print("不合格 code 长度 :\t" + str(countNo))
     print(noindexs)
     # #将两者分开
-    with open(path + "check/" + filename + "_OK"+ ".json", 'w', encoding='utf-8') as f1:
-        json.dump(okfile , f1 , indent=4)
-    with open(path + "check/" + filename + "_NO"+ ".json", 'w', encoding='utf-8') as f2:
-        json.dump(nofile, f2, indent=4)
+    # with open(path + "check/" + filename + "_OK"+ ".json", 'w', encoding='utf-8') as f1:
+    #     json.dump(okfile , f1 , indent=4)
+    # with open(path + "check/" + filename + "_NO"+ ".json", 'w', encoding='utf-8') as f2:
+    #     json.dump(nofile, f2, indent=4)
+
+
 
 if __name__ == "__main__":
     path  = "bug_json/blew_2000_token/"
