@@ -1,7 +1,7 @@
 import json
 import tiktoken
 
-def num_tokens_from_string(string: str, encoding_name: str="p50k_base") -> int:
+def num_tokens_from_string(string: str, encoding_name: str="r50k_base") -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
@@ -18,8 +18,8 @@ def deduplicate_prompts(input_file, output_file):
             completion = json_data.get('completion', '')
 
             # 去重
-            # if prompt not in prompt_completion_map:
-            #     prompt_completion_map[prompt] = completion
+            if prompt not in prompt_completion_map:
+                prompt_completion_map[prompt] = completion
 
         for prompt, completion in prompt_completion_map.items():
             token = num_tokens_from_string(prompt)
@@ -38,8 +38,11 @@ def deduplicate_prompts(input_file, output_file):
                 f.write(json_line + '\n')
 
 # 用法示例
-input_file = 'vul_raw_all_prompt.json'
-# input_file = '2048-2500.json'
-output_file = 'vul_regular_all_prompt.json'
+# input_file = 'vul_raw_all_prompt.json'
+# output_file = 'vul_regular_all_prompt.json'
+input_file = 'ben_valid_prompt.json'
+output_file = 'tmp.json'
+
+
 
 deduplicate_prompts(input_file, output_file)
