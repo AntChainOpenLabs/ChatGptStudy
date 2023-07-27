@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Finitude loss",
+        "yes,Price oracle manipulation",
+        "yes,Price oracle manipulation",
+        "yes,Price orAC projection",
+        "yes,Precision loss"
+    ],
+    "1": [
+        "yes,IBinsured",
+        "yes,Erroneous state updates",
+        "yes,Rate oracle undermining",
+        "yes,Fourbes exact loss drift compensation",
+        "yes,AcumulusCoin"
+    ],
+    "2": [
+        "yes,Pricening\u2014Reaction lying",
+        "yes,Price oracle manipulation",
+        "yes,Price oracle manipulation",
+        "yes,Pricegradient101 algorithm",
+        "yes,Price oracle manipulation"
+    ],
+    "3": [
+        "yes,Price oracle manipulation",
+        "yes,under executionpunching value flipping",
+        "yes,Other similar activity",
+        "yes,Reentrancy",
+        "yes,Pretzel strategy"
+    ],
+    "4": [
+        "yes,ID-related violations",
+        "yes,Reentrancy",
+        "yes,Price oracle manipulation",
+        "yes,Price oracle fusion",
+        "yes,Price oracle manipulation"
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy"
+    ],
+    "1": [
+        "yes,Reentrancy",
+        "yes,ID-related violations",
+        "yes,Price oracle manipulation",
+        "yes,Reentrancy",
+        "yes,Reentrancy"
+    ],
+    "2": [
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy"
+    ],
+    "3": [
+        "yes,Reentrancy",
+        "yes,ID-related violations",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,ID-related violations"
+    ],
+    "4": [
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy",
+        "yes,Reentrancy"
+    ]
+}
