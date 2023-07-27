@@ -1,0 +1,675 @@
+[
+    {
+        "Code": "{\n                uint256 previousInterestRate = loan.perAnumInterestRate;\n                uint256 previousDurationSeconds = loan.durationSeconds;\n\n                require(interestRate <= previousInterestRate, 'NFTLoanFacilitator: rate too high');\n                require(durationSeconds >= previousDurationSeconds, 'NFTLoanFacilitator: duration too low');\n\n                require((previousLoanAmount * requiredImprovementRate / SCALAR) <= amountIncrease\n                || previousDurationSeconds + (previousDurationSeconds * requiredImprovementRate / SCALAR) <= durationSeconds \n                || (previousInterestRate != 0 // do not allow rate improvement if rate already 0\n                    && previousInterestRate - (previousInterestRate * requiredImprovementRate / SCALAR) >= interestRate), \n                \"NFTLoanFacilitator: proposed terms must be better than existing terms\");\n            }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_1",
+                "Location": "NFTLoanFacilitator.sol#L167-L179",
+                "Type": "Precision loss",
+                "Description": "When previousInterestRate is less than 10 and requiredImprovementRate is 100, due to precision loss, the new interestRate is allowed to be the same as the previous one.",
+                "Repair": "Use OpenZeppelin/Math.sol#L39-L42 to avoid precision loss and change the check to previousInterestRate != 0 && previousInterestRate < Math.ceilDiv(previousInterestRate * requiredImprovementRate, SCALAR)."
+            }
+        ]
+    },
+    {
+        "Code": "/// @notice The current number of votes required to submit a proposal\n    function proposalThreshold() public view returns (uint256) {\n        unchecked {\n            return (settings.token.totalSupply() * settings.proposalThresholdBps) / 10_000;\n        }\n    }\n\n    /// @notice The current number of votes required to be in favor of a proposal in order to reach quorum\n    function quorum() public view returns (uint256) {\n        unchecked {\n            return (settings.token.totalSupply() * settings.quorumThresholdBps) / 10_000;\n        }\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_2",
+                "Location": "Governor contract",
+                "Type": "Precision loss",
+                "Description": "Precision is not enough for proposalThreshold and quorum. Collections with at least 20000 NFTs in total supply may have some trouble.",
+                "Repair": "Increase division to a more precise value such as 1e18 to allow high total supply NFT to always set threshold as 1"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: GPL-3.0-only\npragma solidity ^0.8.4;\n\nimport { ImmutableState } from \"./ImmutableState.sol\";\nimport { ReentrancyGuard } from \"./ReentrancyGuard.sol\";\n\nimport { IPair } from \"./interfaces/IPair.sol\";\nimport { IPairMintCallback } from \"./interfaces/callback/IPairMintCallback.sol\";\nimport { ISwapCallback } from \"./interfaces/callback/ISwapCallback.sol\";\n\nimport { Balance } from \"../libraries/Balance.sol\";\nimport { FullMath } from \"../libraries/FullMath.sol\";\nimport { SafeCast } from \"../libraries/SafeCast.sol\";\nimport { SafeTransferLib } from \"../libraries/SafeTransferLib.sol\";\n\nabstract contract Pair is ImmutableState, ReentrancyGuard, IPair {\n  /*//////////////////////////////////////////////////////////////\n                                 EVENTS\n    //////////////////////////////////////////////////////////////*/\n\n  event Mint(uint256 amount0In, uint256 amount1In, uint256 liquidity);\n\n  event Burn(uint256 amount0Out, uint256 amount1Out, uint256 liquidity, address indexed to);\n\n  event Swap(uint256 amount0Out, uint256 amount1Out, uint256 amount0In, uint256 amount1In, address indexed to);\n\n  /*//////////////////////////////////////////////////////////////\n                                 ERRORS\n    //////////////////////////////////////////////////////////////*/\n\n  error InvariantError();\n\n  error InsufficientOutputError();\n\n  /*//////////////////////////////////////////////////////////////\n                                 STORAGE\n    //////////////////////////////////////////////////////////////*/\n\n  /// @inheritdoc IPair\n  uint120 public override reserve0;\n\n  /// @inheritdoc IPair\n  uint120 public override reserve1;\n\n  /// @inheritdoc IPair\n  uint256 public override totalLiquidity;\n\n  /*//////////////////////////////////////////////////////////////\n                              PAIR LOGIC\n    //////////////////////////////////////////////////////////////*/\n\n  /// @inheritdoc IPair\n  function invariant(uint256 amount0, uint256 amount1, uint256 liquidity) public view override returns (bool) {\n    if (liquidity == 0) return (amount0 == 0 && amount1 == 0);\n\n    uint256 scale0 = FullMath.mulDiv(amount0, 1e18, liquidity) * token0Scale;\n    uint256 scale1 = FullMath.mulDiv(amount1, 1e18, liquidity) * token1Scale;\n\n    if (scale1 > 2 * upperBound) revert InvariantError();\n\n    uint256 a = scale0 * 1e18;\n    uint256 b = scale1 * upperBound;\n    uint256 c = (scale1 * scale1) / 4;\n    uint256 d = upperBound * upperBound;\n\n    return a + b >= c + d;\n  }\n\n  /// @dev assumes liquidity is non-zero\n  function mint(uint256 liquidity, bytes calldata data) internal {\n    uint120 _reserve0 = reserve0; // SLOAD\n    uint120 _reserve1 = reserve1; // SLOAD\n    uint256 _totalLiquidity = totalLiquidity; // SLOAD\n\n    uint256 balance0Before = Balance.balance(token0);\n    uint256 balance1Before = Balance.balance(token1);\n    IPairMintCallback(msg.sender).pairMintCallback(liquidity, data);\n    uint256 amount0In = Balance.balance(token0) - balance0Before;\n    uint256 amount1In = Balance.balance(token1) - balance1Before;\n\n    if (!invariant(_reserve0 + amount0In, _reserve1 + amount1In, _totalLiquidity + liquidity)) {\n      revert InvariantError();\n    }\n\n    reserve0 = _reserve0 + SafeCast.toUint120(amount0In); // SSTORE\n    reserve1 = _reserve1 + SafeCast.toUint120(amount1In); // SSTORE\n    totalLiquidity = _totalLiquidity + liquidity; // SSTORE\n\n    emit Mint(amount0In, amount1In, liquidity);\n  }\n\n  /// @dev assumes liquidity is non-zero\n  function burn(address to, uint256 liquidity) internal returns (uint256 amount0, uint256 amount1) {\n    uint120 _reserve0 = reserve0; // SLOAD\n    uint120 _reserve1 = reserve1; // SLOAD\n    uint256 _totalLiquidity = totalLiquidity; // SLOAD\n\n    amount0 = FullMath.mulDiv(_reserve0, liquidity, _totalLiquidity);\n    amount1 = FullMath.mulDiv(_reserve1, liquidity, _totalLiquidity);\n    if (amount0 == 0 && amount1 == 0) revert InsufficientOutputError();\n\n    if (amount0 > 0) SafeTransferLib.safeTransfer(token0, to, amount0);\n    if (amount1 > 0) SafeTransferLib.safeTransfer(token1, to, amount1);\n\n    // Extra check of the invariant\n    if (!invariant(_reserve0 - amount0, _reserve1 - amount1, _totalLiquidity - liquidity)) revert InvariantError();\n\n    reserve0 = _reserve0 - SafeCast.toUint120(amount0); // SSTORE\n    reserve1 = _reserve1 - SafeCast.toUint120(amount1); // SSTORE\n    totalLiquidity = _totalLiquidity - liquidity; // SSTORE\n\n    emit Burn(amount0, amount1, liquidity, to);\n  }\n\n  /// @inheritdoc IPair\n  function swap(address to, uint256 amount0Out, uint256 amount1Out, bytes calldata data) external override nonReentrant {\n    if (amount0Out == 0 && amount1Out == 0) revert InsufficientOutputError();\n\n    uint120 _reserve0 = reserve0; // SLOAD\n    uint120 _reserve1 = reserve1; // SLOAD\n\n    if (amount0Out > 0) SafeTransferLib.safeTransfer(token0, to, amount0Out);\n    if (amount1Out > 0) SafeTransferLib.safeTransfer(token1, to, amount1Out);\n\n    uint256 balance0Before = Balance.balance(token0);\n    uint256 balance1Before = Balance.balance(token1);\n    ISwapCallback(msg.sender).swapCallback(amount0Out, amount1Out, data);\n    uint256 amount0In = Balance.balance(token0) - balance0Before;\n    uint256 amount1In = Balance.balance(token1) - balance1Before;\n\n    if (!invariant(_reserve0 + amount0In - amount0Out, _reserve1 + amount1In - amount1Out, totalLiquidity)) {\n      revert InvariantError();\n    }\n\n    reserve0 = _reserve0 + SafeCast.toUint120(amount0In) - SafeCast.toUint120(amount0Out); // SSTORE\n    reserve1 = _reserve1 + SafeCast.toUint120(amount1In) - SafeCast.toUint120(amount1Out); // SSTORE\n\n    emit Swap(amount0Out, amount1Out, amount0In, amount1In, to);\n  }\n}\n\n\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_3",
+                "Location": "Pair.invariant() function",
+                "Type": "Precision loss",
+                "Description": "There is a precision loss in the invariant function that can lead to loss of funds. The significant rounding before conversion to D18 can result in the wrong invariant check result. This can allow an attacker to steal funds without affecting the invariant.",
+                "Repair": "Multiply first before division to prevent precision loss"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.6.12;\npragma experimental ABIEncoderV2;\n\nimport 'hardhat/console.sol';\n\nimport {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';\nimport {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';\n\nimport {FixedPointMath} from '../libraries/FixedPointMath.sol';\nimport {IDetailedERC20} from '../interfaces/IDetailedERC20.sol';\nimport {IVaultAdapter} from '../interfaces/IVaultAdapter.sol';\nimport {IVault} from '../../interfaces/IVault.sol';\n\n/// @title YaxisVaultAdapter\n///\n/// @dev A vault adapter implementation which wraps a yAxis vault.\ncontract YaxisVaultAdapter is IVaultAdapter {\n    using FixedPointMath for FixedPointMath.FixedDecimal;\n    using SafeERC20 for IDetailedERC20;\n    using SafeMath for uint256;\n\n    /// @dev The vault that the adapter is wrapping.\n    IVault public vault;\n\n    /// @dev The address which has admin control over this contract.\n    address public admin;\n\n    constructor(IVault _vault, address _admin) public {\n        vault = _vault;\n        admin = _admin;\n        updateApproval();\n    }\n\n    /// @dev A modifier which reverts if the caller is not the admin.\n    modifier onlyAdmin() {\n        require(admin == msg.sender, 'YaxisVaultAdapter: only admin');\n        _;\n    }\n\n    /// @dev Gets the token that the vault accepts.\n    ///\n    /// @return the accepted token.\n    function token() external view override returns (IDetailedERC20) {\n        return IDetailedERC20(vault.getToken());\n    }\n\n    /// @dev Gets the total value of the assets that the adapter holds in the vault.\n    ///\n    /// @return the total assets.\n    function totalValue() external view override returns (uint256) {\n        return _sharesToTokens(IDetailedERC20(vault.getLPToken()).balanceOf(address(this)));\n    }\n\n    /// @dev Deposits tokens into the vault.\n    ///\n    /// @param _amount the amount of tokens to deposit into the vault.\n    function deposit(uint256 _amount) external override {\n        vault.deposit(_amount);\n    }\n\n    /// @dev Withdraws tokens from the vault to the recipient.\n    ///\n    /// This function reverts if the caller is not the admin.\n    ///\n    /// @param _recipient the account to withdraw the tokes to.\n    /// @param _amount    the amount of tokens to withdraw.\n    function withdraw(address _recipient, uint256 _amount) external override onlyAdmin {\n        vault.withdraw(_tokensToShares(_amount));\n        address _token = vault.getToken();\n        IDetailedERC20(_token).safeTransfer(_recipient, _amount);\n    }\n\n    /// @dev Updates the vaults approval of the token to be the maximum value.\n    function updateApproval() public {\n        address _token = vault.getToken();\n        IDetailedERC20(_token).safeApprove(address(vault), uint256(-1));\n    }\n\n    /// @dev Computes the number of tokens an amount of shares is worth.\n    ///\n    /// @param _sharesAmount the amount of shares.\n    ///\n    /// @return the number of tokens the shares are worth.\n\n    function _sharesToTokens(uint256 _sharesAmount) internal view returns (uint256) {\n        return _sharesAmount.mul(vault.getPricePerFullShare()).div(1e18);\n    }\n\n    /// @dev Computes the number of shares an amount of tokens is worth.\n    ///\n    /// @param _tokensAmount the amount of shares.\n    ///\n    /// @return the number of shares the tokens are worth.\n    function _tokensToShares(uint256 _tokensAmount) internal view returns (uint256) {\n        return _tokensAmount.mul(1e18).div(vault.getPricePerFullShare());\n    }\n}\n\n\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_4",
+                "Location": "YaxisVaultAdapter.sol#withdraw()",
+                "Type": "Precision loss",
+                "Description": "The actual token withdrawn from 'vault.withdraw()' will most certainly be less than the '_amount', due to precision loss in '_tokensToShares()' and 'vault.withdraw()'. As a result, 'IDetailedERC20(_token).safeTransfer(_recipient, _amount)' will revert due to insufficient balance.",
+                "Repair": "Change the code as described above to increment 'totalCredit' instead of overwrite it."
+            }
+        ]
+    },
+    {
+        "Code": "function _pledge(uint256 pledgeId, address user, uint256 amount, uint256 endTimestamp) internal {\n        if(pledgeId >= pledgesIndex()) revert Errors.InvalidPledgeID();\n        if(amount == 0) revert Errors.NullValue();\n\n        // Load Pledge parameters & check the Pledge is still active\n        Pledge memory pledgeParams = pledges[pledgeId];\n        if(pledgeParams.closed) revert Errors.PledgeClosed();\n        if(pledgeParams.endTimestamp <= block.timestamp) revert Errors.ExpiredPledge();\n\n        // To join until the end of the pledge, user can input 0 as endTimestamp\n        // so it's override by the Pledge's endTimestamp\n        if(endTimestamp == 0) endTimestamp = pledgeParams.endTimestamp;\n        if(endTimestamp > pledgeParams.endTimestamp || endTimestamp != _getRoundedTimestamp(endTimestamp)) revert Errors.InvalidEndTimestamp();\n\n        // Calculated the effective Pledge duration\n        uint256 boostDuration = endTimestamp - block.timestamp;\n\n        // Check that the user has enough boost delegation available & set the correct allowance to this contract\n        delegationBoost.checkpoint_user(user);\n        if(delegationBoost.allowance(user, address(this)) < amount) revert Errors.InsufficientAllowance();\n        if(delegationBoost.delegable_balance(user) < amount) revert Errors.CannotDelegate();\n\n        // Check that this will not go over the Pledge target of votes\n        if(delegationBoost.adjusted_balance_of(pledgeParams.receiver) + amount > pledgeParams.targetVotes) revert Errors.TargetVotesOverflow();\n\n        // Creates the DelegationBoost\n        delegationBoost.boost(\n            pledgeParams.receiver,\n            amount,\n            endTimestamp,\n            user\n        );\n\n        // Re-calculate the new Boost bias & slope (using Boostv2 logic)\n        uint256 slope = amount / boostDuration;\n        uint256 bias = slope * boostDuration;\n\n        // Rewards are set in the Pledge as reward/veToken/sec\n        // To find the total amount of veToken delegated through the whole Boost duration\n        // based on the Boost bias & the Boost duration, to take in account that the delegated amount decreases\n        // each second of the Boost duration\n        uint256 totalDelegatedAmount = ((bias * boostDuration) + bias) / 2;\n        // Then we can calculate the total amount of rewards for this Boost\n        uint256 rewardAmount = (totalDelegatedAmount * pledgeParams.rewardPerVote) / UNIT;\n\n        if(rewardAmount > pledgeAvailableRewardAmounts[pledgeId]) revert Errors.RewardsBalanceTooLow();\n        pledgeAvailableRewardAmounts[pledgeId] -= rewardAmount;\n\n        // Send the rewards to the user\n        IERC20(pledgeParams.rewardToken).safeTransfer(user, rewardAmount);\n\n        emit Pledged(pledgeId, user, amount, endTimestamp);\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_5",
+                "Location": "if(delegationBoost.adjusted_balance_of(pledgeParams.receiver) + amount > pledgeParams.targetVotes) revert Errors.TargetVotesOverflow();",
+                "Type": "Precision loss",
+                "Description": "Due to loss of precision, targetVotes may not reach.",
+                "Repair": "Use bias instead of amount in the check"
+            }
+        ]
+    },
+    {
+        "Code": "    function compensate(uint256 _amount)\n        external\n        override\n        returns (uint256 _compensated)\n    {\n        require(\n            allocPoints[msg.sender] > 0,\n            \"ERROR_COMPENSATE_UNAUTHORIZED_CALLER\"\n        );\n        uint256 _value = vault.underlyingValue(address(this));\n        if (_value >= _amount) {\n            //When the deposited value without earned premium is enough to cover\n            vault.offsetDebt(_amount, msg.sender);\n            //vault.transferValue(_amount, msg.sender);\n            _compensated = _amount;\n        } else {\n            //Withdraw credit to cashout the earnings\n            uint256 _shortage;\n            if (totalLiquidity() < _amount) {\n                //Insolvency case\n                _shortage = _amount - _value;\n                uint256 _cds = ICDSTemplate(registry.getCDS(address(this)))\n                    .compensate(_shortage);\n                _compensated = _value + _cds;\n            }\n            vault.offsetDebt(_compensated, msg.sender);\n        }\n        adjustAlloc();\n        emit Compensated(msg.sender, _compensated);\n    }\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_6",
+                "Location": "IndexTemplate.sol",
+                "Type": "Precision loss",
+                "Description": "IndexTemplate.sol#() will most certainly fail",
+
+                "Repair": "Change the code to use vault.underlyingValue(address(this)) instead of _value + _cds to compensate for the precision loss"
+            }
+        ]
+    },
+    {
+        "Code": "function rebalance(address tokenAddress, uint256[] calldata percentages)\n        external\n        override\n        checkMarketSupported(tokenAddress)\n        onlyAdmin\n    {\n        IERC20Upgradeable token = IERC20Upgradeable(tokenAddress);\n        require(percentages.length + 1 == moneyMarkets.length, \"AssetManager: percentages error\");\n\n        for (uint256 i = 0; i < moneyMarkets.length; i++) {\n            if (!moneyMarkets[i].supportsToken(tokenAddress)) {\n                continue;\n            }\n            moneyMarkets[i].withdrawAll(tokenAddress, address(this));\n        }\n\n        uint256 tokenSupply = token.balanceOf(address(this));\n\n        for (uint256 i = 0; i < percentages.length; i++) {\n            if (!moneyMarkets[i].supportsToken(tokenAddress)) {\n                continue;\n            }\n            uint256 amountToDeposit = (tokenSupply * percentages[i]) / 10000;\n            if (amountToDeposit == 0) {\n                continue;\n            }\n            token.safeTransfer(address(moneyMarkets[i]), amountToDeposit);\n            moneyMarkets[i].deposit(tokenAddress);\n        }\n\n        uint256 remainingTokens = token.balanceOf(address(this));\n        if (moneyMarkets[moneyMarkets.length - 1].supportsToken(tokenAddress) && remainingTokens > 0) {\n            token.safeTransfer(address(moneyMarkets[moneyMarkets.length - 1]), remainingTokens);\n            moneyMarkets[moneyMarkets.length - 1].deposit(tokenAddress);\n        }\n\n        require(token.balanceOf(address(this)) == 0, \"AssetManager: there are remaining funds in the fund pool\");\n\n        emit LogRebalance(tokenAddress, percentages);\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_7",
+                "Location": "uint256 amountToDeposit = (tokenSupply * percentages[i]) / 10000;",
+                "Type": "Precision loss",
+                "Description": "The rebalance function will fail due to low precision of percentages as they are in base points, i.e, the lowest unit is 1 = 0.01%. This will leave dust in the contract in most cases as the tokens have much higher precision.",
+                "Repair": "Remove the final zero balance check, or make sure that the last market that is actually deposited to receives all remaining tokens"
+            }
+        ]
+    },
+    {
+        "Code": "function _pull(\n        address to,\n        uint256[] memory tokenAmounts,\n        bytes memory options\n    ) internal override returns (uint256[] memory actualTokenAmounts) {\n        uint256 maxLoss = abi.decode(options, (uint256));\n        for (uint256 i = 0; i < _yTokens.length; i++) {\n            if (tokenAmounts[i] == 0) {\n                continue;\n            }\n\n            IYearnVault yToken = IYearnVault(_yTokens[i]);\n            uint256 yTokenAmount = ((tokenAmounts[i] * (10**yToken.decimals())) / yToken.pricePerShare());\n            uint256 balance = yToken.balanceOf(address(this));\n            if (yTokenAmount > balance) {\n                yTokenAmount = balance;\n            }\n            if (yTokenAmount == 0) {\n                continue;\n            }\n            yToken.withdraw(yTokenAmount, to, maxLoss);\n            (tokenAmounts[i], address(this));\n        }\n        actualTokenAmounts = tokenAmounts;\n    }\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_8",
+                "Location": "uint256 yTokenAmount = ((tokenAmounts[i] * (10**yToken.decimals())) / yToken.pricePerShare());",
+                "Type": "Precision loss",
+                "Description": "The actual token withdrew from yToken.withdraw() will most certainly be less than the tokenAmounts[i], due to precision loss in the calculation of yTokenAmount. As a result, IERC20(_vaultTokens[i]).safeTransfer(to, actualTokenAmounts[i]); in LpIssuer.sol#withdraw() will revert due to insufficient balance.",
+                "Repair": "Change the code to withdraw the actual token amount from the YearnVault contract instead of relying on the calculated token amount."
+            }
+        ]
+    },
+    {
+        "Code": " /// @notice Helper function for accruing lendgine interest\n  function _accrueInterest() private {\n    if (totalSupply == 0 || totalLiquidityBorrowed == 0) {\n      lastUpdate = block.timestamp;\n      return;\n    }\n\n    uint256 timeElapsed = block.timestamp - lastUpdate;\n    if (timeElapsed == 0) return;\n\n    uint256 _totalLiquidityBorrowed = totalLiquidityBorrowed; // SLOAD\n    uint256 totalLiquiditySupplied = totalLiquidity + _totalLiquidityBorrowed; // SLOAD\n\n    uint256 borrowRate = getBorrowRate(_totalLiquidityBorrowed, totalLiquiditySupplied);\n\n    uint256 dilutionLPRequested = (FullMath.mulDiv(borrowRate, _totalLiquidityBorrowed, 1e18) * timeElapsed) / 365 days;\n    uint256 dilutionLP = dilutionLPRequested > _totalLiquidityBorrowed ? _totalLiquidityBorrowed : dilutionLPRequested;\n    uint256 dilutionSpeculative = convertLiquidityToCollateral(dilutionLP);\n\n    totalLiquidityBorrowed = _totalLiquidityBorrowed - dilutionLP;\n    rewardPerPositionStored += FullMath.mulDiv(dilutionSpeculative, 1e18, totalPositionSize);\n    lastUpdate = block.timestamp;\n\n    emit AccrueInterest(timeElapsed, dilutionSpeculative, dilutionLP);\n  }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_9",
+                "Location": "uint256 dilutionLPRequested = (FullMath.mulDiv(borrowRate, _totalLiquidityBorrowed, 1e18) * timeElapsed) / 365 days;",
+                "Type": "Precision loss",
+                "Description": "Division before multiplication incurs unnecessary precision loss",
+                "Repair": "Normalize and scale totalLiquidityBorrowed by token precision before multiplication instead of division by 1e18"
+            }
+        ]
+    },
+    {
+        "Code": "function getUpdatedAccTokenPerShare(address _baseToken) public view returns (uint256) {\n        uint256 accumulator = 0;\n        uint256 lastUpdatedTime = poolInfo[_baseToken].lastRewardTime;\n        uint256 counter = block.timestamp;\n        uint256 i = rewardRateLog[_baseToken].length - 1;\n        while (true) {\n            if (lastUpdatedTime >= counter) {\n                break;\n            }\n            unchecked {\n                accumulator +=\n                    rewardRateLog[_baseToken][i].rewardsPerSecond *\n                    (counter - max(lastUpdatedTime, rewardRateLog[_baseToken][i].timestamp));\n            }\n            counter = rewardRateLog[_baseToken][i].timestamp;\n            if (i == 0) {\n                break;\n            }\n            --i;\n        }\n\n        // We know that during all the periods that were included in the current iterations,\n        // the value of totalSharesStaked[_baseToken] would not have changed, as we only consider the\n        // updates to the pool that happened after the lastUpdatedTime.\n        accumulator = (accumulator * ACC_TOKEN_PRECISION) / totalSharesStaked[_baseToken];\n        return accumulator + poolInfo[_baseToken].accTokenPerShare;\n    }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_10",
+                "Location": "accumulator = (accumulator * ACC_TOKEN_PRECISION) / totalSharesStaked[_baseToken];",
+                "Type": "Precision loss",
+                "Description": "Users will lose a majority or even all of the rewards when the amount of total shares is too large, due to precision loss.",
+                "Repair": "1. Consider lowering the BASE_DIVISOR so that the initial share price can be higher; 2. Consider making ACC_TOKEN_PRECISION larger to prevent precision loss;"
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.15;\n\nimport \"@chainlink/interfaces/AggregatorV3Interface.sol\";\n\ncontract PegOracle {\n    /***\n    @dev  for example: oracle1 would be stETH / USD, while oracle2 would be ETH / USD oracle\n    ***/\n    address public oracle1;\n    address public oracle2;\n\n    uint8 public decimals;\n\n    AggregatorV3Interface internal priceFeed1;\n    AggregatorV3Interface internal priceFeed2;\n\n    /** @notice Contract constructor\n      * @param _oracle1 First oracle address\n      * @param _oracle2 Second oracle address\n      */\n    constructor(address _oracle1, address _oracle2) {\n        require(_oracle1 != address(0), \"oracle1 cannot be the zero address\");\n        require(_oracle2 != address(0), \"oracle2 cannot be the zero address\");\n        require(_oracle1 != _oracle2, \"Cannot be same Oracle\");\n        priceFeed1 = AggregatorV3Interface(_oracle1);\n        priceFeed2 = AggregatorV3Interface(_oracle2);\n        require(\n            (priceFeed1.decimals() == priceFeed2.decimals()),\n            \"Decimals must be the same\"\n        );\n\n        oracle1 = _oracle1;\n        oracle2 = _oracle2;\n\n        decimals = priceFeed1.decimals();\n    }\n\n    /** @notice Returns oracle-fed data from the latest round\n      * @return roundID Current round id \n      * @return nowPrice Current price\n      * @return startedAt Starting timestamp\n      * @return timeStamp Current timestamp\n      * @return answeredInRound Round id for which answer was computed \n      */ \n    function latestRoundData()\n        public\n        view\n        returns (\n            uint80 roundID,\n            int256 nowPrice,\n            uint256 startedAt,\n            uint256 timeStamp,\n            uint80 answeredInRound\n        )\n    {\n        (\n            uint80 roundID1,\n            int256 price1,\n            uint256 startedAt1,\n            uint256 timeStamp1,\n            uint80 answeredInRound1\n        ) = priceFeed1.latestRoundData();\n\n        int256 price2 = getOracle2_Price();\n\n        if (price1 > price2) {\n            nowPrice = (price2 * 10000) / price1;\n        } else {\n            nowPrice = (price1 * 10000) / price2;\n        }\n\n        int256 decimals10 = int256(10**(18 - priceFeed1.decimals()));\n        nowPrice = nowPrice * decimals10;\n\n        return (\n            roundID1,\n            nowPrice / 1000000,\n            startedAt1,\n            timeStamp1,\n            answeredInRound1\n        );\n    }\n\n    /* solhint-disbable-next-line func-name-mixedcase */\n    /** @notice Lookup first oracle price\n      * @return price Current first oracle price\n      */ \n    function getOracle1_Price() public view returns (int256 price) {\n        (\n            uint80 roundID1,\n            int256 price1,\n            ,\n            uint256 timeStamp1,\n            uint80 answeredInRound1\n        ) = priceFeed1.latestRoundData();\n\n        require(price1 > 0, \"Chainlink price <= 0\");\n        require(\n            answeredInRound1 >= roundID1,\n            \"RoundID from Oracle is outdated!\"\n        );\n        require(timeStamp1 != 0, \"Timestamp == 0 !\");\n\n        return price1;\n    }\n\n    /* solhint-disbable-next-line func-name-mixedcase */\n    /** @notice Lookup second oracle price\n      * @return price Current second oracle price\n      */ \n    function getOracle2_Price() public view returns (int256 price) {\n        (\n            uint80 roundID2,\n            int256 price2,\n            ,\n            uint256 timeStamp2,\n            uint80 answeredInRound2\n        ) = priceFeed2.latestRoundData();\n\n        require(price2 > 0, \"Chainlink price <= 0\");\n        require(\n            answeredInRound2 >= roundID2,\n            \"RoundID from Oracle is outdated!\"\n        );\n        require(timeStamp2 != 0, \"Timestamp == 0 !\");\n\n        return price2;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_11",
+                "Location": " if (price1 > price2) {\n            nowPrice = (price2 * 10000) / price1;\n        } else {\n            nowPrice = (price1 * 10000) / price2;\n        }\n\n        int256 decimals10 = int256(10**(18 - priceFeed1.decimals()));\n        nowPrice = nowPrice * decimals10;\n\n        return (\n            roundID1,\n            nowPrice / 1000000,\n            startedAt1,\n            timeStamp1,\n            answeredInRound1\n        );\n    }",
+                "Type": "Precision loss",
+                "Description": "The first multiplication is first divided by 1e6 and then re-multiplied by uint256 decimals = 10**(18-(priceFeed.decimals())); which leads to loss of precision. This behavior will make the relative price between the assets incorrect.",
+                "Repair": "Use a formula that transforms the relative price to 1e18, and avoid dividing and multiplying by different values that lead to loss of precision"
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    function divide(uint256 a, uint256 b) public pure returns (uint256) {\n        return a / b;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_12",
+                "Location": "divide function",
+                "Type": "Precision loss",
+                "Description": "This function performs a division operation between two unsigned integers. In Solidity, the division of integers results in the truncation of decimals, causing a potential loss of precision. For example, if `a = 1` and `b = 2`, the result would be `0` instead of `0.5`.",
+                "Repair": "To fix this issue, consider implementing a way to handle decimal values, such as using fixed-point libraries like ABDK Math 64.64 or adding a factor to scale up the result and manually handle precision. Be aware of potential overflow issues when scaling up."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    function average(uint256 a, uint256 b) public pure returns (uint256) {\n        return (a + b) / 2;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_13",
+                "Location": "average function",
+                "Type": "Precision loss",
+                "Description": "This function calculates the average of two numbers. When the sum of `a` and `b` is odd, the division by 2 results in truncation of decimals, causing a potential loss of precision. For example, if `a = 3` and `b = 2`, the result would be `2` instead of `2.5`.",
+                "Repair": "Consider scaling up the result to maintain precision, or use libraries that can handle decimal values. Be aware of potential overflow issues when scaling up."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract Token {\n    mapping(address => uint256) public balances;\n    uint256 public totalSupply;\n\n    function transfer(address to, uint256 value) public returns (bool) {\n        require(balances[msg.sender] >= value, \"Insufficient balance.\");\n\n        balances[msg.sender] -= value;\n        balances[to] += value;\n        return true;\n    }\n\n    function mint(uint256 value) public {\n        totalSupply += value;\n        balances[msg.sender] += value;\n    }\n\n    function burn(uint256 value) public {\n        require(balances[msg.sender] >= value, \"Insufficient balance.\");\n\n        totalSupply -= value;\n        balances[msg.sender] -= value;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_14",
+                "Location": "burn function",
+                "Type": "Precision loss",
+                "Description": "This function decreases the `totalSupply` and `balances[msg.sender]` by `value`. However, there's no check if `totalSupply` or `balances[msg.sender]` becomes a negative number due to underflow which is a type of precision loss.",
+                "Repair": "Use SafeMath library or Solidity 0.8.0 or later which has built-in overflow/underflow protection."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity >=0.4.22 <0.9.0;\n\ncontract PrecisionLoss {\n    uint public value;\n\n    function divide(uint256 numerator, uint256 denominator) public {\n        value = numerator / denominator;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_15",
+                "Location": "divide function",
+                "Type": "Precision loss",
+                "Description": "Due to the nature of integer division in Solidity, the fractional part is lost when dividing. This can lead to significant precision loss if not handled properly.",
+                "Repair": "Consider using a fixed point math library to handle fractional numbers, or multiply the numerator by a significant figure before performing division to retain more precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract PrecisionLoss {\n    function calculatePercentage(uint256 _value, uint256 _total) public pure returns (uint256) {\n        return _value * 100 / _total;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_16",
+                "Location": "calculatePercentage function",
+                "Type": "Precision loss",
+                "Description": "Due to the nature of integer division in Solidity, the fractional part is lost when calculating the percentage. This can lead to significant precision loss if not handled properly.",
+                "Repair": "Consider performing the division first and then multiplying by 100, or use a fixed-point library to handle fractional numbers."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract InterestCalculation {\n    uint256 public constant INTEREST_RATE = 105;\n    uint256 public constant RATE_BASE = 100;\n\n    function calculateInterest(uint256 principal) public pure returns (uint256) {\n        return (principal * INTEREST_RATE) / RATE_BASE;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_17",
+                "Location": "calculateInterest function",
+                "Type": "Precision loss",
+                "Description": "The integer division in the interest calculation can lead to precision loss for certain values of `principal`.",
+                "Repair": "Consider using a fixed-point arithmetic library or multiplying the principal by a higher factor before dividing to maintain precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract MyToken {\n    uint256 public totalSupply;\n    mapping(address => uint256) public balances;\n\n    function transfer(address to, uint256 amount) public returns (bool) {\n        uint256 fee = amount / 100;\n        balances[msg.sender] -= amount;\n        balances[to] += amount - fee;\n        totalSupply -= fee;\n        return true;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_18",
+                "Location": "transfer function",
+                "Type": "Precision loss",
+                "Description": "The integer division to calculate the fee can lead to precision loss when `amount` is less than 100.",
+                "Repair": "Consider using a fixed-point arithmetic library or multiply the amount by a higher factor before dividing to maintain precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract InterestBearing {\n    uint256 public totalSupply;\n    uint256 public totalInterestEarned;\n\n    function calculateInterest(address account) public view returns (uint256) {\n        uint256 accountBalance = balances[account];\n        uint256 interestEarned = (accountBalance * totalInterestEarned) / totalSupply;\n        return interestEarned;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_19",
+                "Location": "calculateInterest function",
+                "Type": "Precision loss",
+                "Description": "The calculation `(accountBalance * totalInterestEarned) / totalSupply` could lead to precision loss if `accountBalance * totalInterestEarned` is not an exact multiple of `totalSupply`.",
+                "Repair": "Consider using a fixed-point arithmetic library or multiplying the numerator by a larger factor before dividing to maintain precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract FeeDistributor {\n    uint256 public totalSupply;\n    mapping(address => uint256) public balances;\n    uint256 public totalFees;\n\n    function distributeFees() public {\n        uint256 feesPerToken = totalFees / totalSupply;\n        for (uint256 i = 0; i < totalSupply; i++) {\n            balances[addresses[i]] += feesPerToken;\n        }\n        totalFees = 0;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_20",
+                "Location": "distributeFees function",
+                "Type": "Precision loss",
+                "Description": "The calculation `totalFees / totalSupply` could lead to precision loss if `totalFees` is not an exact multiple of `totalSupply`.",
+                "Repair": "Consider using a fixed-point arithmetic library or multiplying the numerator by a larger factor before dividing to maintain precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\ncontract Staking {\n    uint256 public totalStakes;\n    mapping(address => uint256) public stakes;\n    uint256 public totalRewards;\n\n    function distributeRewards() public {\n        uint256 rewardsPerStake = totalRewards / totalStakes;\n        for (uint256 i = 0; i < totalStakes; i++) {\n            stakes[addresses[i]] += rewardsPerStake;\n        }\n        totalRewards = 0;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_21",
+                "Location": "distributeRewards function",
+                "Type": "Precision loss",
+                "Description": "The calculation `totalRewards / totalStakes` could lead to precision loss if `totalRewards` is not an exact multiple of `totalStakes`.",
+                "Repair": "Consider using a fixed-point arithmetic library or multiplying the numerator by a larger factor before dividing to maintain precision."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract TokenExchange {\n    ERC20 public tokenA;\n    ERC20 public tokenB;\n    uint256 public rate;\n\n    constructor(address _tokenA, address _tokenB, uint256 _rate) public {\n        tokenA = ERC20(_tokenA);\n        tokenB = ERC20(_tokenB);\n        rate = _rate;\n    }\n\n    function exchange(uint256 amountA) public {\n        require(tokenA.transferFrom(msg.sender, address(this), amountA), \"transferFrom failed\");\n        uint256 amountB = amountA * rate;\n        tokenB.transfer(msg.sender, amountB);\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_22",
+                "Location": "exchange function",
+                "Type": "Precision loss",
+                "Description": "The calculation `amountA * rate` could lead to precision loss if `rate` is not an integer or if the multiplication result is larger than what can be represented in `uint256`.",
+                "Repair": "Consider storing `rate` as a fixed-point number or using a library that supports fractional numbers."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12;\n\nimport \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";\n\ncontract StakeContract {\n    ERC20 public token;\n\n    uint256 public totalStaked;\n    mapping(address => uint256) public stakedBalance;\n\n    constructor(address _token) public {\n        token = ERC20(_token);\n    }\n\n    function stake(uint256 amount) public {\n        require(token.transferFrom(msg.sender, address(this), amount), \"transfer failed\");\n        totalStaked += amount;\n        stakedBalance[msg.sender] += amount;\n    }\n\n    function claimReward() public {\n        uint256 reward = calculateReward(msg.sender);\n        token.transfer(msg.sender, reward);\n    }\n\n    function calculateReward(address staker) public view returns (uint256) {\n        uint256 stakerBalance = stakedBalance[staker];\n        uint256 reward = (stakerBalance / totalStaked) * token.balanceOf(address(this));\n        return reward;\n    }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_23",
+                "Location": "calculateReward function",
+                "Type": "Precision loss",
+                "Description": "The calculation `(stakerBalance / totalStaked) * token.balanceOf(address(this))` could lead to precision loss as the division operation is likely to result in a number less than 1 which will be rounded down to 0.",
+                "Repair": "Consider multiplying before dividing to avoid precision loss, or use a library that supports fractional numbers."
+            }
+        ]
+    },
+    {
+        "Code": "contract MyContract { using SafeMath for uint256; uint256 public totalSupply; mapping(address => uint256) public balances; function transferFrom(address _from, address _to, uint256 _value) public returns (bool) { uint256 oldBalance = balances[_from]; uint256 newBalance = oldBalance.sub(_value); balances[_from] = newBalance; balances[_to] = balances[_to].add(_value); return true; } function burn(uint256 _value) public { balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply = totalSupply.sub(_value); } }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_24",
+                "Location": "function burn(uint256 _value)",
+                "Type": "Precision loss",
+                "Description": "The burn function reduces the balance of the sender and the total supply of tokens. However, this could potentially lead to precision loss if _value is not a multiple of 10.",
+                "Repair": "To fix the precision loss issue, we need to ensure that the _value to be burned is a multiple of 10."
+            }
+        ]
+    },
+    {
+        "Code": "pragma solidity ^0.6.12; import \"@openzeppelin/contracts/math/SafeMath.sol\"; contract PrecisionLoss { using SafeMath for uint256; mapping(address => uint256) public tokenBalances; function tokenRatio(address tokenA, address tokenB) public view returns (uint256) { return tokenBalances[tokenA].div(tokenBalances[tokenB]); } }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "precision_25",
+                "Location": "function tokenRatio(address tokenA, address tokenB)",
+                "Type": "Precision loss",
+                "Description": "This contract is vulnerable to precision loss. If the balance of tokenB is larger than the balance of tokenA, the result will be 0 due to the way integer division works in Solidity.",
+                "Repair": "To prevent this, we can return a fixed point number instead of an integer. We can multiply the numerator by a large number (like 1e18) before division and then handle the result as a fixed point number (with 18 decimal places)."
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity 0.8.7;\n contract FunWithNumbers {\n     uint  public tknPerEther = 10;\n     uint  public weiPerEther = 1e18;   \n     mapping(address => uint) public balance;\n     function buyToken() external payable {\n         uint token = msg.value/weiPerEther*tknPerEther;\n         balance[msg.sender] += token;\n     }\n     function sellTokens(uint tokens) public {\n         require(balance[msg.sender] >= tokens);\n         uint eth = tokens/tknPerEther;\n         balance[msg.sender] -= tokens;\n         payable (msg.sender).transfer(eth*weiPerEther);\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_26",
+	            "Location":"uint token = msg.value/weiPerEther*tknPerEther; in buyToken function",
+	            "Type":"Precision loss",
+	            "Description":" buyToken function, if the msg.value is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It is going to have a pretty major effect on the code. An effect like leaving the final calculation (multiplication) to be 0. ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity 0.8.7;\n contract FunWithNumbers {\n     uint  public tknPerEther = 10;\n     uint  public weiPerEther = 1e18;   \n     mapping(address => uint) public balance;\n     function buyToken() external payable {\n         uint token = msg.value/weiPerEther*tknPerEther;\n         balance[msg.sender] += token;\n     }\n     function sellTokens(uint tokens) public {\n         require(balance[msg.sender] >= tokens);\n         uint eth = tokens/tknPerEther;\n         balance[msg.sender] -= tokens;\n         payable (msg.sender).transfer(eth*weiPerEther);\n     }\n }",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_27",
+	            "Location":"uint eth = tokens/tknPerEther; in sellTokens function",
+	            "Type":"Precision loss",
+	            "Description":"in sellToken function, any token less than 10 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity >=0.8.7;\n contract ArithmeticOp { \n     function rightCalculation(uint256 number, uint256 cashback) public pure return(uint256) {\n         return number * cashback / 100;\n     }\n     function wordCalculation(uint256 number, uint256 cashback) public pure return(uint256) {\n         return number / 100 * cashback;\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_28",
+	            "Location":"return number / 100 * cashback; in wordCalculation function",
+	            "Type":"Precision loss",
+	            "Description":"wrongCalculation function is subject to precision loss vulnerability for the following reasons:The rightCalculation function is called with arguments 'number' to 50 and 'cashback' to 8. Since the multiplication operation precedes the division operation, the result of this operation is returned as 4. (50 * 8/100 → 400/100 → 4).However, the wrongCalculation function is called with argument \"number\" as 50 and \"cashback\" as argument 8. Since the division operation precedes the multiplication operation, the result of this operation is returned as 0 because the \"uint256\" variable cannot handle floating-point numbers as a result of the first division operation. (50/100 * 8 → 0.5 * 8 → 0).",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^=0.8.7;\n\ncontract VulnerableContract1 {\n    function riskyOperation1(uint256 itemCost, uint256 discount) public pure returns(uint256) {\n        return itemCost / 25 * discount;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_29",
+	            "Location":"return itemCost / 25 * discount; in ",
+	            "Type":"Precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^=0.8.7;\ncontract VulnerableContract2 {\n    function riskyOperation2(uint256 ticketPrice, uint256 rebate) public pure returns(uint256) {\n        return ticketPrice / 14 * rebate;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_30",
+	            "Location":"return ticketPrice / 14 * rebate;",
+	            "Type":"Precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points. ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity 0.8.7;\ncontract VulnerableContract3 {\n    function riskyOperation3(uint256 salary, uint256 tax) public pure returns(uint256) {\n        return salary / 50 * tax;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_31",
+	            "Location":"return salary / 50 * tax;",
+	            "Type":"Precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity >=0.8.8;\ncontract VulnerableContract25 {\n    function riskyOperation25(uint256 subscriptionFee, uint256 coupon) public pure returns(uint256) {\n        return subscriptionFee / 26 * coupon;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_32",
+	            "Location":"return subscriptionFee / 26 * coupon;",
+	            "Type":"Precision loss",
+	            "Description":"the core issue—division operation preceding the multiplication—remains the same. This order of operations can result in precision loss in Solidity due to the inability of the uint256 data type to handle decimal points.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\n contract Token2 {\n     mapping(address => uint) public balances;\n     uint public pricePerToken = 1000;\n     address public owner;\n \n     constructor() {\n         owner = msg.sender;\n     }\n \n     function buyTokens() external payable onlyOwner {\n         uint tokens = msg.value / pricePerToken;\n         balances[msg.sender] += tokens;\n     }\n \n     function sellTokens(uint tokens) external onlyOwner {\n         require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n         uint etherToSend = tokens / pricePerToken;\n         balances[msg.sender] -= tokens;\n         payable(msg.sender).transfer(etherToSend);\n     }\n \n     modifier onlyOwner() {\n         require(msg.sender == owner, \"Not the contract owner\");\n         _;\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_33",
+	            "Location":"uint tokens = msg.value / pricePerToken;",
+	            "Type":"Precision loss",
+	            "Description":"in buyTokens function, any msg.value less than 1000 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\n contract Token2 {\n     mapping(address => uint) public balances;\n     uint public pricePerToken = 1000;\n     address public owner;\n \n     constructor() {\n         owner = msg.sender;\n     }\n \n     function buyTokens() external payable onlyOwner {\n         uint tokens = msg.value / pricePerToken;\n         balances[msg.sender] += tokens;\n     }\n \n     function sellTokens(uint tokens) external onlyOwner {\n         require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n         uint etherToSend = tokens / pricePerToken;\n         balances[msg.sender] -= tokens;\n         payable(msg.sender).transfer(etherToSend);\n     }\n \n     modifier onlyOwner() {\n         require(msg.sender == owner, \"Not the contract owner\");\n         _;\n     }\n }",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_34",
+	            "Location":"uint etherToSend = tokens / pricePerToken;",
+	            "Type":"Precision loss",
+	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0  ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Token3 {\n    mapping(address => uint) public balances;\n    uint public pricePerToken = 1000;\n    uint public totalSupply = 1000000;\n\n    constructor() {\n        balances[msg.sender] = totalSupply;\n    }\n\n    function buyTokens() external payable {\n        uint tokens = msg.value / pricePerToken;\n        require(tokens <= balances[msg.sender], \"Not enough tokens in supply\");\n        balances[msg.sender] -= tokens;\n        balances[msg.sender] += tokens;\n    }\n\n    function sellTokens(uint tokens) external {\n        require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n        uint etherToSend = tokens / pricePerToken;\n        balances[msg.sender] -= tokens;\n        payable(msg.sender).transfer(etherToSend);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_35",
+	            "Location":"uint tokens = msg.value / pricePerToken;",
+	            "Type":"Precision loss",
+	            "Description":" in buyTokens function, any msg.value less than 1000 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Token3 {\n    mapping(address => uint) public balances;\n    uint public pricePerToken = 1000;\n    uint public totalSupply = 1000000;\n\n    constructor() {\n        balances[msg.sender] = totalSupply;\n    }\n\n    function buyTokens() external payable {\n        uint tokens = msg.value / pricePerToken;\n        require(tokens <= balances[msg.sender], \"Not enough tokens in supply\");\n        balances[msg.sender] -= tokens;\n        balances[msg.sender] += tokens;\n    }\n\n    function sellTokens(uint tokens) external {\n        require(balances[msg.sender] >= tokens, \"Not enough tokens\");\n        uint etherToSend = tokens / pricePerToken;\n        balances[msg.sender] -= tokens;\n        payable(msg.sender).transfer(etherToSend);\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_36",
+	            "Location":"uint etherToSend = tokens / pricePerToken;",
+	            "Type":"Precision loss",
+	            "Description":"in sellTokens function, any tokens less than 1000 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Art3 {\n    uint public artPrice = 10000; \n    mapping(address => uint) public artBalance;\n\n    function buyArt() external payable {\n        uint arts = msg.value / artPrice;\n        artBalance[msg.sender] += arts;\n    }\n\n    function returnArt(uint arts) external {\n        require(artBalance[msg.sender] >= arts);\n        uint refund = arts / artPrice;\n        artBalance[msg.sender] -= arts;\n        payable(msg.sender).transfer(refund);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_37",
+	            "Location":"uint arts = msg.value / artPrice;",
+	            "Type":"Precision loss",
+	            "Description":"in buyArt function, any msg.value less than 10000 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract Art3 {\n    uint public artPrice = 10000; \n    mapping(address => uint) public artBalance;\n\n    function buyArt() external payable {\n        uint arts = msg.value / artPrice;\n        artBalance[msg.sender] += arts;\n    }\n\n    function returnArt(uint arts) external {\n        require(artBalance[msg.sender] >= arts);\n        uint refund = arts / artPrice;\n        artBalance[msg.sender] -= arts;\n        payable(msg.sender).transfer(refund);\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_38",
+	            "Location":"uint refund = arts / artPrice;",
+	            "Type":"Precision loss",
+	            "Description":"in returnArt function, any tokens less than 10000 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract DiscountContract3 {\n    uint public discountPercent = 10; \n\n    function faultyDiscountCalculation(uint originalPrice) public view returns(uint) {\n        return originalPrice / 100 * discountPercent; \n    }\n\n    function properDiscountCalculation(uint originalPrice) public view returns(uint) {\n        return originalPrice * discountPercent / 100; \n    }\n\n    // Some other normal function\n    function adjustDiscountPercent(uint newPercent) public {\n        discountPercent = newPercent;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_39",
+	            "Location":"return originalPrice / 100 * discountPercent; ",
+	            "Type":"Precision loss",
+	            "Description":"in faultyDiscountCalculation function, any originalPrice less than 100 is going to result in 0 ",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract CommissionContract2 {\n    uint public commissionRate = 5; \n\n    function incorrectCommissionCalculation1(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16 * commissionRate; \n    }\n\n    function incorrectCommissionCalculation2(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16; \n    }\n\n    // Some other normal function\n    function setCommissionRate(uint newRate) public {\n        commissionRate = newRate;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_40",
+	            "Location":"return totalAmount / 16 * commissionRate; ",
+	            "Type":"Precision loss",
+	            "Description":"in incorrectCommissionCalculation1 function, any totalAmount less than 16 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract CommissionContract2 {\n    uint public commissionRate = 5; \n\n    function incorrectCommissionCalculation1(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16 * commissionRate; \n    }\n\n    function incorrectCommissionCalculation2(uint totalAmount) public view returns(uint) {\n        return totalAmount / 16; \n    }\n\n    // Some other normal function\n    function setCommissionRate(uint newRate) public {\n        commissionRate = newRate;\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_41",
+	            "Location":"return totalAmount / 16; ",
+	            "Type":"Precision loss",
+	            "Description":"in incorrectCommissionCalculation2 function, any totalAmount less than 16 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\n contract RoyaltyContract1 {\n    uint public royaltyPercent = 15;\n    mapping(address => uint) public balances;\n\n    function RoyaltyCalculation(uint revenue) public view returns(uint) {\n        return revenue / 10 * royaltyPercent;\n    }\n\n    function deposit() public payable {\n        balances[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(balances[msg.sender] >= amount);\n        balances[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function transfer(address recipient, uint amount) public {\n        require(balances[msg.sender] >= amount);\n        balances[msg.sender] -= amount;\n        balances[recipient] += amount;\n    }\n\n    function setRoyaltyPercent(uint newPercent) public {\n        royaltyPercent = newPercent;\n    }\n\n    function getBalance() public view returns (uint) {\n        return balances[msg.sender];\n    }\n\n    function getTotalBalance() public view returns (uint) {\n        return address(this).balance;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_42",
+	            "Location":"return revenue / 10 * royaltyPercent;",
+	            "Type":"Precision loss",
+	            "Description":"in RoyaltyCalculation function, any revenue less than 10 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.8;\ncontract RentContract2 {\n    uint public discountPercent = 5;\n    mapping(address => uint) public rentBalance;\n    function payRent(uint amount) public payable {\n        require(msg.value == amount);\n        rentBalance[msg.sender] += amount;\n    }\n\n    function refundRent(uint amount) public {\n        require(rentBalance[msg.sender] >= amount);\n        rentBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function checkRentBalance() public view returns(uint) {\n        return rentBalance[msg.sender];\n    }\n    function DiscountCalculation(uint totalRent) public view returns(uint) {\n        return totalRent / 155 * discountPercent;\n    }\n    function setDiscountPercent(uint newPercent) public {\n        discountPercent = newPercent;\n    }\n\n    function transferRent(address recipient, uint amount) public {\n        require(rentBalance[msg.sender] >= amount);\n        rentBalance[msg.sender] -= amount;\n        rentBalance[recipient] += amount;\n    }\n\n    function totalRentBalance() public view returns(uint) {\n        return address(this).balance;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_43",
+	            "Location":"return totalRent / 155 * discountPercent;",
+	            "Type":"Precision loss",
+	            "Description":"in DiscountCalculation function, any totalRent less than 155 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\n contract EmployeeSalary3 {\n     uint public taxPercent = 30;\n     mapping(address => uint) public employeeSalaries;\n     // Some other normal functions\n     function setSalary(address employee, uint salary) public {\n         employeeSalaries[employee] = salary;\n     }\n \n     function getSalary(address employee) public view returns (uint) {\n         return employeeSalaries[employee];\n     }\n \n     function increaseSalary(address employee, uint increment) public {\n         employeeSalaries[employee] += increment;\n     }\n \n     function decreaseSalary(address employee, uint decrement) public {\n         require(employeeSalaries[employee] > decrement, \"Decrement cannot be more than current salary.\");\n         employeeSalaries[employee] -= decrement;\n     }\n \n     function changeTaxPercent(uint newPercent) public {\n         taxPercent = newPercent;\n     }\n     function TaxCalculation(uint grossSalary) public view returns(uint) {\n         tmp_num = grossSalary / 80 * taxPercent;\n         return tmp_num\n     }\n     function getTotalSalaries() public view returns (uint total) {\n         for (uint i = 0; i < employees.length; i++) {\n             total += employeeSalaries[employees[i]];\n         }\n     }\n }",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_44",
+	            "Location":"tmp_num = grossSalary / 80 * taxPercent;",
+	            "Type":"Precision loss",
+	            "Description":"in TaxCalculation function, any grossSalary less than 80 is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract RealEstateContract {\n    uint public propertyTokenPerEther = 5;\n    uint public weiPerEther = 1e18;\n    mapping(address => uint) public ownershipBalance;\n\n    function acquireProperty() external payable {\n        uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther;\n        ownershipBalance[msg.sender] += propertyToken;\n    }\n\n    function liquidateProperty(uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens);\n        uint eth = propertyTokens / propertyTokenPerEther;\n        ownershipBalance[msg.sender] -= propertyTokens;\n        payable (msg.sender).transfer(eth * weiPerEther);\n    }\n\n    // Additional normal functions\n    function adjustPropertyTokenPerEther(uint newRate) public {\n        propertyTokenPerEther = newRate;\n    }\n\n    function getPropertyOwnershipBalance(address owner) public view returns(uint) {\n        return ownershipBalance[owner];\n    }\n\n    function transferProperty(address to, uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= propertyTokens;\n        ownershipBalance[to] += propertyTokens;\n    }\n\n    function propertyTokensInCirculation() public view returns(uint total) {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            total += ownershipBalance[propertyOwners[i]];\n        }\n    }\n\n    function addToPropertyOwners(address owner) public {\n        propertyOwners.push(owner);\n    }\n\n    function removePropertyOwner(address owner) public {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            if (propertyOwners[i] == owner) {\n                propertyOwners[i] = propertyOwners[propertyOwners.length - 1];\n                propertyOwners.pop();\n                break;\n            }\n        }\n    }\n\n    function getPropertyOwners() public view returns(address[] memory) {\n        return propertyOwners;\n    }\n\n    function deposit() public payable {\n        ownershipBalance[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(ownershipBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_45",
+	            "Location":"uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther; in acquireProperty function",
+	            "Type":"Precision loss",
+	            "Description":"in acquireProperty function, any msg.value less than weiPerEther is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\ncontract RealEstateContract {\n    uint public propertyTokenPerEther = 5;\n    uint public weiPerEther = 1e18;\n    mapping(address => uint) public ownershipBalance;\n\n    function acquireProperty() external payable {\n        uint propertyToken = msg.value/weiPerEther * propertyTokenPerEther;\n        ownershipBalance[msg.sender] += propertyToken;\n    }\n\n    function liquidateProperty(uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens);\n        uint eth = propertyTokens / propertyTokenPerEther;\n        ownershipBalance[msg.sender] -= propertyTokens;\n        payable (msg.sender).transfer(eth * weiPerEther);\n    }\n\n    // Additional normal functions\n    function adjustPropertyTokenPerEther(uint newRate) public {\n        propertyTokenPerEther = newRate;\n    }\n\n    function getPropertyOwnershipBalance(address owner) public view returns(uint) {\n        return ownershipBalance[owner];\n    }\n\n    function transferProperty(address to, uint propertyTokens) public {\n        require(ownershipBalance[msg.sender] >= propertyTokens, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= propertyTokens;\n        ownershipBalance[to] += propertyTokens;\n    }\n\n    function propertyTokensInCirculation() public view returns(uint total) {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            total += ownershipBalance[propertyOwners[i]];\n        }\n    }\n\n    function addToPropertyOwners(address owner) public {\n        propertyOwners.push(owner);\n    }\n\n    function removePropertyOwner(address owner) public {\n        for (uint i = 0; i < propertyOwners.length; i++) {\n            if (propertyOwners[i] == owner) {\n                propertyOwners[i] = propertyOwners[propertyOwners.length - 1];\n                propertyOwners.pop();\n                break;\n            }\n        }\n    }\n\n    function getPropertyOwners() public view returns(address[] memory) {\n        return propertyOwners;\n    }\n\n    function deposit() public payable {\n        ownershipBalance[msg.sender] += msg.value;\n    }\n\n    function withdraw(uint amount) public {\n        require(ownershipBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        ownershipBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_46",
+	            "Location":"uint eth = propertyTokens / propertyTokenPerEther; in liquidateProperty function",
+	            "Type":"Precision loss",
+	            "Description":"in liquidateProperty function, any propertyTokens less than propertyTokenPerEther is going to result in 0",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract CryptoExchangeContract {\n    uint public cryptoTokenPerUSD = 20;\n    uint public weiPerEther = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public walletBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function buyCryptoToken() external payable {\n        uint ethPrice = getLatestPrice();\n        uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD);\n        walletBalance[msg.sender] += cryptoToken;\n    }\n\n    function sellCryptoToken(uint cryptoTokens) public {\n        require(walletBalance[msg.sender] >= cryptoTokens);\n        uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice();\n        walletBalance[msg.sender] -= cryptoTokens;\n        payable(msg.sender).transfer(eth);\n    }\n\n    function getLatestPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function setCryptoTokenPerUSD(uint newRate) public {\n        cryptoTokenPerUSD = newRate;\n    }\n\n    function getWalletBalance(address walletAddress) public view returns (uint) {\n        return walletBalance[walletAddress];\n    }\n\n    function transferCryptoTokens(address to, uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        walletBalance[to] += amount;\n    }\n\n    function depositFunds() public payable {\n        walletBalance[msg.sender] += msg.value;\n    }\n\n    function withdrawFunds(uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalCryptoTokens() public view returns (uint total) {\n        for (uint i = 0; i < walletOwners.length; i++) {\n            total += walletBalance[walletOwners[i]];\n        }\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_47",
+	            "Location":"uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD); in buyCryptoToken function",
+	            "Type":"Precision loss",
+	            "Description":"Now, if the amount of ether sent to the buyCryptoToken function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract CryptoExchangeContract {\n    uint public cryptoTokenPerUSD = 20;\n    uint public weiPerEther = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public walletBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function buyCryptoToken() external payable {\n        uint ethPrice = getLatestPrice();\n        uint cryptoToken = (msg.value / weiPerEther) * (ethPrice / cryptoTokenPerUSD);\n        walletBalance[msg.sender] += cryptoToken;\n    }\n\n    function sellCryptoToken(uint cryptoTokens) public {\n        require(walletBalance[msg.sender] >= cryptoTokens);\n        uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice();\n        walletBalance[msg.sender] -= cryptoTokens;\n        payable(msg.sender).transfer(eth);\n    }\n\n    function getLatestPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function setCryptoTokenPerUSD(uint newRate) public {\n        cryptoTokenPerUSD = newRate;\n    }\n\n    function getWalletBalance(address walletAddress) public view returns (uint) {\n        return walletBalance[walletAddress];\n    }\n\n    function transferCryptoTokens(address to, uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        walletBalance[to] += amount;\n    }\n\n    function depositFunds() public payable {\n        walletBalance[msg.sender] += msg.value;\n    }\n\n    function withdrawFunds(uint amount) public {\n        require(walletBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        walletBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalCryptoTokens() public view returns (uint total) {\n        for (uint i = 0; i < walletOwners.length; i++) {\n            total += walletBalance[walletOwners[i]];\n        }\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_48",
+	            "Location":"uint eth = (cryptoTokens / cryptoTokenPerUSD) * getLatestPrice(); in sellCryptoToken function",
+	            "Type":"Precision loss",
+	            "Description":" in the sellCryptoToken function, any number of tokens less than cryptoTokenPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract DeFiContract {\n    uint public digitalAssetPerUSD = 20;\n    uint public weiPerEth = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public userBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function getCurrentPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function updateDigitalAssetPerUSD(uint newRate) public {\n        digitalAssetPerUSD = newRate;\n    }\n\n    function getAccountBalance(address accountAddress) public view returns (uint) {\n        return userBalance[accountAddress];\n    }\n    function redeemDigitalAsset(uint digitalAssets) public {\n        require(userBalance[msg.sender] >= digitalAssets);\n        uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice();\n        userBalance[msg.sender] -= digitalAssets;\n        payable(msg.sender).transfer(eth);\n    }\n    function transferDigitalAssets(address to, uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        userBalance[to] += amount;\n    }\n\n    function fundAccount() public payable {\n        userBalance[msg.sender] += msg.value;\n    }\n    function purchaseDigitalAsset() external payable {\n        uint ethPrice = getCurrentPrice();\n        uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD);\n        userBalance[msg.sender] += digitalAsset;\n    }\n    function withdrawFromAccount(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalDigitalAssets() public view returns (uint total) {\n        for (uint i = 0; i < accountOwners.length; i++) {\n            total += userBalance[accountOwners[i]];\n        }\n    }\n\n    function burnDigitalAssets(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n    }\n\n    function mintDigitalAssets(uint amount) public {\n        userBalance[msg.sender] += amount;\n    }\n}",
+	    "VulnerabilityDesc":[
+            {
+                "Name":"precision loss_49",
+	            "Location":"uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD); in purchaseDigitalAsset function",
+	            "Type":"Precision loss",
+	            "Description":"Now, if the amount of ether sent to the purchaseDigitalAsset function is less than 1 ether, no matter how close to 1 ether it is, the division will result in 0. It will have a significant effect on the code, causing the final calculation (multiplication) to be 0. This represents a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+	    "Code":"pragma solidity ^0.8.7;\nimport \"@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol\";\ncontract DeFiContract {\n    uint public digitalAssetPerUSD = 20;\n    uint public weiPerEth = 1e18;\n    AggregatorV3Interface internal priceFeed;\n    mapping(address => uint) public userBalance;\n\n    /**\n     * Network: Kovan\n     * Aggregator: ETH/USD\n     * Address: 0x9326BFA02ADD2366b30bacB125260Af641031331\n     */\n    constructor() {\n        priceFeed = AggregatorV3Interface(0x9326BFA02ADD2366b30bacB125260Af641031331);\n    }\n\n    function getCurrentPrice() public view returns (uint) {\n        (\n            uint80 roundID, \n            int price,\n            uint startedAt,\n            uint timeStamp,\n            uint80 answeredInRound\n        ) = priceFeed.latestRoundData();\n        return uint(price);\n    }\n\n    // Additional normal functions\n    function updateDigitalAssetPerUSD(uint newRate) public {\n        digitalAssetPerUSD = newRate;\n    }\n\n    function getAccountBalance(address accountAddress) public view returns (uint) {\n        return userBalance[accountAddress];\n    }\n    function redeemDigitalAsset(uint digitalAssets) public {\n        require(userBalance[msg.sender] >= digitalAssets);\n        uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice();\n        userBalance[msg.sender] -= digitalAssets;\n        payable(msg.sender).transfer(eth);\n    }\n    function transferDigitalAssets(address to, uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        userBalance[to] += amount;\n    }\n\n    function fundAccount() public payable {\n        userBalance[msg.sender] += msg.value;\n    }\n    function purchaseDigitalAsset() external payable {\n        uint ethPrice = getCurrentPrice();\n        uint digitalAsset = (msg.value / weiPerEth) * (ethPrice / digitalAssetPerUSD);\n        userBalance[msg.sender] += digitalAsset;\n    }\n    function withdrawFromAccount(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n    }\n\n    function totalDigitalAssets() public view returns (uint total) {\n        for (uint i = 0; i < accountOwners.length; i++) {\n            total += userBalance[accountOwners[i]];\n        }\n    }\n\n    function burnDigitalAssets(uint amount) public {\n        require(userBalance[msg.sender] >= amount, \"Insufficient balance.\");\n        userBalance[msg.sender] -= amount;\n    }\n\n    function mintDigitalAssets(uint amount) public {\n        userBalance[msg.sender] += amount;\n    }\n}",
+	    "VulnerabilityDesc":[
+			{
+                "Name":"precision loss_50",
+	            "Location":"uint256 eth = (digitalAssets / digitalAssetPerUSD) * getCurrentPrice(); in redeemDigitalAsset function",
+	            "Type":"Precision loss",
+	            "Description":"in the redeemDigitalAsset function, any number of tokens less than digitalAssetPerUSD will result in 0. This is due to the division operation preceding the multiplication, causing a loss of precision vulnerability.",
+	            "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stake(uint256_tokenId,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup = 1ockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    uint256 lastIndex = userStakes[msg.sender].length.sub(1); \r\n    Stake storage __stake = userStakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    stake.duration=_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration*28800); \r\n    __stake.end=block.number.add(_lockup.duration*10); \r\n    __stake.tokenIds.push(_tokenId);\r\n    __stake.tokenIndex[_tokenId] =__stake.tokenIds.length.sub(1); \r\n    __stake.amount=1;\r\n    __stake.rewardDebt = _lockup.accTokenPerShare; \r\n\r\n    _lockup.totalstaked =_lockup.totalstaked.add(1); \r\n    tokenIndexInStakes[_tokenId] = lastIndex;\r\n    __stake(msg.sender,_tokenId,_type); \r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare;",
+                "Type":"Precision loss",
+                "Description":"The stake functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stakeBatch(uint256[] memory _tokenIds,uint8_type) external { \r\n\trequire(_type<lockups.length,\"Lockup Not found\");\r\n\tclaimReward();\r\n\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userStakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userStakes[msg.sender].length.sub(1); \r\n    Stake storage_stake = userstakes[msg.sender][lastIndex]; \r\n    __stake.stakeType=_type;\r\n    __stake.duration =_lockup.duration;\r\n    \/\/_stake.end-block.number.add(_lockup.duration *28800); \r\n    __stake.end = block.number.add(_lockup.duration * 10); \r\n    for (uint i =0;i <_tokenIds.length;i++){\r\n\t\tuint256 _tokenId = _tokenIds[i]; \r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] =__stake.tokenIds.length,sub(1); \r\n        __stake.amount=_stake.amount.add(1);\r\n\r\n        _lockup.totalStaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        _stake(msg.sender, _tokenId, _type);\r\n    }\r\n    __stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); \r\n",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _1ockup.accTokenPerShare.mul(_tokenIds.length); ",
+                "Type":"Precision loss",
+                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function stakeAll(uint8 _type) external {\r\n    require(_type<lockups.length,\"Lockup Not found\"); \r\n\tclaimReward();\r\n    Lockup storage _lockup =lockups[_type]; \r\n    userstakes[msg.sender].push();\r\n    \r\n    uint256 lastIndex=userstakes[msg.sender].1ength.sub(1);\r\n    Stake storage __stake=userStakes[nsg.sender][1astIndex]; \r\n    __stake.stakeType = _type;\r\n    __stake.duration = _lockup.duration;\r\n    \/\/_stake.end=block.number.add(_lockup.duration\"28800); \r\n    __stake.end-block.number.add(_lockup.duration10);\r\n\r\n    uint256 balance = stakingNFT.balanceof(msg.sender); \r\n    for (uint i = e;i<balance; i++) {\r\n\t\tuint256 _tokenId=stakingNFT.tokenofOwnerByIndex(msg.sender,balance - 1-1);\r\n        __stake.tokenIds.push(_tokenId);\r\n        __stake.tokenIndex[_tokenId] = _stake.tokenIds.length.sub(1); \r\n        __stake.amount=__stake.amount.add(1);\r\n        \r\n        _lockup.totalstaked = _lockup.totalStaked.add(1); \r\n        tokenIndexInStakes[_tokenId] = lastIndex;\r\n        \r\n        _stake(msg.sender,_tokenId,_type);\r\n    }\r\n    __stake.rewardDebt = _lockup.accTokenPerShare.mul(balance); \r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/NftStaking_202201251000.pdf/Precision is not handled correctly",
+                "Location":"__stake.rewardDebt = _lockup.accTokenPerShare.mul(balance);",
+                "Type":"Precision loss",
+                "Description":"The stakeBatch functions do not correctly handle the precision of rewardDebt,which will cause abnormal reward processing and make the contract unworkable.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"uint currentBlock =block.number >=_activity.startBlock.add(_activity.totalRewardBlock)?_activity.startBlock.add(_activity.totalRewardBlock): block.number; \r\nuint crossBlock =currentBlock>_pool.lastRewardBlock?currentBlock.sub(_pool.lastRewardBlock):0;\r\n\r\nif (crossBlock > 0) {\r\n\r\n    uint accReward = crossBlock.mul(_activity.rewardPerBlock);\r\n\r\n    pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); \r\n    pool.1astkewardBlock = currentBlock;\r\n\r\n}",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/W3Swap-Farm_202207092336.pdf/Rewards may ",
+                "Location":"pool.accRewardPerStake-_pool.accRewardPerStake.add(accReward.mul(rewardTokenDeciaml[_pool.rewardToken]).div(_pool.totalSupply)); ",
+                "Type":"Precision loss",
+                "Description":"In the MultiStaker contract, since the precision of the reward token is used to calculate the reward, if the precision of the reward token is smaller than the precision of the stake token, the user's reward may be zero",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"function addTotalSupply(uint256 _amount) public onlyowner {\r\n\ttotalSupply = totalSupply.add(_amount.mul(decim));\r\n    balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/WFEx_202108051800.pdf/Logic problems",
+                "Location":"balance[owner] = balance[owner].add(_amount); \r\n    emit AddSupply(_amount);\r\n} ",
+                "Type":"Precision loss",
+                "Description":"When calling the addTotalSupply function, the precision should be added when calculating the balance of the owner.",
+                "Repair":""
+            }
+        ]
+    },
+    {
+        "Code":"uint balance1Adjusted;\r\n\r\n\/\/ Dynamic fees \r\nif(stable){\r\n    balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4));\r\nelse{\r\n    balance0Adjusted = balancee.mul(10000).sub(amounteIn.mul(25)); \/\/ 25--0.25% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(25));\r\n}\r\n\/\/ The curve,either x3y+y3x for stable pools,or x\"y for volatile pools\r\nrequire(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
+        "VulnerabilityDesc":[
+            {
+                "Name":"/Beosin/Whale Loans_202206281847.pdf/Incorrect k value judgment",
+                "Location":"balance0Adjusted = balance0.mul(10000).sub(amounteIn.mul(4));\/\/4--0.84% fee \r\n    balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(4)); require(_k(balanceθAdjusted,balance1Adjusted)>_k(_reservee,_reserve1).mul(10000**2),'Whaleswap:K');",
+                "Type":"Precision loss",
+                "Description":"In the swap function of the WhaleswapPair contract, when making the k-value judgment, the k-value check will pass after borrowing a large amount of funds from the pair contract, as balance0Adjusted and balance1Adjusted have undergone precision expansion before calculating the k-value, while _reserve0 and _reserve1 have not undergone precision expansion before calculating the k-value.",
+                "Repair":"It is recommended that _reserve0 and _reserve1 perform precision expansion before calculating the k value"
+            }
+        ]
+    }
+]
