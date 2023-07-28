@@ -41,5 +41,6 @@ file_names = ["bug_erroneous_accounting.json",
               "bug_ID-related violations.json",
               "bug_precision.json",
               "bug_price_orcal.json",
-              "bug_reentrancy.json"]
+              "bug_reentrancy.json",
+              "bug_fake_deposit.json"]
 process_files(file_names)
