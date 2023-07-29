@@ -12,26 +12,26 @@ completion_start = " "
 completion_end = "###\n###"
 
 
-FINE_TUNED_MODEL_4A = "davinci:ft-antchainopenlab-2023-07-26-16-47-48" #4A
+FINE_TUNED_MODEL_5B = "davinci:ft-antchainopenlab-2023-07-28-19-07-33" #5B
 
 vul_erroneous_accounting_file = "vul_erroneous_accounting.json"
 vul_fake_deposit_file = "vul_fake_deposit.json"
-vul_ID_related_violations_file = "vul_ID-related violations.json"
+vul_ID_related_violations_file = "vul_ID_related_violations.json"
 vul_precision_file = "vul_precision.json"
 vul_price_orcal_file = "vul_price_orcal.json"
 vul_reentrancy_file = "vul_reentrancy.json"
 
 
-vul_erroneous_accounting_result = "result/vul_erroneous_accounting_result_4A"
-vul_fake_deposit_result = "result/vul_fake_deposit_result_4A"
-vul_ID_related_violations_result = "result/vul_ID_related_violations_result_4A"
-vul_precision_result = "result/vul_precision_result_4A"
-vul_price_orcal_result = "result/vul_price_orcal_result_4A"
-vul_reentrancy_result = "result/vul_reentrancy_result_4A"
+vul_erroneous_accounting_result = "result/vul_erroneous_accounting_result_5B"
+vul_fake_deposit_result = "result/vul_fake_deposit_result_5B"
+vul_ID_related_violations_result = "result/vul_ID_related_violations_result_5B"
+vul_precision_result = "result/vul_precision_result_5B"
+vul_price_orcal_result = "result/vul_price_orcal_result_5B"
+vul_reentrancy_result = "result/vul_reentrancy_result_5B"
 
 
-ben_valid_file_4A = "ben_valid_prompt.json"
-ben_result_file =  "result/ben_result_4A"
+ben_valid_file_5B = "ben_valid_prompt.json"
+ben_result_file =  "result/ben_result_5B"
 
 
 
@@ -69,6 +69,7 @@ def fineTune(FINE_TUNED_MODEL , testCase , testCaseNum, file , prompt_start , te
                     prompt= prompt_start + PROMPT,
                     stop=completion_end,
                     temperature= temperature,
+                    max_tokens=200,
                     # 问一次生成几个completion
                     n = 5
                 )
@@ -105,16 +106,16 @@ if __name__ == "__main__":
     openai.api_key = "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"
 
 
-    # 测试4A
+    # 测试5B
     # 恶性样本测试
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_precision_file, vul_precision_result , 5)
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_price_orcal_file, vul_price_orcal_result, 5)
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_erroneous_accounting_file, vul_erroneous_accounting_result, 5)
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_ID_related_violations_file, vul_ID_related_violations_result, 5)
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_fake_deposit_file, vul_fake_deposit_result, 5)
-    # run(FINE_TUNED_MODEL_4A, prompt_start_0, vul_reentrancy_file, vul_reentrancy_result, 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_precision_file, vul_precision_result , 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_price_orcal_file, vul_price_orcal_result, 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_erroneous_accounting_file, vul_erroneous_accounting_result, 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_ID_related_violations_file, vul_ID_related_violations_result, 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_fake_deposit_file, vul_fake_deposit_result, 5)
+    # run(FINE_TUNED_MODEL_5B, prompt_start_0, vul_reentrancy_file, vul_reentrancy_result, 5)
 
 
     # 良性样本测试
-    run(FINE_TUNED_MODEL_4A, prompt_start_0, ben_valid_file_4A, ben_result_file , 5)
+    run(FINE_TUNED_MODEL_5B, prompt_start_0, ben_valid_file_5B, ben_result_file , 5)
     

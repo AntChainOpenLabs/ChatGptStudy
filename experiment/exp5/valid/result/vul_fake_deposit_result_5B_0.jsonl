@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Precision loss.The vulnerability is in function transfer and funtion transferfrom.Sandwich attack.A malicious actor can place a series of ERC-20 tokens as the first and second tokens in a transfer, with a value of 1. This will result in a loss of precision for the amount to be transferred, potentially leading to a loss of funds for the user.",
+        "yes,Precision loss.The vulnerability is in function transfer and funtion transferfrom.Sandwich attack.A malicious actor can place a series of ERC-20 tokens as the first and second tokens in a transfer, with a value of 1. This will result in a loss of precision for the amount to be transferred, potentially leading to a loss of funds for the user.",
+        "yes,Precision loss.The vulnerability is in function transfer and funtion transferfrom.Sandwich attack.A malicious actor can place a series of ERC-20 tokens as the first and second tokens in a transfer, with a value of 1. This will result in a loss of precision for the amount to be transferred, potentially leading to a loss of funds for the user.",
+        "yes,Precision loss.The vulnerability is in function transfer and funtion transferfrom.Sandwich attack.A malicious actor can place a series of ERC-20 tokens as the first and second tokens in a transfer, with a value of 1. This will result in a loss of precision for the amount to be transferred, potentially leading to a loss of funds for the user.",
+        "yes,Precision loss.The vulnerability is in function transfer and funtion transferfrom.Sandwich attack.A malicious actor can place a series of ERC-20 tokens as the first and second tokens in a transfer, with a value of 1. This will result in a loss of precision for the amount to be transferred, potentially leading to a loss of funds for the user."
+    ],
+    "1": [
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens"
+    ],
+    "2": [
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens"
+    ],
+    "3": [
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens",
+        "yes,fake deposit.The vulnerability is in function transfer and funtion transferfrom.Fake deposit means that a token contract\u2019s standard interfaces can be invoked but it does not transfer tokens"
+    ],
+    "4": [
+        "yes,Reentrancy.The vulnerability is in function transfer and funtion transferfrom.In the Papillon token contract, there is a reentrancy vulnerability in the functions transfer and transferFrom. If an attacker calls either of these functions and also triggers the fallback function in the recipient contract, they can potentially steal tokens from the sender.",
+        "yes,Reentrancy.The vulnerability is in function transfer and funtion transferfrom.In the standard token contract, there is a reentrancy vulnerability in the functions transfer and transferFrom. Before updating the balances, the token contract calls the receiving contract. If the receiving contract calls back into the token contract, it could potentially transfer more tokens than intended.",
+        "yes,Reentrancy.The vulnerability is in function transfer and funtion transferfrom.In the Papillon token contract, there is a reentrancy vulnerability in the functions transfer and transferFrom. If an attacker calls either of these functions and also triggers the fallback function in the recipient contract, they can potentially steal tokens from the sender.",
+        "yes,Reentrancy.The vulnerability is in function transfer and funtion transferfrom.In the standard token contract, there is a reentrancy vulnerability in the functions transfer and transferfrom. If an attacker calls either of these functions while the balance update is still pending (ie. before the function returns), they can potentially steal the tokens.",
+        "yes,Reentrancy.The vulnerability is in function transfer and funtion transferfrom.In the standard token contract, there is a reentrancy vulnerability in the functions transfer and transferFrom. If an attacker calls either of these functions while the balance update in the corresponding function is still pending (i.e., before the function returns), the attacker's balance will be increased instead of the intended recipient's."
+    ]
+}
