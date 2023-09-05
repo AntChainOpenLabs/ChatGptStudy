@@ -40,7 +40,7 @@ def deduplicate_prompts(input_file, output_file):
 # 用法示例
 # input_file = 'vul_raw_all_prompt.json'
 # output_file = 'vul_regular_all_prompt.json'
-input_file = 'ben_valid_prompt.json'
+input_file = 'ben_raw_all_prompt.json'
 output_file = 'tmp.json'
 
 
