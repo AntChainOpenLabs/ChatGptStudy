@@ -1,0 +1,62 @@
+[
+        {
+        "code": "contract HoneyPot {\n    mapping (address => uint) public balances;\n    bool Mutex = false;\n   modifier nonReentrant() {\n      require(Mutex == false, \"Reentrant call\");\n      Mutex = true;\n   \n      _;\n       \n      Mutex = false;\n    }\n    function get() nonReentrant{\n    if (!msg.sender.call.value(balances[msg.sender])()) { throw; }\n    balances[msg.sender] = 0;\n    }\n   }",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Ben_Reentrancy_201",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract MultiplicatorX3 {\n\n bool Mutex = false;\nmodifier nonReentrant() {\n   require(Mutex == false, \"Reentrant call\");\n   Mutex = true;\n\n   _;\n    \n   Mutex = false;\n }\nfunction Command(address adr, bytes data) nonReentrant payable public {\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Ben_Reentrancy_202",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract NBUNIERC20 {\n\n mapping(address => uint256) bool Mutex = false;\n   modifier nonReentrant() {\n      require(Mutex == false, \"Reentrant call\");\n      Mutex = true;\n   \n      _;\n       \n      Mutex = false;\n    }\nprivate balances;\n\n function emergencyDrain24hAfterLiquidityGenerationEventIsDone() public nonReentrant {\n bool success = msg.sender.call.value(address(this).balance)();\n balances[msg.sender] = balances[address(this)];\n balances[address(this)] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Ben_Reentrancy_203",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract Private_Bank {\n\n bool Mutex = false;\n   modifier nonReentrant() {\n      require(Mutex == false, \"Reentrant call\");\n      Mutex = true;\n   \n      _;\n       \n      Mutex = false;\n    }\nmapping (address => uint) public balances;\n\n function CashOut(uint _am)nonReentrant {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Ben_Reentrancy_204",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract Reentrance {\n mapping (address => uint) userBalance;\n\nbool Mutex = false;\n   modifier nonReentrant() {\n      require(Mutex == false, \"Reentrant call\");\n      Mutex = true;\n   \n      _;\n       \n      Mutex = false;\n    }\n function withdrawBalance() nonReentrant{\n if( !(msg.sender.call.value(userBalance[msg.sender])()) ){ throw; }\n userBalance[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Ben_Reentrancy_205",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    }
+]

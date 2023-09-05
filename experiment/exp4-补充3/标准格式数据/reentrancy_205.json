@@ -1,0 +1,2462 @@
+[
+    {
+        "Code": "\ncontract Balancer {\n\n function executeTransaction(address to, uint256 value, bytes data) public returns (bool) {\n return to.call.value(value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_1",
+                "Location": "function executeTransaction(address to, uint256 value, bytes data) public returns (bool) {\n return to.call.value(value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Balancer {\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function executeTransaction(address to, uint256 value, bytes data) public onlyOwner returns (bool) {\n return to.call.value(value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_2",
+                "Location": "function executeTransaction(address to, uint256 value, bytes data) public onlyOwner returns (bool) {\n return to.call.value(value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ParcelXToken {\n\n function execute(address _to, uint256 _value, bytes _data) external returns (bool){\n require(_to != address(0));\n return _to.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_3",
+                "Location": "function execute(address _to, uint256 _value, bytes _data) external returns (bool){\n require(_to != address(0));\n return _to.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ParcelXToken {\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function execute(address _to, uint256 _value, bytes _data) external onlyOwner returns (bool){\n require(_to != address(0));\n return _to.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_4",
+                "Location": "function execute(address _to, uint256 _value, bytes _data) external onlyOwner returns (bool){\n require(_to != address(0));\n return _to.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FsTKerWallet {\n\n function callContract(address to, bytes data) public payable returns (bool) {\n require(to.call.value(msg.value)(data));\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_5",
+                "Location": "function callContract(address to, bytes data) public payable returns (bool) {\n require(to.call.value(msg.value)(data));\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FsTKerWallet {\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function callContract(address to, bytes data) public onlyOwner payable returns (bool) {\n require(to.call.value(msg.value)(data));\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_6",
+                "Location": "function callContract(address to, bytes data) public onlyOwner payable returns (bool) {\n require(to.call.value(msg.value)(data));\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ICOBuyer {\n\n address public sale;\n\n function buy() {\n require(sale.call.value(this.balance)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_7",
+                "Location": "function buy() {\n require(sale.call.value(this.balance)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ICOBuyer {\n\n address public sale;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function buy() onlyOwner {\n require(sale.call.value(this.balance)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_8",
+                "Location": "function buy() onlyOwner {\n require(sale.call.value(this.balance)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokensGate {\n\n function transferEth(address walletToTransfer, uint256 weiAmount) payable public {\n require(address(this).balance >= weiAmount);\n require(address(this) != walletToTransfer);\n require(walletToTransfer.call.value(weiAmount)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_9",
+                "Location": "function transferEth(address walletToTransfer, uint256 weiAmount) payable public {\n require(address(this).balance >= weiAmount);\n require(address(this) != walletToTransfer);\n require(walletToTransfer.call.value(weiAmount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ERC827Token {\n\n function approveAndCall(address _spender, uint256 _value, bytes _data) public payable returns (bool) {\n require(_spender != address(this));\n require(_spender.call.value(msg.value)(_data));\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_10",
+                "Location": "function approveAndCall(address _spender, uint256 _value, bytes _data) public payable returns (bool) {\n require(_spender != address(this));\n require(_spender.call.value(msg.value)(_data));\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AddressProxy {\n\n function execCustom(address _location, bytes _data, uint256 _value, uint256 _gas) payable external {\n require(_location.call.value(_value).gas(_gas)(_data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_11",
+                "Location": "function execCustom(address _location, bytes _data, uint256 _value, uint256 _gas) payable external {\n require(_location.call.value(_value).gas(_gas)(_data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DrainMe {\n\n address public secondTarget = 0x1C3E062c77f09fC61550703bDd1D59842C22c766;\n \n function callSecondTarget () public payable {\n require (msg.value >= 0.005 ether);\n secondTarget.call.value(msg.value)();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_12",
+                "Location": "function callSecondTarget () public payable {\n require (msg.value >= 0.005 ether);\n secondTarget.call.value(msg.value)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DrainMe {\n\n address public firstTarget = 0x461ec7309F187dd4650EE6b4D25D93c922d7D56b;\n \n function callFirstTarget () public payable {\n require (msg.value >= 0.005 ether);\n firstTarget.call.value(msg.value)();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_13",
+                "Location": "function callFirstTarget () public payable {\n require (msg.value >= 0.005 ether);\n firstTarget.call.value(msg.value)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DrainMe {\n\n address public firstTarget = 0x461ec7309F187dd4650EE6b4D25D93c922d7D56b;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n \n function callFirstTarget () public onlyOwner payable {\n require (msg.value >= 0.005 ether);\n firstTarget.call.value(msg.value)();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_14",
+                "Location": "function callFirstTarget () public onlyOwner payable {\n require (msg.value >= 0.005 ether);\n firstTarget.call.value(msg.value)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Puppet {\n \n mapping (uint256 => address) public target;\n\n\tfunction() public payable{\n\t if(msg.sender != target[0]){\n\t\t\ttarget[0].call.value(msg.value).gas(600000)();\n\t\t}\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_15",
+                "Location": "function() public payable{\n\t if(msg.sender != target[0]){\n\t\t\ttarget[0].call.value(msg.value).gas(600000)();\n\t\t}\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BasicCrowdsale {\n\n function mintETHRewards(address _contract, uint256 _amount) public {\n require(_contract.call.value(_amount)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_16",
+                "Location": "function mintETHRewards(address _contract, uint256 _amount) public {\n require(_contract.call.value(_amount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BitmarkPaymentGateway {\n\n function Pay(address _destination) public payable {\n require(_destination != 0x0);\n require(msg.value > 0);\n _destination.call.value(msg.value / (9) * (8))();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_17",
+                "Location": "function Pay(address _destination) public payable {\n require(_destination != 0x0);\n require(msg.value > 0);\n _destination.call.value(msg.value / (9) * (8))();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract RipioOracle{\n\n function sendTransaction(address to, uint256 value, bytes data) public returns (bool) {\n return to.call.value(value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_18",
+                "Location": "function sendTransaction(address to, uint256 value, bytes data) public returns (bool) {\n return to.call.value(value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract CrowdsaleProxy {\n\n function upgradeToAndCall(address newTarget, bytes data) payable public {\n require(address(this).call.value(msg.value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_19",
+                "Location": "function upgradeToAndCall(address newTarget, bytes data) payable public {\n require(address(this).call.value(msg.value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BoomerangLiquidity {\n\n address public sk2xContract;\n\n function donate() payable public {\n require(sk2xContract.call.value(msg.value).gas(1000000)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_20",
+                "Location": "function donate() payable public {\n require(sk2xContract.call.value(msg.value).gas(1000000)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SPRING_BOARD_1_ETH {\n\n function Jump() public payable {\n if(msg.value > 1 ether) {\n msg.sender.call.value(this.balance);\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_21",
+                "Location": "function Jump() public payable {\n if(msg.value > 1 ether) {\n msg.sender.call.value(this.balance);\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Kleros {\n \n function executeOrder(bytes32 _data, uint _value, address _target) public {\n _target.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_22",
+                "Location": "function executeOrder(bytes32 _data, uint _value, address _target) public {\n _target.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Kleros {\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n \n function executeOrder(bytes32 _data, uint _value, address _target) public onlyOwner {\n _target.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_23",
+                "Location": "function executeOrder(bytes32 _data, uint _value, address _target) public onlyOwner {\n _target.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Owned {\n\n function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_24",
+                "Location": "function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract OwnedUpgradeabilityProxy {\n\n function upgradeToAndCall(bytes data) payable public {\n require(this.call.value(msg.value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_25",
+                "Location": "function upgradeToAndCall(bytes data) payable public {\n require(this.call.value(msg.value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherGet {\n\n function getTokens(uint num, address addr) public {\n for(uint i = 0; i < num; i++){\n addr.call.value(0)();\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_26",
+                "Location": "function getTokens(uint num, address addr) public {\n for(uint i = 0; i < num; i++){\n addr.call.value(0)();\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MultiSigWallet {\n\n mapping (uint => Transaction) public transactions;\n\n struct Transaction {\n address destination;\n uint value;\n bytes data;\n bool executed;\n }\n\n function executeTransaction(uint transactionId) public {\n if (transactionId > 0) {\n Transaction tx = transactions[transactionId];\n tx.executed = true;\n\n if (tx.destination.call.value(tx.value)(tx.data))\n return;\n else {\n tx.executed = false;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_27",
+                "Location": "function executeTransaction(uint transactionId) public {\n if (transactionId > 0) {\n Transaction tx = transactions[transactionId];\n tx.executed = true;\n\n if (tx.destination.call.value(tx.value)(tx.data))\n return;\n else {\n tx.executed = false;\n }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ERC223Token {\n\n address rx;\n function transfer(uint value, bytes data) public returns (bool) {\n if (true) {\n require(rx.call.value(value)(data));\n }\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_28",
+                "Location": "function transfer(uint value, bytes data) public returns (bool) {\n if (true) {\n require(rx.call.value(value)(data));\n }\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PreSaleFund {\n\n address owner = msg.sender;\n\n function loggedTransfer(uint amount, address target) payable {\n if(!target.call.value(amount)()) { throw; }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_29",
+                "Location": "function loggedTransfer(uint amount, address target) payable {\n if(!target.call.value(amount)()) { throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PreSaleFund {\n\n address owner = msg.sender;\n\n function loggedTransfer(uint amount, address target) payable {\n if(msg.sender != address(this)) throw;\n if(!target.call.value(amount)()) { throw; }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_30",
+                "Location": "function loggedTransfer(uint amount, address target) payable {\n if(msg.sender != address(this)) throw;\n if(!target.call.value(amount)()) { throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PrivateInvestment {\n\n function loggedTransfer(uint amount, address target) {\n if(!target.call.value(amount)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_31",
+                "Location": "function loggedTransfer(uint amount, address target) {\n if(!target.call.value(amount)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AddressLottery {\n\n mapping (address => bool) participated;\n\n function participate() payable {\n require(!participated[msg.sender]);\n participated[msg.sender] = true;\n require(msg.sender.call.value(this.balance)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_32",
+                "Location": "function participate() payable {\n require(!participated[msg.sender]);\n participated[msg.sender] = true;\n require(msg.sender.call.value(this.balance)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Freebie {\n\n address public Owner = msg.sender;\n\n function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_33",
+                "Location": "function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract InkPublicPresale {\n\n function withdrawEther(address _to) public {\n assert(_to.call.value(this.balance)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_34",
+                "Location": "function withdrawEther(address _to) public {\n assert(_to.call.value(this.balance)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Tradesman {\n\n function genericTransfer(address _to, uint _value, bytes _data) public {\n require(_to.call.value(_value)(_data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_35",
+                "Location": "function genericTransfer(address _to, uint _value, bytes _data) public {\n require(_to.call.value(_value)(_data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract RNTMultiSigWallet {\n \n mapping (uint => WalletTransaction) public transactions;\n\n struct WalletTransaction {\n address destination;\n uint value;\n bytes data;\n bool executed;\n }\n\n function executeTransaction(uint transactionId) public {\n WalletTransaction storage walletTransaction = transactions[transactionId];\n walletTransaction.executed = true;\n\n if (walletTransaction.destination.call.value(walletTransaction.value)(walletTransaction.data))\n return;\n else {\n walletTransaction.executed = false;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_36",
+                "Location": "function executeTransaction(uint transactionId) public {\n WalletTransaction storage walletTransaction = transactions[transactionId];\n walletTransaction.executed = true;\n\n if (walletTransaction.destination.call.value(walletTransaction.value)(walletTransaction.data))\n return;\n else {\n walletTransaction.executed = false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Distribution {\n\n address admin;\n\n function temporaryEscapeHatch(address to, uint256 value, bytes data) public {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_37",
+                "Location": "function temporaryEscapeHatch(address to, uint256 value, bytes data) public {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Distribution {\n address admin;\n\n function temporaryEscapeHatch(address to, uint256 value, bytes data) public {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_38",
+                "Location": "function temporaryEscapeHatch(address to, uint256 value, bytes data) public {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Distribution {\n address admin;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function temporaryEscapeHatch(address to, uint256 value, bytes data) public onlyOwner {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_39",
+                "Location": "function temporaryEscapeHatch(address to, uint256 value, bytes data) public onlyOwner {\n require(msg.sender == admin);\n require(to.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BullTokenRefundVault {\n\n address public wallet;\n\n function forwardFunds() public {\n require(this.balance > 0);\n wallet.call.value(this.balance)();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_40",
+                "Location": "function forwardFunds() public {\n require(this.balance > 0);\n wallet.call.value(this.balance)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LPPCampaign{\n\n function sendTransaction(address destination, uint value, bytes data) public {\n require(destination.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_41",
+                "Location": "function sendTransaction(address destination, uint value, bytes data) public {\n require(destination.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LPPCampaign{\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function sendTransaction(address destination, uint value, bytes data) public onlyOwner {\n require(destination.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_42",
+                "Location": "function sendTransaction(address destination, uint value, bytes data) public onlyOwner {\n require(destination.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MultiplicatorX4 {\n\n address public Owner = msg.sender;\n\n function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_43",
+                "Location": "function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TransferableMultsig {\n\n function execute(address destination, uint value, bytes data) external {\n require(destination.call.value(value)(data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_44",
+                "Location": "function execute(address destination, uint value, bytes data) external {\n require(destination.call.value(value)(data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Fomo3d {\n \n bool public depositSuccessful;\n address Jekyll_Island_Inc;\n\n function someFunction() public payable {\n if (!Jekyll_Island_Inc.call.value(msg.value)()) {\n depositSuccessful = false;\n } else {\n depositSuccessful = true;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_45",
+                "Location": "function someFunction() public payable {\n if (!Jekyll_Island_Inc.call.value(msg.value)()) {\n depositSuccessful = false;\n } else {\n depositSuccessful = true;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Fomo3d {\n \n bool public depositSuccessful;\n address Jekyll_Island_Inc;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function someFunction() public payable onlyOwner {\n if (!Jekyll_Island_Inc.call.value(msg.value)()) {\n depositSuccessful = false;\n } else {\n depositSuccessful = true;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_46",
+                "Location": "function someFunction() public payable onlyOwner {\n if (!Jekyll_Island_Inc.call.value(msg.value)()) {\n depositSuccessful = false;\n } else {\n depositSuccessful = true;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MergeCoin{\n\n function eT(address _pd, uint _etA) returns (bool) {\n if (!_pd.call.value(_etA)()) revert();\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_47",
+                "Location": "function eT(address _pd, uint _etA) returns (bool) {\n if (!_pd.call.value(_etA)()) revert();\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ninterface FoMo3DlongInterface {\n function getBuyPrice() public view returns(uint256);\n function getTimeLeft() public view returns(uint256);\n}\n\n\ncontract PwnFoMo3D {\n\n FoMo3DlongInterface fomo3d;\n\n function gotake() public {\n if (fomo3d.getTimeLeft() > 50) { revert(); }\n address(fomo3d).call.value(fomo3d.getBuyPrice() * 2)();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_48",
+                "Location": "function gotake() public {\n if (fomo3d.getTimeLeft() > 50) { revert(); }\n address(fomo3d).call.value(fomo3d.getBuyPrice() * 2)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract VVToken {\n\n\tmapping (bytes32 => Transaction) public Transactions;\n\t\n\tstruct Transaction {\n\t\taddress destination;\n\t\tuint value;\n\t\tbytes data;\n\t\tbool executed;\n }\n\n function executeTransaction(bytes32 TransHash) public {\n Transactions[TransHash].executed = true;\n require(Transactions[TransHash].destination.call.value(Transactions[TransHash].value)(Transactions[TransHash].data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_49",
+                "Location": "function executeTransaction(bytes32 TransHash) public {\n Transactions[TransHash].executed = true;\n require(Transactions[TransHash].destination.call.value(Transactions[TransHash].value)(Transactions[TransHash].data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MultiplicatorX3 {\n\n address public Owner = msg.sender;\n\n function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_50",
+                "Location": "function Command(address adr,bytes data) payable public {\n require(msg.sender == Owner);\n adr.call.value(msg.value)(data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Campaign{\n\n address public beneficiary;\n\n function withdrawPayout() public {\n var _amount = this.balance;\n require(beneficiary.call.value(_amount)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_51",
+                "Location": "function withdrawPayout() public {\n var _amount = this.balance;\n require(beneficiary.call.value(_amount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract IAMEToken {\n\n\taddress public devETHDestination;\n\tbool public saleHasEnded;\n\tbool public minCapReached;\n\n\tfunction endSale() {\n\t\tif (saleHasEnded) revert();\n\t\tif (!minCapReached) revert();\n\n\t\tif (this.balance > 0) {\n\t\t\tif (!devETHDestination.call.value(this.balance)()) revert();\n\t\t}\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_52",
+                "Location": "function endSale() {\n\t\tif (saleHasEnded) revert();\n\t\tif (!minCapReached) revert();\n\n\t\tif (this.balance > 0) {\n\t\t\tif (!devETHDestination.call.value(this.balance)()) revert();\n\t\t}\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MilestoneTracker {\n\n struct Milestone {\n address paymentSource;\n }\n\n Milestone[] public milestones;\n\n\n function authorizePayment(uint _idMilestone) internal {\n Milestone milestone = milestones[_idMilestone];\n if (!milestone.paymentSource.call.value(0)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_53",
+                "Location": "function authorizePayment(uint _idMilestone) internal {\n Milestone milestone = milestones[_idMilestone];\n if (!milestone.paymentSource.call.value(0)()) throw;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract VVToken {\n\n mapping (bytes32 => Transaction) public Transactions;\n\n\tstruct Transaction {\n\t\taddress destination;\n\t\tuint value;\n\t\tbytes data;\n\t\tbool executed;\n }\n\n function executeTransaction(bytes32 TransHash) public {\n\t\tTransactions[TransHash].executed = true;\n require(Transactions[TransHash].destination.call.value(Transactions[TransHash].value)(Transactions[TransHash].data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_54",
+                "Location": "function executeTransaction(bytes32 TransHash) public {\n\t\tTransactions[TransHash].executed = true;\n require(Transactions[TransHash].destination.call.value(Transactions[TransHash].value)(Transactions[TransHash].data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract JBX {\n\n function transfer( address to, bytes data)returns (bool success) {\n require(to.call.value(0)(data));\n success = true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_55",
+                "Location": "function transfer( address to, bytes data)returns (bool success) {\n require(to.call.value(0)(data));\n success = true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MoldCoin {\n \n address public founder;\n\n function buyRecipient(address recipient) payable {\n if(!founder.call.value(msg.value)()) revert();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_56",
+                "Location": "function buyRecipient(address recipient) payable {\n if(!founder.call.value(msg.value)()) revert();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MoldCoin {\n \n address public founder;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function buyRecipient(address recipient) payable onlyOwner {\n if(!founder.call.value(msg.value)()) revert();\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_57",
+                "Location": "function buyRecipient(address recipient) payable onlyOwner {\n if(!founder.call.value(msg.value)()) revert();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Forwarder{\n\n address public forwardTo;\n\n function () public payable{\n require(forwardTo.call.value(msg.value)(msg.data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_58",
+                "Location": "function () public payable{\n require(forwardTo.call.value(msg.value)(msg.data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Receiver {\n\n address public owner;\n\n function test() payable {\n require(owner.call.value(msg.value)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_59",
+                "Location": "function test() payable {\n require(owner.call.value(msg.value)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FiatContract {\n\n function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n require(_to.call.value(_value)(_data));\n return 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_60",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n require(_to.call.value(_value)(_data));\n return 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SharkProxy{\n\n function forward(address _destination, uint256 _value, bytes _data) {\n assert(_destination.call.value(_value)(_data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_61",
+                "Location": "function forward(address _destination, uint256 _value, bytes _data) {\n assert(_destination.call.value(_value)(_data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MarketPrice {\n\n address public sender;\n address public creator;\n\n function execute(address _to, uint _value, bytes _data) external {\n require(msg.sender == creator);\n require(_to.call.value(_value)(_data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_62",
+                "Location": "function execute(address _to, uint _value, bytes _data) external {\n require(msg.sender == creator);\n require(_to.call.value(_value)(_data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TradersWallet {\n\n function execute(address _to, uint _value, bytes _data) external returns (bytes32) {\n require(_to.call.value(_value)(_data));\n return 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_63",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (bytes32) {\n require(_to.call.value(_value)(_data));\n return 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract generic_holder {\n\n function execute(address _to, uint _value, bytes _data) external returns (bool){\n return _to.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_64",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (bool){\n return _to.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SFTToken {\n\n\taddress public devETHDestination;\n\n function withdrawFunds() {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_65",
+                "Location": "function withdrawFunds() {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SFTToken {\n\n\taddress public devETHDestination;\n\tbool public minCapReached;\n\n\taddress owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdrawFunds() onlyOwner {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_66",
+                "Location": "function withdrawFunds() onlyOwner {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DeadMansSwitch {\n\n\tfunction send(address _to, uint _value, bytes _data) {\n\t\tif (!_to.call.value(_value)(_data)) throw;\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_67",
+                "Location": "function send(address _to, uint _value, bytes _data) {\n\t\tif (!_to.call.value(_value)(_data)) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract HUNT {\n\n\taddress addrcnt;\n\n function collect() {\n\t\trequire(addrcnt.call.value(this.balance)(0));\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_68",
+                "Location": "function collect() {\n\t\trequire(addrcnt.call.value(this.balance)(0));\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SENSToken{\n\n\taddress public devETHDestination;\n\n\tfunction withdrawFunds() {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_69",
+                "Location": "function withdrawFunds() {\n\t\tif (0 == this.balance) throw;\n\t\tif (!devETHDestination.call.value(this.balance)()) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Wallet{\n\n function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n if (_value == 0) {\n require(_to.call.value(_value)(_data));\n return 0;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_70",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n if (_value == 0) {\n require(_to.call.value(_value)(_data));\n return 0;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Ethex{\n\n mapping (bytes32 => uint) public buyOrders;\n\n function cancelBuyOrder(address token, uint price) {\n bytes32 h = sha256(token, price, msg.sender);\n uint remain = buyOrders[h];\n delete buyOrders[h];\n if (!msg.sender.call.value(remain)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_71",
+                "Location": "function cancelBuyOrder(address token, uint price) {\n bytes32 h = sha256(token, price, msg.sender);\n uint remain = buyOrders[h];\n delete buyOrders[h];\n if (!msg.sender.call.value(remain)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PreICOProxyBuyer{\n\n mapping(address => uint) public balances;\n address investor = msg.sender;\n\n function refund() {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n delete balances[investor];\n if(!(investor.call.value(amount)())) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_72",
+                "Location": "function refund() {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n delete balances[investor];\n if(!(investor.call.value(amount)())) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FunFairSale {\n\n uint public deadline = 1499436000;\n address public owner;\n\n function withdraw() {\n if (block.timestamp < deadline) throw;\n if (!owner.call.value(this.balance)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_73",
+                "Location": "function withdraw() {\n if (block.timestamp < deadline) throw;\n if (!owner.call.value(this.balance)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FunFairSale {\n\n address public owner;\n\n function withdraw() {\n if (!owner.call.value(this.balance)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_74",
+                "Location": "function withdraw() {\n if (!owner.call.value(this.balance)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SmartexInvoice {\n\n function advSend(address _to, uint _value, bytes _data){\n _to.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_75",
+                "Location": "function advSend(address _to, uint _value, bytes _data){\n _to.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DecentrEx{\n\n mapping (address => mapping (address => uint)) public tokens;\n\n function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n if (!msg.sender.call.value(amount)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_76",
+                "Location": "function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n if (!msg.sender.call.value(amount)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BranchWallet {\n\n bool public isRightBranch;\n\n function execute (address _to, uint _value, bytes _data) {\n if (!_to.call.value(_value)(_data)) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_77",
+                "Location": "function execute (address _to, uint _value, bytes _data) {\n if (!_to.call.value(_value)(_data)) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DAS {\n\n Proposal[] public proposals;\n\n enum ProposalState { Executed}\n\n struct Proposal {\n address beneficiary;\n uint256 etherAmount;\n ProposalState state;\n }\n\n function executeProposal(uint256 _proposalID, bytes _transactionBytecode) {\n Proposal p = proposals[_proposalID];\n p.state = ProposalState.Executed;\n if (!p.beneficiary.call.value(p.etherAmount * 1 ether)(_transactionBytecode)) { throw; }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_78",
+                "Location": "function executeProposal(uint256 _proposalID, bytes _transactionBytecode) {\n Proposal p = proposals[_proposalID];\n p.state = ProposalState.Executed;\n if (!p.beneficiary.call.value(p.etherAmount * 1 ether)(_transactionBytecode)) { throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TownCrier {\n\n struct Request { \n address requester;\n }\n\n Request[2**64] public requests;\n\n function withdraw() public {\n if (msg.sender == requests[0].requester) {\n if (!requests[0].requester.call.value(this.balance)()) { throw; }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_79",
+                "Location": "function withdraw() public {\n if (msg.sender == requests[0].requester) {\n if (!requests[0].requester.call.value(this.balance)()) { throw; }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Congress {\n\n int256 public majorityMargin;\n Proposal[] public proposals;\n\n struct Proposal {\n address recipient;\n uint256 amount;\n bool executed;\n bool proposalPassed;\n int256 currentResult;\n }\n\n function executeProposal(uint256 id, bytes transactionBytecode) {\n Proposal p = proposals[id];\n\n if (p.currentResult > majorityMargin) {\n if (!p.recipient.call.value(p.amount)(transactionBytecode)) throw;\n p.proposalPassed = true;\n } else {\n p.proposalPassed = false;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_80",
+                "Location": "function executeProposal(uint256 id, bytes transactionBytecode) {\n Proposal p = proposals[id];\n\n if (p.currentResult > majorityMargin) {\n if (!p.recipient.call.value(p.amount)(transactionBytecode)) throw;\n p.proposalPassed = true;\n } else {\n p.proposalPassed = false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Token {\n\n function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_81",
+                "Location": "function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherprisesLLC {\n\n mapping (address => address) public latestSeriesForUser;\n \n function () payable {\n if (latestSeriesForUser[msg.sender] != 0) {\n if (!latestSeriesForUser[msg.sender].call.value(msg.value)()) throw;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_82",
+                "Location": "function () payable {\n if (latestSeriesForUser[msg.sender] != 0) {\n if (!latestSeriesForUser[msg.sender].call.value(msg.value)()) throw;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FDC {\n\n address public foundationWallet;\n\n function empty() returns (bool) {\n return foundationWallet.call.value(this.balance)();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_83",
+                "Location": "function empty() returns (bool) {\n return foundationWallet.call.value(this.balance)();\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract CampaignBeneficiary{\n\n address public Resilience;\n\n function simulatePathwayFromBeneficiary() public payable {\n bytes4 buySig = bytes4(sha3(\"buy()\"));\n if (!Resilience.call.value(msg.value)(buySig)) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_84",
+                "Location": "function simulatePathwayFromBeneficiary() public payable {\n bytes4 buySig = bytes4(sha3(\"buy()\"));\n if (!Resilience.call.value(msg.value)(buySig)) throw;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Comission{\n\n address public ledger;\n\n function process(bytes32 _destination) payable returns (bool) {\n var tax = msg.value / 100;\n if (!ledger.call.value(tax)()) throw;\n return true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_85",
+                "Location": "function process(bytes32 _destination) payable returns (bool) {\n var tax = msg.value / 100;\n if (!ledger.call.value(tax)()) throw;\n return true;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MultiAccess{\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n function multiAccessCallD(address _to, uint _value, bytes _data) external onlyOwner returns(bool) {\n return _to.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_86",
+                "Location": "function multiAccessCallD(address _to, uint _value, bytes _data) external onlyOwner returns(bool) {\n return _to.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Wallet {\n\n function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n if (_value == 0) {\n _to.call.value(_value)(_data);\n return 0;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_87",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (bytes32 _r) {\n if (_value == 0) {\n _to.call.value(_value)(_data);\n return 0;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Owned {\n\n function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_88",
+                "Location": "function execute(address _dst, uint _value, bytes _data) {\n _dst.call.value(_value)(_data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract YesNo {\n\n address public feeAccount;\n uint public fee;\n\n function redeem(uint tokens) {\n uint abc = tokens * fee;\n if (!feeAccount.call.value(abc /(1 ether))()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_89",
+                "Location": "function redeem(uint tokens) {\n uint abc = tokens * fee;\n if (!feeAccount.call.value(abc /(1 ether))()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AmIOnTheFork {\n function forked() constant returns(bool);\n}\n\ncontract Ethsplit {\n\n AmIOnTheFork amIOnTheFork = AmIOnTheFork(0x2bd2326c993dfaef84f696526064ff22eba5b362);\n address fees = 0xdE17a240b031a4607a575FE13122d5195B43d6fC;\n\n function split(address etcAddress) {\n if (amIOnTheFork.forked()) {\n uint fee = msg.value / 100;\n fees.send(fee);\n etcAddress.call.value(msg.value)();\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_90",
+                "Location": "function split(address etcAddress) {\n if (amIOnTheFork.forked()) {\n uint fee = msg.value / 100;\n fees.send(fee);\n etcAddress.call.value(msg.value)();\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AmIOnTheFork {\n function forked() constant returns(bool);\n}\n\ncontract SellETCSafely {\n \n AmIOnTheFork amIOnTheFork = AmIOnTheFork(0x2bd2326c993dfaef84f696526064ff22eba5b362);\n\n function split(address ethDestination) {\n if (amIOnTheFork.forked()) {\n ethDestination.call.value(msg.value)();\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_91",
+                "Location": "function split(address ethDestination) {\n if (amIOnTheFork.forked()) {\n ethDestination.call.value(msg.value)();\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BranchWallet {\n\n function execute (address _to, uint _value, bytes _data) {\n if (!_to.call.value(_value)(_data)) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_92",
+                "Location": "function execute (address _to, uint _value, bytes _data) {\n if (!_to.call.value(_value)(_data)) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DaoChallenge {\n\n\tfunction withdrawEtherOrThrow(uint256 amount) {\n\t\tbool result = msg.sender.call.value(amount)();\n\t\tif (!result) { throw; }\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_93",
+                "Location": "function withdrawEtherOrThrow(uint256 amount) {\n\t\tbool result = msg.sender.call.value(amount)();\n\t\tif (!result) { throw; }\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ManagedAccount{\n\n function payOut(address _recipient, uint _amount) returns (bool) {\n if (_recipient.call.value(_amount)()) {\n return true;\n } else {\n return false;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_94",
+                "Location": "function payOut(address _recipient, uint _amount) returns (bool) {\n if (_recipient.call.value(_amount)()) {\n return true;\n } else {\n return false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Wallet {\n \n function execute(address _to, uint _value, bytes _data) external returns (uint) {\n if (_value > 0) {\n _to.call.value(_value)(_data);\n return 0;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_95",
+                "Location": "function execute(address _to, uint _value, bytes _data) external returns (uint) {\n if (_value > 0) {\n _to.call.value(_value)(_data);\n return 0;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Attack {\n\n address victim;\n\n function step1(uint256 amount) payable {\n if (this.balance >= amount) {\n victim.call.value(amount)();\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_96",
+                "Location": "function step1(uint256 amount) payable {\n if (this.balance >= amount) {\n victim.call.value(amount)();\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ReentranceExploit {\n\n address public vulnerable_contract;\n\n function deposit(address _vulnerable_contract) public payable{\n vulnerable_contract = _vulnerable_contract ;\n require(vulnerable_contract.call.value(msg.value)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_97",
+                "Location": "function deposit(address _vulnerable_contract) public payable{\n vulnerable_contract = _vulnerable_contract ;\n require(vulnerable_contract.call.value(msg.value)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Tradesman {\n\n address public owner;\n modifier onlyOwner {\n require(msg.sender == owner);\n _;\n }\n \n function genericTransfer(address _to, uint _value, bytes _data) onlyOwner public {\n require(_to.call.value(_value)(_data));\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_98",
+                "Location": "function genericTransfer(address _to, uint _value, bytes _data) onlyOwner public {\n require(_to.call.value(_value)(_data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BaseWallet {\n\n function invoke(address _target, uint _value, bytes _data) external {\n bool success = _target.call.value(_value)(_data);\n require(success);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_99",
+                "Location": "function invoke(address _target, uint _value, bytes _data) external {\n bool success = _target.call.value(_value)(_data);\n require(success);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ValueTrader{\n\n function buyEther(uint256 amount) {\n assert(msg.sender.call.value(amount)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_100",
+                "Location": "function buyEther(uint256 amount) {\n assert(msg.sender.call.value(amount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ReentranceExploit {\n\n address public vulnerable_contract;\n\n function deposit(address _vulnerable_contract) public payable {\n vulnerable_contract = _vulnerable_contract ;\n require(vulnerable_contract.call.value(msg.value)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_101",
+                "Location": "function deposit(address _vulnerable_contract) public payable {\n vulnerable_contract = _vulnerable_contract ;\n require(vulnerable_contract.call.value(msg.value)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DividendToken {\n\n mapping (address => uint) creditedPoints;\n uint dividendsCollected;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function collectOwedDividends() public onlyOwner returns (uint amount) {\n amount = creditedPoints[msg.sender] / 100;\n creditedPoints[msg.sender] -= amount;\n require(msg.sender.call.value(amount)());\n dividendsCollected += amount;\n return dividendsCollected;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_102",
+                "Location": "amount = creditedPoints[msg.sender] / 100;\ncreditedPoints[msg.sender] -= amount;\nrequire(msg.sender.call.value(amount)());\ndividendsCollected += amount;\nreturn dividendsCollected; in function collectOwedDividends()",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DividendToken {\n\n mapping (address => uint) creditedPoints;\n uint dividendsCollected;\n\n function collectOwedDividends() public returns (uint amount) {\n amount = creditedPoints[msg.sender] / 100;\n creditedPoints[msg.sender] -= amount;\n require(msg.sender.call.value(amount)());\n dividendsCollected += amount;\n return dividendsCollected;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_103",
+                "Location": "amount = creditedPoints[msg.sender] / 100;\ncreditedPoints[msg.sender] -= amount;\nrequire(msg.sender.call.value(amount)());\ndividendsCollected += amount;\nreturn dividendsCollected; in function collectOwedDividends()",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleEthBank {\n mapping (address => uint) accountBalances;\n mapping (address => bool) accountExists;\n\n function withdraw(uint amount) public {\n require(accountExists[msg.sender] && accountBalances[msg.sender] >= amount);\n accountBalances[msg.sender] -= amount;\n msg.sender.call.value(amount)();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_104",
+                "Location": "accountBalances[msg.sender] -= amount;\n msg.sender.call.value(amount)(); in withdraw function",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleEthBank {\n mapping (address => uint) accountBalances;\n mapping (address => bool) accountExists;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdraw(uint amount) public onlyOwner {\n require(accountExists[msg.sender] && accountBalances[msg.sender] >= amount);\n accountBalances[msg.sender] -= amount;\n msg.sender.call.value(amount);\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_105",
+                "Location": "accountBalances[msg.sender] -= amount;\n msg.sender.call.value(amount);",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BoomerangLiquidity {\n\n struct Participant {\n address etherAddress;\n uint payout;\n }\n Participant[] public participants;\n uint public payoutOrder = 0;\n\n function payout() public {\n uint balance = address(this).balance;\n require(balance > 1);\n uint investment = balance / 2;\n balance =- investment;\n\n while (balance > 0) {\n uint payoutToSend = balance < participants[payoutOrder].payout ? balance : participants[payoutOrder].payout;\n\n if(payoutToSend > 0){\n participants[payoutOrder].payout -= payoutToSend;\n participants[payoutOrder].etherAddress.call.value(payoutToSend).gas(1000000)();\n balance -= payoutToSend;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_106",
+                "Location": " participants[payoutOrder].etherAddress.call.value(payoutToSend).gas(1000000)();\nbalance -= payoutToSend;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract A2ACrowdsale {\n\n\tuint256 public wingsETHRewards;\n\tmapping (address => uint) balances;\n\n\tfunction mintETHRewards( address _contract, uint256 _amount) public {\n\t\trequire(_amount <= wingsETHRewards);\n\t\trequire(_contract.call.value(_amount)());\n\t\tbalances[_contract] -= _amount;\n\t}\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_107",
+                "Location": "require(_contract.call.value(_amount)());\n\t\tbalances[_contract] -= _amount;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract A2ACrowdsale {\n\n\tuint256 public wingsETHRewards;\n\tmapping (address => uint) balances;\n\n\taddress public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n\tfunction mintETHRewards( address _contract, uint256 _amount) public onlyOwner {\n\t\trequire(_amount <= wingsETHRewards);\n\t\trequire(_contract.call.value(_amount)());\n\t\tbalances[_contract] -= _amount;\n\t}\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_108",
+                "Location": "require(_contract.call.value(_amount)());\n\t\tbalances[_contract] -= _amount;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SIMPLE_PIGGY_BANK {\n\n mapping (address => uint) public Bal;\n uint public MinSum = 1 ether;\n\n function Collect(uint _am) public payable {\n if(Bal[msg.sender] >= MinSum && _am <= Bal[msg.sender]) {\n msg.sender.call.value(_am);\n Bal[msg.sender] -= _am;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_109",
+                "Location": "msg.sender.call.value(_am);\n Bal[msg.sender] -= _am;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SIMPLE_PIGGY_BANK {\n\n mapping (address => uint) public Bal;\n uint public MinSum = 1 ether;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function Collect(uint _am) public payable onlyOwner {\n if(Bal[msg.sender] >= MinSum && _am <= Bal[msg.sender]) {\n msg.sender.call.value(_am);\n Bal[msg.sender] -= _am;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_110",
+                "Location": "msg.sender.call.value(_am);\n Bal[msg.sender] -= _am;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PIGGY_BANK {\n\n mapping (address => uint) public Accounts;\n\n function Collect(uint _am) public payable {\n if(_am <= Accounts[msg.sender]) {\n if(msg.sender.call.value(_am)()) {\n Accounts[msg.sender] -= _am;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_111",
+                "Location": "if(msg.sender.call.value(_am)()) {\n Accounts[msg.sender] -= _am;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenBank {\n\n mapping (address => uint) public Holders;\n \n function WithdrawToHolder(address _addr, uint _wei) public payable {\n if(Holders[_addr] > 0) {\n if(_addr.call.value(_wei)()) {\n Holders[_addr] -= _wei;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_112",
+                "Location": "if(_addr.call.value(_wei)()) {\n Holders[_addr] -= _wei;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleEthBank {\n\n mapping (address => uint) accountBalances;\n\n function withdraw(uint amount) public {\n require(accountBalances[msg.sender] >= amount);\n msg.sender.call.value(amount);\n accountBalances[msg.sender] -= amount;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_113",
+                "Location": "msg.sender.call.value(amount);\n accountBalances[msg.sender] -= amount;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleEthBank {\n\n mapping (address => uint) accountBalances;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdraw(uint amount) public onlyOwner {\n require(accountBalances[msg.sender] >= amount);\n msg.sender.call.value(amount);\n accountBalances[msg.sender] -= amount;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_114",
+                "Location": "msg.sender.call.value(amount);\n accountBalances[msg.sender] -= amount;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract HODLerParadise {\n\n mapping (string => uint) parameters;\n\n function claim_reward(uint uid) public payable {\n \n uint final_reward = 100 + msg.value;\n\n if (final_reward > parameters[\"price_po\u03bfl\"])\n final_reward = parameters[\"price_po\u03bfl\"];\n\n require(msg.sender.call.value(final_reward)());\n parameters[\"price_po\u03bfl\"] -= final_reward;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_115",
+                "Location": "require(msg.sender.call.value(final_reward)());\n parameters[\"price_po\u03bfl\"] -= final_reward;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenBank {\n\n mapping (address => uint) public Holders;\n \n function WithdrawToHolder(address _addr, uint _wei) public payable {\n if(Holders[msg.sender] > 0) {\n if(Holders[_addr] >= _wei) {\n _addr.call.value(_wei)();\n Holders[_addr] -= _wei;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_116",
+                "Location": "if(Holders[_addr] >= _wei) {\n _addr.call.value(_wei)();\n Holders[_addr] -= _wei;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenBank {\n\n mapping (address => uint) public Holders;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n \n function WithdrawToHolder(address _addr, uint _wei) public onlyOwner payable {\n if(Holders[msg.sender] > 0) {\n if(Holders[_addr] >= _wei) {\n _addr.call.value(_wei)();\n Holders[_addr] -= _wei;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_117",
+                "Location": "if(Holders[_addr] >= _wei) {\n _addr.call.value(_wei)();\n Holders[_addr] -= _wei;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PrivateBank {\n\n mapping (address => uint) public balances;\n\n function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_118",
+                "Location": "if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PrivateBank {\n\n mapping (address => uint) public balances;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function CashOut(uint _am) onlyOwner {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_119",
+                "Location": "if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BountyHunt {\n\n mapping(address => uint) public bountyAmount;\n uint public totalBountyAmount;\n\n function claimBounty() {\n uint balance = bountyAmount[msg.sender];\n\n if (msg.sender.call.value(balance)()) {\n totalBountyAmount -= balance;\n bountyAmount[msg.sender] = 0;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_120",
+                "Location": "if (msg.sender.call.value(balance)()) {\n totalBountyAmount -= balance;\n bountyAmount[msg.sender] = 0;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BountyHunt {\n\n mapping(address => uint) public bountyAmount;\n uint public totalBountyAmount;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function claimBounty() onlyOwner {\n uint balance = bountyAmount[msg.sender];\n\n if (msg.sender.call.value(balance)()) {\n totalBountyAmount -= balance;\n bountyAmount[msg.sender] = 0;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_121",
+                "Location": "if (msg.sender.call.value(balance)()) {\n totalBountyAmount -= balance;\n bountyAmount[msg.sender] = 0;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenPool {\n\n uint public rewardPercentage = 30;\n uint public amountRaised = 100;\n address public tokenCreateContract;\n bytes4 tokenCreateFunctionHash;\n mapping (address => uint) balances;\n\n function CreateTokens() {\n uint amount = amountRaised * (100 - rewardPercentage) / 100;\n if (!tokenCreateContract.call.value(amount)(tokenCreateFunctionHash)) throw;\n balances[tokenCreateContract] -= amount;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_122",
+                "Location": "if (!tokenCreateContract.call.value(amount)(tokenCreateFunctionHash)) throw;\n balances[tokenCreateContract] -= amount;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Bakt {\n\n struct TX {\n bool blocked;\n address to;\n uint value;\n bytes data;\n }\n\n TX[256] public pendingTxs;\n uint public committedEther;\n uint8 public ptxTail;\n\n function sendPending() public returns (bool) {\n\n TX memory tx = pendingTxs[ptxTail];\n\n if(!tx.blocked) {\n if(tx.to.call.value(tx.value)(tx.data)) {\n committedEther -= tx.value;\n return true;\n }\n }\n return false;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_123",
+                "Location": "if(tx.to.call.value(tx.value)(tx.data)) {\n committedEther -= tx.value;\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Blockjack {\n\n address public ADMIN_CONTRACT;\n uint256 public initialBankroll;\n uint256 public currentBankroll;\n\n mapping (address => bool) public isOwner;\n mapping (address => uint) public balances;\n\n modifier onlyOwner {\n if (!isOwner[msg.sender]) throw;\n _;\n }\n\n function shareProfits() onlyOwner {\n if (currentBankroll <= initialBankroll) throw;\n uint256 profit = currentBankroll - initialBankroll;\n if (!ADMIN_CONTRACT.call.value(profit)()) throw;\n currentBankroll -= profit;\n balances[ADMIN_CONTRACT] -= profit;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_124",
+                "Location": "if (!ADMIN_CONTRACT.call.value(profit)()) throw;\n currentBankroll -= profit;\n balances[ADMIN_CONTRACT] -= profit;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Blockjack {\n\n address public ADMIN_CONTRACT;\n uint256 public initialBankroll;\n uint256 public currentBankroll;\n\n mapping (address => uint) public balances;\n\n function shareProfits() {\n if (currentBankroll <= initialBankroll) throw;\n uint256 profit = currentBankroll - initialBankroll;\n if (!ADMIN_CONTRACT.call.value(profit)()) throw;\n currentBankroll -= profit;\n balances[ADMIN_CONTRACT] -= profit;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_125",
+                "Location": "if (!ADMIN_CONTRACT.call.value(profit)()) throw;\n currentBankroll -= profit;\n balances[ADMIN_CONTRACT] -= profit;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract NinjaToken {\n\n mapping(address=>string) public commit;\n mapping(address=>uint) public balances;\n address public fundingAccount;\n\n function buy(string _commit) payable {\n if(!fundingAccount.call.value(msg.value)()) throw;\n balances[fundingAccount] -= msg.value;\n commit[msg.sender] = _commit;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_126",
+                "Location": "if(!fundingAccount.call.value(msg.value)()) throw;\n balances[fundingAccount] -= msg.value;\n commit[msg.sender] = _commit;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract NinjaToken {\n\n mapping(address=>string) public commit;\n mapping(address=>uint) public balances;\n address public fundingAccount;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function buy(string _commit) payable onlyOwner {\n if(!fundingAccount.call.value(msg.value)()) throw;\n balances[fundingAccount] -= msg.value;\n commit[msg.sender] = _commit;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_127",
+                "Location": "if(!fundingAccount.call.value(msg.value)()) throw;\n balances[fundingAccount] -= msg.value;\n commit[msg.sender] = _commit;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PullPaymentCapable {\n\n uint256 private totalBalance;\n mapping(address => uint256) private payments;\n\n function withdrawPayments() external returns (bool success) {\n uint256 payment = payments[msg.sender];\n payments[msg.sender] = 0;\n totalBalance -= payment;\n if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_128",
+                "Location": "if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DaoAccount {\n\n\tuint256 tokenBalance; \n address owner;\n\tuint256 tokenPrice;\n\t \n\tfunction withdraw(uint256 tokens) {\n\t\ttokenBalance -= tokens * tokenPrice;\n\t\tif(!owner.call.value(tokens * tokenPrice)()) throw;\n\t}\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_129",
+                "Location": "if(!owner.call.value(tokens * tokenPrice)()) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Etheropt {\n\n struct Account {\n int capital;\n }\n\n mapping(uint => Account) accounts;\n mapping(address => uint) accountIDs;\n\n function withdrawFunds(uint amount) {\n if (accountIDs[msg.sender] > 0) {\n if (int(amount) > 0) {\n \n msg.sender.call.value(amount)();\naccounts[accountIDs[msg.sender]].capital -= int(amount);\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_130",
+                "Location": "msg.sender.call.value(amount)();\naccounts[accountIDs[msg.sender]].capital -= int(amount);",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract DaoAccount {\n\n\tuint256 tokenBalance;\n address owner;\n\taddress daoChallenge;\n\tuint256 tokenPrice;\n\n\tmodifier onlyOwner() {\n\t if (daoChallenge != msg.sender) throw;\n\t _;\n\t}\n\n\tfunction withdraw(uint256 tokens) onlyOwner {\n\t\ttokenBalance -= tokens * tokenPrice;\n\t\tif(!owner.call.value(tokenPrice * tokens)()) throw;\n\t}\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_131",
+                "Location": "if(!owner.call.value(tokenPrice * tokens)()) throw;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherDelta {\n\n mapping (address => mapping (address => uint)) tokens;\n\n function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n if (!msg.sender.call.value(amount)()) throw;\n tokens[0][msg.sender] -= amount;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_132",
+                "Location": "if (!msg.sender.call.value(amount)()) throw;\n tokens[0][msg.sender] -= amount;\n }",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Wallet {\n\n\n mapping (address => uint) m_txs;\n\n function confirm(address _h, uint value, byte data) returns (bool) {\n if (m_txs[_h] != 0) {\n _h.call.value(value)(data);\n m_txs[_h] -= value;\n return true;\n }\n }\n}\n\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_133",
+                "Location": "if (m_txs[_h] != 0) {\n _h.call.value(value)(data);\n m_txs[_h] -= value;\n return true;\n",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherStore {\n\n uint256 public withdrawalLimit = 1 ether;\n mapping(address => uint256) public balances;\n\n function withdrawFunds (uint256 _weiToWithdraw) public {\n require(balances[msg.sender] >= _weiToWithdraw);\n require(_weiToWithdraw <= withdrawalLimit);\n require(msg.sender.call.value(_weiToWithdraw)());\n balances[msg.sender] -= _weiToWithdraw;\n }\n}\n\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_134",
+                "Location": "require(msg.sender.call.value(_weiToWithdraw)());\n balances[msg.sender] -= _weiToWithdraw;",
+                "Type": "Reentrancy",
+                "Description": "When called .call.value()(), all gas will be sent, and when sending fails, a Boolean value of false will be returned, which can cause a re-entry attack",
+                "Repair": " "
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleDAO {\n\n mapping (address => uint) public credit;\n\n function withdraw(uint amount) {\n if (credit[msg.sender] >= amount) {\n msg.sender.call.value(amount)();\n credit[msg.sender] -= amount;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_135",
+                "Location": "function withdraw(uint amount) {\n if (credit[msg.sender] >= amount) {\n msg.sender.call.value(amount)();\n credit[msg.sender] -= amount;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Victim {\n\n mapping(address => uint) public balances;\n\n function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(!msg.sender.call.value(_amount)()) { throw; }\n balances[msg.sender] -= _amount;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_136",
+                "Location": "function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(!msg.sender.call.value(_amount)()) { throw; }\n balances[msg.sender] -= _amount;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PIGGY_BANK {\n\n mapping (address => uint) public Accounts;\n uint public MinSum = 1 ether;\n uint putBlock;\n\n function Collect(uint _am) public payable {\n if(Accounts[msg.sender] >= MinSum && _am <= Accounts[msg.sender]) {\n if(msg.sender.call.value(_am)()) {\n Accounts[msg.sender] -= _am;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_137",
+                "Location": "function Collect(uint _am) public payable {\n if(Accounts[msg.sender] >= MinSum && _am <= Accounts[msg.sender]) {\n if(msg.sender.call.value(_am)()) {\n Accounts[msg.sender] -= _am;\n }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Private_Bank {\n\n mapping (address => uint) public balances;\n\n function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()) {\n balances[msg.sender] -= _am;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_138",
+                "Location": "function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()) {\n balances[msg.sender] -= _am;\n }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n\n mapping(address => uint) public balances;\n\n function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(msg.sender.call.value(_amount)()) {\n balances[msg.sender] -= _amount;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_139",
+                "Location": "function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(msg.sender.call.value(_amount)()) {\n balances[msg.sender] -= _amount;\n }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleDAO {\n\n mapping (address => uint) public credit;\n\n function withdraw(uint amount) public {\n if (credit[msg.sender] >= amount) {\n require(msg.sender.call.value(amount)());\n credit[msg.sender] -= amount;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_140",
+                "Location": "function withdraw(uint amount) public {\n if (credit[msg.sender] >= amount) {\n require(msg.sender.call.value(amount)());\n credit[msg.sender] -= amount;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SimpleDAO {\n\n mapping (address => uint) public credit;\n\n function withdraw(uint amount) public {\n if (credit[msg.sender] >= amount) {\n credit[msg.sender] -= amount;\n require(msg.sender.call.value(amount)());\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_141",
+                "Location": "function withdraw(uint amount) public {\n if (credit[msg.sender] >= amount) {\n credit[msg.sender] -= amount;\n require(msg.sender.call.value(amount)());\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Victim {\n \n mapping(address => uint) public balances;\n\n function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(msg.sender.call.value(_amount)()) {\n balances[msg.sender] -= _amount;\n }\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_142",
+                "Location": "function withdraw(uint _amount) public {\n if(balances[msg.sender] >= _amount) {\n if(msg.sender.call.value(_amount)()) {\n balances[msg.sender] -= _amount;\n }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenCreation {\n\n mapping (address => uint256) balances;\n uint256 public totalSupply;\n\n function refund() {\n if (msg.sender.call.value(balances[msg.sender])()) {\n totalSupply -= balances[msg.sender];\n balances[msg.sender] = 0;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_143",
+                "Location": "function refund() {\n if (msg.sender.call.value(balances[msg.sender])()) {\n totalSupply -= balances[msg.sender];\n balances[msg.sender] = 0;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract keepMyEther {\n\n mapping(address => uint256) public balances;\n\n function withdraw() public {\n msg.sender.call.value(balances[msg.sender])();\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_144",
+                "Location": "unction withdraw() public {\n msg.sender.call.value(balances[msg.sender])();\n balances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Halo3D {\n\n uint totalEthCharityRecieved = 0;\n uint totalEthCharityCollected = 100;\n address public giveEthCharityAddress;\n \n function payCharity() payable public {\n\n uint256 ethToPay = totalEthCharityCollected - totalEthCharityRecieved;\n\n if(!giveEthCharityAddress.call.value(ethToPay).gas(400000)()) {\n totalEthCharityRecieved = totalEthCharityRecieved - ethToPay;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_145",
+                "Location": "function payCharity() payable public {\n\n uint256 ethToPay = totalEthCharityCollected - totalEthCharityRecieved;\n\n if(!giveEthCharityAddress.call.value(ethToPay).gas(400000)()) {\n totalEthCharityRecieved = totalEthCharityRecieved - ethToPay;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PoormansHoneyPot {\n\n mapping (address => uint) public balances;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdraw() public onlyOwner {\n assert(msg.sender.call.value(balances[msg.sender])()) ;\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_146",
+                "Location": "function withdraw() public onlyOwner {\n assert(msg.sender.call.value(balances[msg.sender])()) ;\n balances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract keepMyEther {\n\n mapping(address => uint256) public balances;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdraw() public onlyOwner {\n msg.sender.call.value(balances[msg.sender])();\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_147",
+                "Location": "function withdraw() public onlyOwner {\n msg.sender.call.value(balances[msg.sender])();\n balances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract HODLWallet {\n\n mapping(address => uint256) public balances;\n uint256 public constant MAX_WITHDRAWAL = 0.002 * 1000000000000000000;\n\n function doWithdraw(address from, uint256 amount) internal {\n require(amount <= MAX_WITHDRAWAL);\n require(balances[from] >= amount);\n balances[from] = balances[from] - amount;\n from.call.value(amount)();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_148",
+                "Location": "function doWithdraw(address from, uint256 amount) internal {\n require(amount <= MAX_WITHDRAWAL);\n require(balances[from] >= amount);\n balances[from] = balances[from] - amount;\n from.call.value(amount)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract HODLWallet {\n\n mapping(address => uint256) public balances;\n uint256 public constant MAX_WITHDRAWAL = 0.002 * 1000000000000000000;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function doWithdraw(address from, uint256 amount) internal onlyOwner {\n require(amount <= MAX_WITHDRAWAL);\n require(balances[from] >= amount);\n balances[from] = balances[from] - amount;\n from.call.value(amount)();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_149",
+                "Location": "function doWithdraw(address from, uint256 amount) internal onlyOwner {\n require(amount <= MAX_WITHDRAWAL);\n require(balances[from] >= amount);\n balances[from] = balances[from] - amount;\n from.call.value(amount)();\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract ERC223TokenCompatible {\n\n mapping (address => uint) balances;\n\n\tfunction transfer(address _to, uint256 _value, bytes _data) public returns (bool success) {\n\t\trequire(_value <= balances[msg.sender]);\n balances[msg.sender] = balances[msg.sender] - _value;\n balances[_to] = balances[_to] + _value;\n\t msg.sender.call.value(_value)(_data);\n\t\treturn true;\n\t}\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_150",
+                "Location": "function transfer(address _to, uint256 _value, bytes _data) public returns (bool success) {\n\t\trequire(_value <= balances[msg.sender]);\n balances[msg.sender] = balances[msg.sender] - _value;\n balances[_to] = balances[_to] + _value;\n\t msg.sender.call.value(_value)(_data);\n\t\treturn true;\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AuctusTokenSale {\n\n\tfunction finish() public {\n\t\tuint256 freeEthers = address(this).balance * 40 / 100;\n\t\tuint256 vestedEthers = address(this).balance - freeEthers;\n\t\tassert(address(this).call.value(vestedEthers)());\n\t}\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_151",
+                "Location": "function finish() public {\n\t\tuint256 freeEthers = address(this).balance * 40 / 100;\n\t\tuint256 vestedEthers = address(this).balance - freeEthers;\n\t\tassert(address(this).call.value(vestedEthers)());\n\t}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LZLCoin {\n\n mapping (address => uint) balances;\n\n function eT(address _pd, uint _tkA) returns (bool) {\n balances[msg.sender] = balances[msg.sender] - _tkA;\n balances[_pd] = balances[_pd] + _tkA;\n if (!msg.sender.call.value(_tkA)()) revert();\n return true;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_152",
+                "Location": "function eT(address _pd, uint _tkA) returns (bool) {\n balances[msg.sender] = balances[msg.sender] - _tkA;\n balances[_pd] = balances[_pd] + _tkA;\n if (!msg.sender.call.value(_tkA)()) revert();\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LZLCoin {\n\n mapping (address => uint) balances;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function eT(address _pd, uint _tkA) onlyOwner returns (bool) {\n balances[msg.sender] = balances[msg.sender] - _tkA;\n balances[_pd] = balances[_pd] + _tkA;\n if (!msg.sender.call.value(_tkA)()) revert();\n return true;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_153",
+                "Location": "function eT(address _pd, uint _tkA) onlyOwner returns (bool) {\n balances[msg.sender] = balances[msg.sender] - _tkA;\n balances[_pd] = balances[_pd] + _tkA;\n if (!msg.sender.call.value(_tkA)()) revert();\n return true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Payee {\n \n uint256 public price;\n\n function pay(uint256 count) public payable {\n assert(msg.value >= price * count);\n if(!msg.sender.call.value(msg.value - price * count)()){ revert(); }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_154",
+                "Location": "function pay(uint256 count) public payable {\n assert(msg.value >= price * count);\n if(!msg.sender.call.value(msg.value - price * count)()){ revert(); }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract NIZIGEN {\n\n mapping (address => uint) balances;\n\n address public owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function transfer(uint _value, bytes _data) public onlyOwner returns (bool) {\n\n if(true) {\n if (balances[msg.sender] < _value) revert();\n balances[msg.sender] = balances[msg.sender] - _value;\n assert(msg.sender.call.value(_value)(_data));\n return true;\n }\n return false;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_155",
+                "Location": "function transfer(uint _value, bytes _data) public onlyOwner returns (bool) {\n\n if(true) {\n if (balances[msg.sender] < _value) revert();\n balances[msg.sender] = balances[msg.sender] - _value;\n assert(msg.sender.call.value(_value)(_data));\n return true;\n }\n return false;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenLab {\n\n mapping (address => mapping (address => uint)) public tokens;\n\n function withdraw(uint amount) {\n require(tokens[0][msg.sender] >= amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n require(msg.sender.call.value(amount)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_156",
+                "Location": "function withdraw(uint amount) {\n require(tokens[0][msg.sender] >= amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n require(msg.sender.call.value(amount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenLab {\n\n mapping (address => mapping (address => uint)) public tokens;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdraw(uint amount) onlyOwner {\n require(tokens[0][msg.sender] >= amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n require(msg.sender.call.value(amount)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_157",
+                "Location": "function withdraw(uint amount) onlyOwner {\n require(tokens[0][msg.sender] >= amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n require(msg.sender.call.value(amount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TokenStore {\n\n mapping (address => mapping (address => uint)) public tokens;\n\n function withdraw(uint _amount) {\n require(tokens[0][msg.sender] >= _amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - _amount;\n if (!msg.sender.call.value(_amount)()) { revert(); }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_158",
+                "Location": "function withdraw(uint _amount) {\n require(tokens[0][msg.sender] >= _amount);\n tokens[0][msg.sender] = tokens[0][msg.sender] - _amount;\n if (!msg.sender.call.value(_amount)()) { revert(); }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract CoinDashBuyer {\n \n uint256 public bounty = 1;\n address public sale;\n\n function claim_bounty(){\n if(!sale.call.value(this.balance - bounty)()) throw;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_159",
+                "Location": "function claim_bounty(){\n if(!sale.call.value(this.balance - bounty)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Blockjack {\n\n address public ADMIN_CONTRACT;\n uint256 public initialBankroll;\n uint256 public currentBankroll;\n address public owner;\n\n modifier onlyOwner() {\n if (msg.sender != owner) throw;\n _;\n }\n\n function migrateBlockjack() onlyOwner {\n if (currentBankroll > initialBankroll) {\n if (!ADMIN_CONTRACT.call.value(currentBankroll - initialBankroll)()) throw;\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_160",
+                "Location": "function migrateBlockjack() onlyOwner {\n if (currentBankroll > initialBankroll) {\n if (!ADMIN_CONTRACT.call.value(currentBankroll - initialBankroll)()) throw;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract NIZIGEN {\n\n mapping (address => uint) balances;\n\n function transfer(uint _value, bytes _data) public returns (bool) {\n\n if(true) {\n if (balances[msg.sender] < _value) revert();\n balances[msg.sender] = balances[msg.sender] - _value;\n assert(msg.sender.call.value(_value)(_data));\n return true;\n }\n else {\n return false;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_161",
+                "Location": "function transfer(uint _value, bytes _data) public returns (bool) {\n\n if(true) {\n if (balances[msg.sender] < _value) revert();\n balances[msg.sender] = balances[msg.sender] - _value;\n assert(msg.sender.call.value(_value)(_data));\n return true;\n }\n else {\n return false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherDelta {\n\n mapping (address => mapping (address => uint)) tokens;\n\n function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n if (!msg.sender.call.value(amount)()) throw;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_162",
+                "Location": "function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n if (!msg.sender.call.value(amount)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract BancorBuyer {\n\n mapping(address => uint256) public balances;\n\n function buyOne(address _exchange, uint256 _value, bytes _data) payable public {\n require(_exchange.call.value(_value)(_data));\n balances[msg.sender] = balances[msg.sender] - _value;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_163",
+                "Location": "function buyOne(address _exchange, uint256 _value, bytes _data) payable public {\n require(_exchange.call.value(_value)(_data));\n balances[msg.sender] = balances[msg.sender] - _value;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherDeltaExchange {\n\n mapping (address => mapping (address => uint)) public tokens;\n\n function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n if (!msg.sender.call.value(amount)()) throw;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_164",
+                "Location": "function withdraw(uint amount) {\n if (tokens[0][msg.sender] < amount) throw;\n tokens[0][msg.sender] = tokens[0][msg.sender] - amount;\n if (!msg.sender.call.value(amount)()) throw;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AutomobileCyberchainToken {\n\n function buy(address recipient, uint256 value) public payable {\n if (value < msg.value) {\n require(msg.sender.call.value(msg.value - value)()); \n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_165",
+                "Location": "function buy(address recipient, uint256 value) public payable {\n if (value < msg.value) {\n require(msg.sender.call.value(msg.value - value)()); \n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TrustWallet {\n\n struct Transaction {\n address destination;\n uint value;\n bytes data;\n }\n\n Transaction[] public transactions;\n\n function executeTransaction() public {\n Transaction storage transaction = transactions[transactions.length - 1];\n require(transaction.destination.call.value(transaction.value)(transaction.data));\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_166",
+                "Location": "function executeTransaction() public {\n Transaction storage transaction = transactions[transactions.length - 1];\n require(transaction.destination.call.value(transaction.value)(transaction.data));\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TrustWallet {\n\n struct Transaction {\n address destination;\n uint value;\n bytes data;\n bool execution_successful;\n }\n\n Transaction[] public transactions;\n\n function executeTransaction() public{\n Transaction storage transaction = transactions[transactions.length - 1];\n transaction.execution_successful = transaction.destination.call.value(transaction.value)(transaction.data);\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_167",
+                "Location": "function executeTransaction() public{\n Transaction storage transaction = transactions[transactions.length - 1];\n transaction.execution_successful = transaction.destination.call.value(transaction.value)(transaction.data);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TelcoinSaleCapEscrow {\n\n mapping(address => uint256) public deposited;\n\n function reject(address _participant) public {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_168",
+                "Location": "function reject(address _participant) public {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TelcoinSaleCapEscrow {\n\n mapping(address => uint256) public deposited;\n address owner;\n\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function reject(address _participant) public onlyOwner {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_169",
+                "Location": " function reject(address _participant) public onlyOwner {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PullPaymentCapable {\n\n mapping(address => uint256) private payments;\n\n function withdrawPayments() external returns (bool success) {\n uint256 payment = payments[msg.sender];\n payments[msg.sender] = 0;\n if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_170",
+                "Location": " function withdrawPayments() external returns (bool success) {\n uint256 payment = payments[msg.sender];\n payments[msg.sender] = 0;\n if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PullPaymentCapable {\n\n mapping(address => uint256) private payments;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function withdrawPayments() external onlyOwner returns (bool success) {\n uint256 payment = payments[msg.sender];\n payments[msg.sender] = 0;\n if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_171",
+                "Location": "function withdrawPayments() external onlyOwner returns (bool success) {\n uint256 payment = payments[msg.sender];\n payments[msg.sender] = 0;\n if (!msg.sender.call.value(payment)()) { throw; }\n success = true;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract TelcoinSaleKYCEscrow {\n\n mapping(address => uint256) public deposited;\n\n function reject(address _participant) public {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_172",
+                "Location": "function reject(address _participant) public {\n uint256 weiAmount = deposited[_participant];\n require(weiAmount > 0);\n deposited[_participant] = 0;\n require(_participant.call.value(weiAmount)());\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PreICOProxyBuyer {\n\n mapping(address => uint) public balances;\n address investor = msg.sender;\n\n function refund() {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n balances[investor] = 0;\n if(!(investor.call.value(amount)())) throw;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_173",
+                "Location": "function refund() {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n balances[investor] = 0;\n if(!(investor.call.value(amount)())) throw;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PreICOProxyBuyer {\n\n mapping(address => uint) public balances;\n bool refunded = true;\n address investor = msg.sender;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function refund() onlyOwner {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n balances[investor] = 0;\n if(!(investor.call.value(amount)())) throw;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_174",
+                "Location": "function refund() onlyOwner {\n if(balances[investor] == 0) throw;\n uint amount = balances[investor];\n balances[investor] = 0;\n if(!(investor.call.value(amount)())) throw;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MoldCoin {\n \n address public founder;\n uint public coinAllocation = 20 * 10**8 * 10**2;\n uint public amountRaised = 0;\n mapping(address => uint) balances;\n\n function buyRecipient(address recipient) payable {\n uint tokens = msg.value * block.timestamp;\n require(tokens <= coinAllocation);\n balances[recipient] = balances[recipient] + tokens;\n amountRaised = amountRaised + msg.value;\n if (!founder.call.value(msg.value)()) revert();\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_175",
+                "Location": "function buyRecipient(address recipient) payable {\n uint tokens = msg.value * block.timestamp;\n require(tokens <= coinAllocation);\n balances[recipient] = balances[recipient] + tokens;\n amountRaised = amountRaised + msg.value;\n if (!founder.call.value(msg.value)()) revert();\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherShot{\n\n mapping (address => uint) playerPendingWithdrawals;\n\n function playerWithdrawPendingTransactions() public returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n }\n else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_176",
+                "Location": "function playerWithdrawPendingTransactions() public returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n }\n else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Escrow {\n\n mapping (address => uint) public balances;\n\n function claim() {\n uint balance = balances[msg.sender];\n require(balance > 0);\n balances[msg.sender] = 0;\n bool claimed = msg.sender.call.value(balance)();\n require(claimed);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_177",
+                "Location": "function claim() {\n uint balance = balances[msg.sender];\n require(balance > 0);\n balances[msg.sender] = 0;\n bool claimed = msg.sender.call.value(balance)();\n require(claimed);\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract AddressOwnershipVerification {\n\n mapping(address => mapping (address => uint32)) verifications;\n\n function revoke(address transactor, address transactee) {\n uint32 deposit = verifications[transactor][transactee];\n verifications[transactor][transactee] = 0;\n if (!transactee.call.value(deposit).gas(23000)()) { throw; }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_178",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherollCrowdfund{\n\n mapping (address => uint) public balanceOf;\n\n function calcRefund(address _addressToRefund) internal {\n uint amount = balanceOf[_addressToRefund];\n balanceOf[_addressToRefund] = 0;\n\n if (amount > 0) {\n if (_addressToRefund.call.value(amount)()) {\n return;\n } else {\n balanceOf[_addressToRefund] = amount;\n }\n } \n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_179",
+                "Location": "",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EtherollCrowdfund{\n\n mapping (address => uint) public balanceOf;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function calcRefund(address _addressToRefund) internal onlyOwner {\n uint amount = balanceOf[_addressToRefund];\n balanceOf[_addressToRefund] = 0;\n\n if (amount > 0) {\n if (_addressToRefund.call.value(amount)()) {\n return;\n } else {\n balanceOf[_addressToRefund] = amount;\n }\n } \n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_180",
+                "Location": "function calcRefund(address _addressToRefund) internal onlyOwner {\n uint amount = balanceOf[_addressToRefund];\n balanceOf[_addressToRefund] = 0;\n\n if (amount > 0) {\n if (_addressToRefund.call.value(amount)()) {\n return;\n } else {\n balanceOf[_addressToRefund] = amount;\n }\n } \n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract MyEtherBank {\n\n uint256 private _bankDonationsBalance = 0;\n\n function BankOwner_WithdrawDonations() public {\n if (_bankDonationsBalance > 0) {\n uint256 amount_ = _bankDonationsBalance;\n _bankDonationsBalance = 0;\n if (!msg.sender.call.value(amount_)()) { throw; }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_181",
+                "Location": "function BankOwner_WithdrawDonations() public {\n if (_bankDonationsBalance > 0) {\n uint256 amount_ = _bankDonationsBalance;\n _bankDonationsBalance = 0;\n if (!msg.sender.call.value(amount_)()) { throw; }\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Bank{\n\n mapping (address => uint256) public balances;\n\n function withdraw() {\n require(msg.sender.call.value(balances[msg.sender])());\n balances[msg.sender] = 0;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_182",
+                "Location": "function withdraw() {\n require(msg.sender.call.value(balances[msg.sender])());\n balances[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Owner{\n mapping (address => uint) private rewardsForA;\n\n function untrustedWithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n if (recipient.call.value(amountToWithdraw)() == false) { throw; }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_183",
+                "Location": "function untrustedWithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n if (recipient.call.value(amountToWithdraw)() == false) { throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract crossFunctionReentrancy{\n\n mapping (address => uint) private rewardsForA;\n\n function WithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n require(recipient.call.value(amountToWithdraw)());\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_184",
+                "Location": "function WithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n require(recipient.call.value(amountToWithdraw)());\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract dumbDAO {\n\n mapping (address => uint) public balances;\n\n function withdraw(address _recipient) returns (bool) {\n\n if (_recipient.call.value(balances[msg.sender])()) {\n balances[msg.sender] = 0;\n return true;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_185",
+                "Location": "function withdraw(address _recipient) returns (bool) {\n\n if (_recipient.call.value(balances[msg.sender])()) {\n balances[msg.sender] = 0;\n return true;\n }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n mapping (address => uint) userBalance;\n\n function withdrawBalance_fixed() {\n uint amount = userBalance[msg.sender];\n userBalance[msg.sender] = 0;\n if(!(msg.sender.call.value(amount)())){ throw; }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_186",
+                "Location": "function withdrawBalance_fixed() {\n uint amount = userBalance[msg.sender];\n userBalance[msg.sender] = 0;\n if(!(msg.sender.call.value(amount)())){ throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SendBalance {\n\n mapping (address => uint) userBalances ;\n\n function withdrawBalance() {\n if (!(msg.sender.call.value(userBalances[msg.sender])())) { throw ; }\n userBalances[msg.sender] = 0;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_187",
+                "Location": "function withdrawBalance() {\n if (!(msg.sender.call.value(userBalances[msg.sender])())) { throw ; }\n userBalances[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Bank{\n\n mapping (address => uint256) public balances;\n\n function withdraw(){\n require(msg.sender.call.value(balances[msg.sender])());\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_188",
+                "Location": "function withdraw(){\n require(msg.sender.call.value(balances[msg.sender])());\n balances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Owner{\n\n mapping (address => uint) private rewardsForA;\n\n function WithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n require(recipient.call.value(amountToWithdraw)());\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_189",
+                "Location": "function WithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n require(recipient.call.value(amountToWithdraw)());\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Owner{\n\n mapping (address => uint) private rewardsForA;\n\n function untrustedWithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n if (recipient.call.value(amountToWithdraw)() == false) { throw; }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_190",
+                "Location": "function untrustedWithdrawReward(address recipient) public {\n uint amountToWithdraw = rewardsForA[recipient];\n rewardsForA[recipient] = 0;\n if (recipient.call.value(amountToWithdraw)() == false) { throw; }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract dumbDAO {\n\n mapping (address => uint) public balances;\n\n function withdraw(address _recipient) returns (bool) {\n if (balances[msg.sender] == 0){ throw; }\n if (_recipient.call.value(balances[msg.sender])()) {\n balances[msg.sender] = 0;\n return true;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_191",
+                "Location": "function withdraw(address _recipient) returns (bool) {\n if (balances[msg.sender] == 0){ throw; }\n if (_recipient.call.value(balances[msg.sender])()) {\n balances[msg.sender] = 0;\n return true;\n }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n\n mapping (address => uint) userBalance;\n\n function withdrawBalance_fixed(){\n uint amount = userBalance[msg.sender];\n if(!(msg.sender.call.value(amount)())){ throw; }\n userBalance[msg.sender] = 0;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_192",
+                "Location": "function withdrawBalance_fixed(){\n uint amount = userBalance[msg.sender];\n if(!(msg.sender.call.value(amount)())){ throw; }\n userBalance[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n\n mapping (address => uint) userBalance;\n\n function withdrawBalance(){\n if(!(msg.sender.call.value(userBalance[msg.sender])())){ throw; }\n userBalance[msg.sender] = 0;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_193",
+                "Location": "function withdrawBalance(){\n if(!(msg.sender.call.value(userBalance[msg.sender])())){ throw; }\n userBalance[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n\n mapping (address => uint) userBalance;\n\n function withdrawBalance_fixed(){\n uint amount = userBalance[msg.sender];\n userBalance[msg.sender] = 0;\n if(!(msg.sender.call.value(amount)())){ throw; }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_194",
+                "Location": "function withdrawBalance_fixed(){\n uint amount = userBalance[msg.sender];\n userBalance[msg.sender] = 0;\n if(!(msg.sender.call.value(amount)())){ throw; }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract PoormansHoneyPot {\n\n mapping (address => uint) public balances;\n\n function withdraw() public{\n assert(msg.sender.call.value(balances[msg.sender])()) ;\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_195",
+                "Location": "function withdraw() public{\n assert(msg.sender.call.value(balances[msg.sender])()) ;\n balances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LuckyETH {\n\n mapping(address => uint) playerPendingWithdrawals;\n\n function playerWithdrawPendingTransactions() public returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n } else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_196",
+                "Location": "function playerWithdrawPendingTransactions() public returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n } else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract LuckyETH {\n\n mapping(address => uint) playerPendingWithdrawals;\n\n address owner;\n modifier onlyOwner() {\n require(msg.sender == owner);\n _;\n }\n\n function playerWithdrawPendingTransactions() public onlyOwner returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n } else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_197",
+                "Location": "function playerWithdrawPendingTransactions() public onlyOwner returns (bool) {\n uint withdrawAmount = playerPendingWithdrawals[msg.sender];\n playerPendingWithdrawals[msg.sender] = 0;\n\n if (msg.sender.call.value(withdrawAmount)()) {\n return true;\n } else {\n playerPendingWithdrawals[msg.sender] = withdrawAmount;\n return false;\n }\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract FREE_FOR_FUN {\n\n mapping (address=>uint256) public ExtractDepositTime;\n\n function GetFreeEther() public payable {\n if(ExtractDepositTime[msg.sender] != 0) {\n msg.sender.call.value(ExtractDepositTime[msg.sender])();\n ExtractDepositTime[msg.sender] = 0;\n }\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_198",
+                "Location": "function GetFreeEther() public payable {\n if(ExtractDepositTime[msg.sender] != 0) {\n msg.sender.call.value(ExtractDepositTime[msg.sender])();\n ExtractDepositTime[msg.sender] = 0;\n }}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract EXPERIMENTAL_ETH_AUCTION {\n\n mapping(address => uint) public Bids;\n\n function RevokeBid() public payable {\n uint toTransfer = Bids[msg.sender];\n Bids[msg.sender] = 0;\n msg.sender.call.value(toTransfer);\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_199",
+                "Location": "function RevokeBid() public payable {\n uint toTransfer = Bids[msg.sender];\n Bids[msg.sender] = 0;\n msg.sender.call.value(toTransfer);\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract SendBalance {\n\n mapping (address => uint) userBalances ;\n bool withdrawn = false ;\n\n function withdrawBalance(){\n if (!(msg.sender.call.value(userBalances[msg.sender])())) { throw; }\n userBalances[msg.sender] = 0;\n }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_200",
+                "Location": "function withdrawBalance(){\n if (!(msg.sender.call.value(userBalances[msg.sender])())) { throw; }\n userBalances[msg.sender] = 0;\n }",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract HoneyPot {\n mapping (address => uint) public balances;\n\n function get() {\n if (!msg.sender.call.value(balances[msg.sender])()) { throw; }\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_201",
+                "Location": "function get() {\n if (!msg.sender.call.value(balances[msg.sender])()) { throw; }\n balances[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": " \ncontract MultiplicatorX3 {\n\n function Command(address adr, bytes data) payable public {\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_202",
+                "Location": "function Command(address adr, bytes data) payable public {\n adr.call.value(msg.value)(data);\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract NBUNIERC20 {\n\n mapping(address => uint256) private balances;\n\n function emergencyDrain24hAfterLiquidityGenerationEventIsDone() public {\n bool success = msg.sender.call.value(address(this).balance)();\n balances[msg.sender] = balances[address(this)];\n balances[address(this)] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_203",
+                "Location": "function emergencyDrain24hAfterLiquidityGenerationEventIsDone() public {\n bool success = msg.sender.call.value(address(this).balance)();\n balances[msg.sender] = balances[address(this)];\n balances[address(this)] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Private_Bank {\n\n mapping (address => uint) public balances;\n\n function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_204",
+                "Location": "function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "\ncontract Reentrance {\n mapping (address => uint) userBalance;\n\n function withdrawBalance(){\n if( !(msg.sender.call.value(userBalance[msg.sender])()) ){ throw; }\n userBalance[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_205",
+                "Location": "function withdrawBalance(){\n if( !(msg.sender.call.value(userBalance[msg.sender])()) ){ throw; }\n userBalance[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    }
+]

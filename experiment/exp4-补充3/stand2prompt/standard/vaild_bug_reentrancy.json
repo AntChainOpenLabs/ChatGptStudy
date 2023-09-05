@@ -1,0 +1,62 @@
+[
+        {
+        "code": "\ncontract HoneyPot {\n mapping (address => uint) public balances;\n\n function get() {\n if (!msg.sender.call.value(balances[msg.sender])()) { throw; }\n balances[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_201",
+                "Location": "function get() {\n if (!msg.sender.call.value(balances[msg.sender])()) { throw; }\n balances[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": " \ncontract MultiplicatorX3 {\n\n function Command(address adr, bytes data) payable public {\n adr.call.value(msg.value)(data);\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_202",
+                "Location": "function Command(address adr, bytes data) payable public {\n adr.call.value(msg.value)(data);\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract NBUNIERC20 {\n\n mapping(address => uint256) private balances;\n\n function emergencyDrain24hAfterLiquidityGenerationEventIsDone() public {\n bool success = msg.sender.call.value(address(this).balance)();\n balances[msg.sender] = balances[address(this)];\n balances[address(this)] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_203",
+                "Location": "function emergencyDrain24hAfterLiquidityGenerationEventIsDone() public {\n bool success = msg.sender.call.value(address(this).balance)();\n balances[msg.sender] = balances[address(this)];\n balances[address(this)] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract Private_Bank {\n\n mapping (address => uint) public balances;\n\n function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_204",
+                "Location": "function CashOut(uint _am) {\n if(_am <= balances[msg.sender]) {\n if(msg.sender.call.value(_am)()){\n balances[msg.sender] -= _am;\n }\n }\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "code": "\ncontract Reentrance {\n mapping (address => uint) userBalance;\n\n function withdrawBalance(){\n if( !(msg.sender.call.value(userBalance[msg.sender])()) ){ throw; }\n userBalance[msg.sender] = 0;\n }\n}",
+        "VulnerabilityDesc": [
+            {
+                "Name": "Reentrancy_205",
+                "Location": "function withdrawBalance(){\n if( !(msg.sender.call.value(userBalance[msg.sender])()) ){ throw; }\n userBalance[msg.sender] = 0;\n }\n}",
+                "Type": "Reentrancy",
+                "Description": "",
+                "Repair": ""
+            }
+        ]
+    }
+]
