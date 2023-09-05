@@ -1,0 +1,37 @@
+{
+    "0": [
+        " Yes,{'type':'fake deposit','location':'if (!msg",
+        " Yes,{'type':'fake deposit','location':'if (!msg",
+        " Yes,{'type':'fake deposit','location':'if (!msg",
+        " Yes,{'type':'fake deposit','location':'if (!msg",
+        " Yes,{'type':'fake deposit','location':'if (!msg"
+    ],
+    "1": [
+        " Yes,{'type':'fake deposit','location':'function Command(",
+        " Yes,{'type':'fake deposit','location':'function Command(",
+        " Yes,{'type':'fake deposit','location':'function Command(",
+        " Yes,{'type':'fake deposit','location':'function Command(",
+        " Yes,{'type':'fake deposit','location':'function Command("
+    ],
+    "2": [
+        " Yes,{'type':'fake deposit','location':'if (bal",
+        " Yes,{'type':'fake deposit','location':'if (bal",
+        " Yes,{'type':'fake deposit','location':'if (bal",
+        " Yes,{'type':'fake deposit','location':'if (bal",
+        " Yes,{'type':'fake deposit','location':'if (bal"
+    ],
+    "3": [
+        " Yes,{'type':'fake deposit','location':'if (_am",
+        " Yes,{'type':'fake deposit','location':'if (_am",
+        " Yes,{'type':'fake deposit','location':'if (_am",
+        " Yes,{'type':'fake deposit','location':'if (_am",
+        " Yes,{'type':'fake deposit','location':'if (_am"
+    ],
+    "4": [
+        " Yes,{'type':'fake deposit','location':'function withdrawBalance",
+        " Yes,{'type':'fake deposit','location':'function withdrawBalance",
+        " Yes,{'type':'fake deposit','location':'if( !",
+        " Yes,{'type':'fake deposit','location':'function withdrawBalance",
+        " Yes,{'type':'fake deposit','location':'if( !"
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "0": [
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer("
+    ],
+    "1": [
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer("
+    ],
+    "2": [
+        " No.",
+        " No.",
+        " No.",
+        " No.",
+        " No."
+    ],
+    "3": [
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom"
+    ],
+    "4": [
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom"
+    ]
+}
