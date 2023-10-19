@@ -1,0 +1,32 @@
+[
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableStaking {\n    mapping(address => uint256) public balances;\n    uint256 public totalStaked;\n    uint256 public rewardRate = 5;  // Reward rate in percentage\n\n    event Staked(address indexed user, uint256 amount, uint256 reward);\n    event Unstaked(address indexed user, uint256 amount);\n\n    function stake(uint256 amount) external {\n        uint256 reward = (amount * rewardRate) / 100;\n\n        totalStaked += amount;  // Vulnerability: Updating total staked before rewarding the user\n        balances[msg.sender] += amount + reward;  // This gives the user less reward than they should get\n\n        emit Staked(msg.sender, amount, reward);\n    }\n\n    function unstake(uint256 amount) external {\n        require(balances[msg.sender] >= amount, \"Insufficient balance\");\n\n        totalStaked -= amount;  // Vulnerability: Reducing totalStaked before reducing the user's balance\n        balances[msg.sender] -= amount;\n\n        emit Unstaked(msg.sender, amount);\n    }\n}\n",
+        "VulnerabilityDesc": {
+            "Name": "1",
+            "Location": "totalStaked += amount;\n        balances[msg.sender] += amount + reward;",
+            "Type": "Incorrect_calculating_order",
+            "Description": "In the stake function, we're updating totalStaked before adding the reward to the user's balance, which is an incorrect calculation order.",
+            "Repair": ""
+        }
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableTokenSale {\n    address public owner;\n    uint256 public pricePerToken = 1 ether;  // 1 ETH = 1 Token for simplicity\n    uint256 public totalTokensSold;\n    mapping(address => uint256) public tokens;\n\n    event Purchased(address indexed user, uint256 amount);\n    event PriceUpdated(uint256 newPrice);\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    function purchase(uint256 tokenAmount) external payable {\n        uint256 totalCost = pricePerToken * tokenAmount;\n        require(msg.value >= totalCost, \"Insufficient funds sent\");\n\n        totalTokensSold += tokenAmount;  // Vulnerability: Updating total before checking availability\n        require(totalTokensSold <= 1000, \"Not enough tokens left\");\n\n        tokens[msg.sender] += tokenAmount;\n\n        emit Purchased(msg.sender, tokenAmount);\n    }\n\n    function setPrice(uint256 newPrice) external {\n        require(msg.sender == owner, \"Only owner can set price\");\n        \n        pricePerToken = newPrice;  // Vulnerability: Setting the price without updating pending purchases\n        emit PriceUpdated(newPrice);\n    }\n}\n",
+        "VulnerabilityDesc": {
+            "Name": "2",
+            "Location": "totalTokensSold += tokenAmount;  \n        require(totalTokensSold <= 1000, \"Not enough tokens left\");",
+            "Type": "Incorrect_calculating_order",
+            "Description": "In the purchase function, we're updating the totalTokensSold before checking if there are enough tokens left to sell.",
+            "Repair": ""
+        }
+    },
+    {
+        "Code": NaN,
+        "VulnerabilityDesc": {
+            "Name": "3",
+            "Location": NaN,
+            "Type": "Incorrect_calculating_order",
+            "Description": NaN,
+            "Repair": ""
+        }
+    }
+]
