@@ -384,18 +384,6 @@
         ]
     },
     {
-        "Code": "no code",
-        "VulnerabilityDesc": [
-            {
-                "Name": "REP-Moma-2021-05-19.pdf  :   Risk of Flash Loan Attack on Price Oracl",
-                "Location": "",
-                "Type": "Price oracle manipulation",
-                "Description": "",
-                "Repair": ""
-            }
-        ]
-    },
-    {
         "Code": "pragma solidity ^0.8.0;\nimport \"./RoleAware.sol\";\nimport \"./MarginRouter.sol\";\nimport \"../libraries/UniswapStyleLib.sol\";\nstruct TokenPrice {\n    uint256 blockLastUpdated;\n    uint256 tokenPer1k;\n    address[] liquidationPairs;\n    address[] inverseLiquidationPairs;\n    address[] liquidationTokens;\n    address[] inverseLiquidationTokens;\n}\n\nabstract contract PriceAware is Ownable, RoleAware {\n    address public immutable peg;\n    mapping(address => TokenPrice) public tokenPrices;\n\n    uint16 public priceUpdateWindow = 8;\n    uint256 public UPDATE_RATE_PERMIL = 80;\n    uint256 public UPDATE_MAX_PEG_AMOUNT = 50_000;\n    uint256 public UPDATE_MIN_PEG_AMOUNT = 1_000;\n\n    constructor(address _peg) Ownable() {\n        peg = _peg;\n    }\n\n    function setPriceUpdateWindow(uint16 window) external onlyOwner {\n        priceUpdateWindow = window;\n    }\n    function getCurrentPriceInPeg(\n        address token,\n        uint256 inAmount,\n        bool forceCurBlock\n    ) public returns (uint256) {\n        TokenPrice storage tokenPrice = tokenPrices[token];\n        if (forceCurBlock) {\n            if (\n                block.number - tokenPrice.blockLastUpdated > priceUpdateWindow\n            ) {\n                return getPriceFromAMM(token, inAmount);\n            } else {\n                return viewCurrentPriceInPeg(token, inAmount);\n            }\n        } else if (tokenPrice.tokenPer1k == 0) {\n            return getPriceFromAMM(token, inAmount);\n        }\n\n        if (block.number - tokenPrice.blockLastUpdated > priceUpdateWindow) {\n            getPriceFromAMM(token, inAmount);\n        }\n\n        return (inAmount * 1000 ether) / tokenPrice.tokenPer1k;\n    }\n\n    function getPriceFromAMM(address token, uint256 inAmount)\n        internal\n        virtual\n        returns (uint256)\n    {\n        if (token == peg) {\n            return inAmount;\n        } else {\n            TokenPrice storage tokenPrice = tokenPrices[token];\n            uint256[] memory pathAmounts =\n                UniswapStyleLib.getAmountsOut(\n                    inAmount,\n                    tokenPrice.liquidationPairs,\n                    tokenPrice.liquidationTokens\n                );\n            uint256 outAmount = pathAmounts[pathAmounts.length - 1];\n\n            if (\n                outAmount > UPDATE_MIN_PEG_AMOUNT &&\n                outAmount < UPDATE_MAX_PEG_AMOUNT\n            ) {\n                setPriceVal(tokenPrice, inAmount, outAmount);\n            }\n\n            return outAmount;\n        }\n    }\n\n    function setPriceVal(\n        TokenPrice storage tokenPrice,\n        uint256 inAmount,\n        uint256 outAmount\n    ) internal {\n        _setPriceVal(tokenPrice, inAmount, outAmount, UPDATE_RATE_PERMIL);\n        tokenPrice.blockLastUpdated = block.number;\n    }\n\n    function _setPriceVal(\n        TokenPrice storage tokenPrice,\n        uint256 inAmount,\n        uint256 outAmount,\n        uint256 weightPerMil\n    ) internal {\n        uint256 updatePer1k = (1000 ether * inAmount) / (outAmount + 1);\n        tokenPrice.tokenPer1k =\n            (tokenPrice.tokenPer1k *\n                (1000 - weightPerMil) +\n                updatePer1k *\n                weightPerMil) /\n            1000;\n    }\n}",
         "VulnerabilityDesc": [
             {

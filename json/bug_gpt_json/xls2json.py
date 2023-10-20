@@ -19,21 +19,25 @@ def xls2json(xlsx_file, bug_type):
         description = row['description']
         repair = ""
 
-        vulnerability_bug = {
-            "Name": name,
-            "Location": location,
-            "Type": bug_type,
-            "Description": description,
-            "Repair": ""
-        }
+        vulnerability_bug = [
+            {
+                "Name": name,
+                "Location": location,
+                "Type": bug_type,
+                "Description": description,
+                "Repair": ""
+            }
+        ]
 
-        vulnerability_ben = {
-            "Name": "ben_"+name,
-            "Location": "",
-            "Type": bug_type,
-            "Description": "",
-            "Repair": ""
-        }
+        vulnerability_ben = [
+            {
+                "Name": "ben_" + name,
+                "Location": "",
+                "Type": bug_type,
+                "Description": "",
+                "Repair": ""
+            }
+        ]
 
         entry_bug = {
             "Code": code,
@@ -49,13 +53,13 @@ def xls2json(xlsx_file, bug_type):
         json_data_benign.append(entry_ben)
 
     # 输出JSON数据
-    with open("blew_2000_token/"+bug_type+".json",'w+') as f:
+    with open("blew_2000_token/"+bug_type.replace(" ","_")+".json",'w+') as f:
         json.dump(json_data_bug,f, indent=4)
-    with open("blew_2000_token/"+"ben_"+bug_type+".json",'w+') as f2:
+    with open("blew_2000_token/"+"ben_"+bug_type.replace(" ","_")+".json",'w+') as f2:
         json.dump(json_data_benign,f2, indent=4)
 
 if __name__ == "__main__":
-    xlsx_file =  ['raw/s6-1-2.xlsx']
+    xlsx_file =  ['raw/s6-1.xlsx']
 
-    xls2json(xlsx_file[0], "Incorrect calculating order".replace(" ","_"))
+    xls2json(xlsx_file[0], "Incorrect calculating order")
 
