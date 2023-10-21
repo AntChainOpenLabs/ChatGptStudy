@@ -2398,5 +2398,125 @@
                 "Repair": ""
             }
         ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract EthLoan {\n    struct Loan {\n        uint256 amount;\n        uint256 startBlock;\n    }\n\n    uint256 public interestRatePerBlock = 1;  // 0.01% per block as an example\n    mapping(address => Loan) public loans;\n\n    event LoanTaken(address indexed user, uint256 amount);\n\n    function takeLoan(uint256 amount) external payable {\n        require(msg.value == amount, \"Amount mismatch!\");\n        \n        // Vulnerability: Calculate and update interest before setting the new start block\n        if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;\n\n        emit LoanTaken(msg.sender, amount);\n    }\n\n    function repayLoan() external payable {\n        require(loans[msg.sender].amount > 0, \"No loan taken.\");\n        uint256 totalDue = loans[msg.sender].amount + (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n        require(msg.value >= totalDue, \"Not enough to cover the loan and interest.\");\n\n        payable(msg.sender).transfer(msg.value - totalDue);  // Refund any excess\n        delete loans[msg.sender];  // Clear the loan\n    }\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "201",
+                "Location": "if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;\n",
+                "Type": "Incorrect calculating order",
+                "Description": "A contract allows users to loan Ethereum, receiving interest over time. The interest is calculated based on the number of blocks since the loan was taken. A vulnerability arises due to the incorrect order in which the interest calculation and user balance update occur.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract EthDepositReward {\n    uint256 public totalDeposits;\n    uint256 public tokenPrice = 1 ether;  // Starting token price as 1 ETH for simplicity.\n\n    mapping(address => uint256) public balances;\n    mapping(address => uint256) public rewards;\n\n    event Deposited(address indexed user, uint256 amount, uint256 rewardAmount);\n\n    function deposit() external payable {\n        require(msg.value > 0, \"Deposit value should be greater than 0\");\n        \n        // Vulnerability: Updating token price before calculating the reward.\n        tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;\n\n        balances[msg.sender] += msg.value;\n        totalDeposits += msg.value;\n        rewards[msg.sender] += rewardAmount;\n\n        emit Deposited(msg.sender, msg.value, rewardAmount);\n    }\n    \n    // Additional functions would be here...\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "202",
+                "Location": "tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;\n\n        balances[msg.sender] += msg.value;\n        totalDeposits += msg.value;\n        rewards[msg.sender] += rewardAmount;",
+                "Type": "Incorrect calculating order",
+                "Description": "A contract allows users to deposit Ethereum and rewards them with a token. The number of tokens they receive is calculated based on the current token price. However, there's a vulnerability due to the incorrect order of updating the total deposit balance and the current token price.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract SimpleStaking {\n    uint256 public rewardRate = 1e18;  // For simplicity, let's say 1 token reward per second.\n\n    struct User {\n        uint256 balance;\n        uint256 lastClaimTime;\n    }\n\n    mapping(address => User) public users;\n\n    event RewardClaimed(address indexed user, uint256 amount);\n\n    function stake(uint256 amount) external {\n        // Assume a transfer function exists that moves tokens into the contract\n        // For simplicity, it's omitted here.\n        \n        User storage user = users[msg.sender];\n        user.balance += amount;\n        user.lastClaimTime = block.timestamp;\n    }\n\n    function claimReward() external {\n        User storage user = users[msg.sender];\n        \n        // Vulnerability: Updating lastClaimTime before calculating the reward.\n        uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;\n\n        require(reward <= user.balance, \"Not enough tokens to give as reward\");\n\n        // Simulate the transfer of reward to the user\n        user.balance -= reward;\n\n        emit RewardClaimed(msg.sender, reward);\n    }\n\n    // Additional functions would be here...\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "203",
+                "Location": "uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;\n\n        require(reward <= user.balance, \"Not enough tokens to give as reward\");\n\n        // Simulate the transfer of reward to the user\n        user.balance -= reward;",
+                "Type": "Incorrect calculating order",
+                "Description": "In a simple staking contract, users can stake tokens and after a certain time, they can claim their rewards which are calculated based on the total time staked. However, there is a vulnerability in the claimReward function due to the incorrect order of updating the user's last claim time and calculating the reward.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract SimpleSavings {\n    uint256 public interestRate = 1e15;  // Representing 0.1% interest per second for simplicity.\n\n    struct Account {\n        uint256 balance;\n        uint256 lastDepositTime;\n    }\n\n    mapping(address => Account) public accounts;\n\n    event Withdrawn(address indexed user, uint256 amount);\n\n    function deposit(uint256 amount) external {\n        // Assume a function that transfers tokens into the contract exists.\n        // Omitted for brevity.\n\n        Account storage userAccount = accounts[msg.sender];\n        userAccount.balance += amount;\n        userAccount.lastDepositTime = block.timestamp;\n    }\n\n    function withdraw(uint256 amount) external {\n        Account storage userAccount = accounts[msg.sender];\n        \n        // Vulnerability: Calculating interest before updating the lastDepositTime.\n        uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;\n        \n        uint256 totalWithdrawal = amount + interest;\n        require(totalWithdrawal <= userAccount.balance, \"Insufficient balance\");\n\n        // Simulate the transfer of the withdrawal amount to the user.\n        userAccount.balance -= totalWithdrawal;\n\n        emit Withdrawn(msg.sender, totalWithdrawal);\n    }\n\n    // ... other functions.\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "204",
+                "Location": "uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;\n        \n        uint256 totalWithdrawal = amount + interest;\n        require(totalWithdrawal <= userAccount.balance, \"Insufficient balance\");\n\n        // Simulate the transfer of the withdrawal amount to the user.\n        userAccount.balance -= totalWithdrawal;",
+                "Type": "Incorrect calculating order",
+                "Description": "A savings contract allows users to deposit tokens. The interest is calculated based on the total time the tokens have been held. The flaw is in the withdraw function, which calculates interest before updating the user's last deposit time, allowing users to potentially exploit the contract by frequently withdrawing and depositing.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract EventTickets {\n    struct Event {\n        string name;\n        uint256 ticketPrice;\n        uint256 totalTickets;\n        uint256 ticketsSold;\n    }\n\n    mapping(uint256 => Event) public events;\n    uint256 public nextEventId = 0;\n\n    event TicketPurchased(uint256 eventId, address buyer, uint256 amount);\n\n    function createEvent(string calldata _name, uint256 _ticketPrice, uint256 _totalTickets) external {\n        events[nextEventId] = Event({\n            name: _name,\n            ticketPrice: _ticketPrice,\n            totalTickets: _totalTickets,\n            ticketsSold: 0\n        });\n\n        nextEventId++;\n    }\n\n    function buyTicket(uint256 _eventId, uint256 _amount) external payable {\n        Event storage chosenEvent = events[_eventId];\n        \n        // Assuming we can do ERC20 transfers or similar. Here we just use ether for simplicity.\n        require(msg.value == chosenEvent.ticketPrice * _amount, \"Incorrect Ether sent\");\n\n        // Vulnerability: Decreasing tickets before checking availability.\n        chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");\n\n        emit TicketPurchased(_eventId, msg.sender, _amount);\n    }\n\n    // ... other functions for refunding, event management etc.\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "205",
+                "Location": "require(msg.value == chosenEvent.ticketPrice * _amount, \"Incorrect Ether sent\");\n\n        // Vulnerability: Decreasing tickets before checking availability.\n        chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");\n",
+                "Type": "Incorrect calculating order",
+                "Description": "The contract flaw is in the buyTicket function: the contract checks if the event has enough tickets after it decrements the number of available tickets, allowing users to potentially purchase more tickets than available.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableWallet {\n    mapping(address => uint256) public balances;\n\n    event Deposited(address indexed user, uint256 amount);\n    event Withdrawn(address indexed user, uint256 amount);\n\n    function deposit() external payable {\n        balances[msg.sender] += msg.value;\n        emit Deposited(msg.sender, msg.value);\n    }\n\n    function withdraw(uint256 _amount) external {\n        require(balances[msg.sender] >= _amount, \"Insufficient balance!\");\n\n        // Vulnerability: Sending ether before updating the balance\n        (bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;\n        emit Withdrawn(msg.sender, _amount);\n    }\n\n    // ... other potential functions\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "206",
+                "Location": "(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;",
+                "Type": "Incorrect calculating order",
+                "Description": " The contract flaw is in the withdraw function: the contract sends the funds to the user before decrementing the user's balance, making it vulnerable to a reentrancy attack.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableAuction {\n    address public highestBidder;\n    uint256 public highestBid;\n\n    event HighestBidIncreased(address indexed bidder, uint256 amount);\n\n    function bid() external payable {\n        require(msg.value > highestBid, \"There's already a higher bid.\");\n\n        // Vulnerability: Refunding before updating the state\n        if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;\n        emit HighestBidIncreased(msg.sender, msg.value);\n    }\n\n    // ... other functions like auction end, withdrawal, etc.\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "207",
+                "Location": "if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;",
+                "Type": "Incorrect calculating order",
+                "Description": "he vulnerability arises from updating the state of the highest bid after refunding the previous highest bidder. This could allow potential reentrancy attacks.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableRewardPool {\n    mapping(address => uint256) public balances;\n    uint256 public totalSupply;\n    uint256 public globalInterestRate = 1e18;\n\n    function deposit(uint256 amount) external {\n        // Update user balance\n        balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();\n        \n        totalSupply += amount;\n    }\n\n    function claimRewards() external {\n        uint256 reward = balances[msg.sender] * globalInterestRate;\n        balances[msg.sender] += reward;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();\n    }\n\n    function updateGlobalInterestRate() internal {\n        // Assume some logic to increase global interest rate, e.g., 1% increment\n        globalInterestRate += globalInterestRate / 100;\n    }\n\n    // ... other functions\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "208",
+                "Location": "balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();\n        \n        totalSupply += amount;",
+                "Type": "Incorrect calculating order",
+                "Description": "The vulnerability arises when calculating and distributing rewards. The contract updates user balance before updating the global interest rate, which means users can potentially claim more rewards than they should be able to.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableLottery {\n    mapping(address => uint256) public balances;\n    uint256 public totalDeposits;\n    uint256 constant interestRate = 105; // 5% interest\n\n    function deposit(uint256 amount) external {\n        // Incorrect order: Updating the principal deposit before adding the interest\n        balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;\n    }\n\n    function applyInterest(address user) internal {\n        balances[user] = (balances[user] * interestRate) / 100;\n    }\n\n    // ... other functions like drawing a winner, etc.\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "209",
+                "Location": " balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;",
+                "Type": "Incorrect calculating order",
+                "Description": "Each deposit also earns a small interest for the user. However, the contract updates the user's principal deposit before applying the interest, leading to incorrect final balances.",
+                "Repair": ""
+            }
+        ]
+    },
+    {
+        "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract VulnerableBank {\n    mapping(address => uint256) public balances;\n    uint256 public totalDeposits;\n    uint256 constant loyaltyBonus = 10;  // 10 tokens bonus for each deposit\n\n    function deposit(uint256 amount) external {\n        balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;\n    }\n\n    function giveLoyaltyBonus(address user) internal {\n        balances[user] += loyaltyBonus;\n    }\n\n    // ... other functions like withdrawals, etc.\n}\n",
+        "VulnerabilityDesc": [
+            {
+                "Name": "210",
+                "Location": "balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;",
+                "Type": "Incorrect calculating order",
+                "Description": "The contract offers a loyalty bonus to its users every time they deposit funds. However, the bonus is incorrectly added after updating the user's balance instead of before, leading to miscalculated total deposits.",
+                "Repair": ""
+            }
+        ]
     }
 ]

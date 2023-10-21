@@ -1,0 +1,93 @@
+{
+    "0": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "1": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "2": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "3": [
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;'}###\n###"
+    ],
+    "4": [
+        " Yes,{'type':'Incorrect calculating order','location':'tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'tokenPrice = totalDeposits / 1000;  // Example: The more total deposits, the lesser the token price.\n        uint256 rewardAmount = msg.value / tokenPrice;'}###\n###"
+    ],
+    "5": [
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - user.lastClaimTime;\n        user.lastClaimTime = block.timestamp;\n        uint256 reward = timeElapsed * rewardRate;'}###\n###"
+    ],
+    "6": [
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed = block.timestamp - userAccount.lastDepositTime;\n        uint256 interest = userAccount.balance * interestRate * timeElapsed;\n        userAccount.lastDepositTime = block.timestamp;'}###\n###"
+    ],
+    "7": [
+        " Yes,{'type':'Incorrect calculating order','location':'chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'chosenEvent.ticketsSold += _amount;\n\n        require(chosenEvent.ticketsSold <= chosenEvent.totalTickets, \"Not enough tickets available\");'}###\n###"
+    ],
+    "8": [
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###"
+    ],
+    "9": [
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###"
+    ],
+    "10": [
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n\n        // Incorrect order: Updating global rate after user balance\n        updateGlobalInterestRate();'}###\n###"
+    ],
+    "11": [
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###"
+    ],
+    "12": [
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;  // Incorrect order: updating balance before adding the bonus\n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###"
+    ]
+}

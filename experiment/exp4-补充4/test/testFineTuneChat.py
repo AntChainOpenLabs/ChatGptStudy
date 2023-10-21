@@ -7,11 +7,11 @@ import random
 
 
 
-FINE_TUNED_MODEL_supplement = "gpt-3.5-turbo-0613" # exp4-补充4-1
+FINE_TUNED_MODEL_supplement = "ft:gpt-3.5-turbo-0613:antchainopenlab::8BgMiDB9" # exp4-补充4-1
 
 
-vul_ben_Incorrect_calculating_order_file = ""
-vul_bug_Incorrect_calculating_order_file = ""
+vul_ben_Incorrect_calculating_order_file = "vul_ben_Incorrect_calculating_order.json"
+vul_bug_Incorrect_calculating_order_file = "vul_bug_Incorrect_calculating_order.json"
 
 vul_ben_Incorrect_calculating_order_result = "result/ben_Incorrect_calculating_order/vul_ben_Incorrect_calculating_order_result"
 vul_bug_Incorrect_calculating_order_result = "result/bug_Incorrect_calculating_order/vul_bug_Incorrect_calculating_order_result"
@@ -20,7 +20,7 @@ vul_bug_Incorrect_calculating_order_result = "result/bug_Incorrect_calculating_o
 def read_testFile(file):
     testCase = []
     with open(file,"r",encoding="utf-8") as f:
-        tst = json.load(file)
+        tst = json.load(f)
         for item in tst:
             testCase.append(item["Code"])
     return testCase
@@ -50,7 +50,7 @@ def fineTune(FINE_TUNED_MODEL , testCase , testCaseNum, file  , temperature):
                 )
                 print(response)
                 for choice in response["choices"]:
-                    ans.append(choice["text"].replace("\n"," ").replace("\r"," "))
+                    ans.append(choice["message"]['content'])
                 index += 1
             except:
                 print(" 第{}个样本 测试失败 ".format(i))
@@ -65,8 +65,8 @@ def fineTune(FINE_TUNED_MODEL , testCase , testCaseNum, file  , temperature):
 # testResult : 保存测试结果的文件
 # testCaseNum : 测试数量
 def run(fine_tuned_model, filename, testResultFile, testCaseNum):
-    testCase = read_testFile(filename, testCaseNum)
-    for temperature in range(0,1):
+    testCase = read_testFile(filename)
+    for temperature in range(0,3):
         print("---------------------")
         print("正在测试 temperatur 为 {} 时 ".format(temperature))
         fineTune(fine_tuned_model, testCase,testCaseNum, testResultFile +"_" + str(temperature) + ".jsonl" ,temperature)
@@ -76,7 +76,9 @@ if __name__ == "__main__":
     openai.api_key = "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"
 
 
-    run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_file ,vul_bug_Incorrect_calculating_order_result, 1)
+    run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_file ,vul_bug_Incorrect_calculating_order_result, 13)
+
+    # run(FINE_TUNED_MODEL_supplement, vul_ben_Incorrect_calculating_order_file, vul_ben_Incorrect_calculating_order_result, 10)
 
 
     
