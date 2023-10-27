@@ -7,17 +7,21 @@ import random
 
 
 
-FINE_TUNED_MODEL_supplement = "ft:gpt-3.5-turbo-0613:antchainopenlab::8BgMiDB9" # exp4-补充4-1
+# s6_1  = "ft:gpt-3.5-turbo-0613:antchainopenlab::8BgMiDB9" # exp4-补充4-1
+s6_1_delete_explation = "ft:gpt-3.5-turbo-0613:antchainopenlab::8EFhCfmg"
 
 
-vul_ben_Incorrect_calculating_order_file = "s6-1/vul_ben_Incorrect_calculating_order.json"
-vul_bug_Incorrect_calculating_order_file = "s6-1/vul_bug_Incorrect_calculating_order.json"
-vul_bug_Incorrect_calculating_order_add_explation_file = "s6-1/vul_bug_Incorrect_calculating_order_add_explation.json"
+# vul_ben_Incorrect_calculating_order_file = "s6-1/vul_ben_Incorrect_calculating_order.json"
+# vul_bug_Incorrect_calculating_order_file = "s6-1/vul_bug_Incorrect_calculating_order.json"
+# vul_bug_Incorrect_calculating_order_add_explation_file = "s6-1/vul_bug_Incorrect_calculating_order_add_explation.json"
+vul_bug_Incorrect_calculating_order_delete_explation_file = "s6-1-delete-explation/vul_bug_Incorrect_calculating_order.json"
+vul_ben_Incorrect_calculating_order_delete_explation_file = "s6-1-delete-explation/vul_ben_Incorrect_calculating_order.json"
 
-vul_ben_Incorrect_calculating_order_result = "result/ben_Incorrect_calculating_order/vul_ben_Incorrect_calculating_order_result"
-vul_bug_Incorrect_calculating_order_result = "result/bug_Incorrect_calculating_order/vul_bug_Incorrect_calculating_order_result"
-vul_bug_Incorrect_calculating_order_add_explation_result =  "result/bug_Incorrect_calculating_order_add_explation/vul_bug_Incorrect_calculating_order_add_explation_result"
-
+# vul_ben_Incorrect_calculating_order_result = "result/s6-1/ben_Incorrect_calculating_order/vul_ben_Incorrect_calculating_order_result"
+# vul_bug_Incorrect_calculating_order_result = "result/s6-1/bug_Incorrect_calculating_order/vul_bug_Incorrect_calculating_order_result"
+# vul_bug_Incorrect_calculating_order_add_explation_result =  "result/s6-1/bug_Incorrect_calculating_order_add_explation/vul_bug_Incorrect_calculating_order_add_explation_result"
+vul_ben_Incorrect_calculating_order_delete_explation_result = "result/s6-1-delete-explation/ben_Incorrect_calculating_order/vul_ben_Incorrect_calculating_order_result"
+vul_bug_Incorrect_calculating_order_delete_explation_result = "result/s6-1-delete-explation/bug_Incorrect_calculating_order/vul_bug_Incorrect_calculating_order_result"
 
 def read_testFile(file):
     testCase = []
@@ -82,7 +86,9 @@ if __name__ == "__main__":
 
     # run(FINE_TUNED_MODEL_supplement, vul_ben_Incorrect_calculating_order_file, vul_ben_Incorrect_calculating_order_result, 10)
 
-    run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_add_explation_file, vul_bug_Incorrect_calculating_order_add_explation_result, 3)
+    # run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_add_explation_file, vul_bug_Incorrect_calculating_order_add_explation_result, 3)
 
+    # run(s6_1_delete_explation, vul_ben_Incorrect_calculating_order_delete_explation_file, vul_ben_Incorrect_calculating_order_delete_explation_result, 10)
+    run(s6_1_delete_explation, vul_bug_Incorrect_calculating_order_delete_explation_file,  vul_bug_Incorrect_calculating_order_delete_explation_result, 13)
 
     

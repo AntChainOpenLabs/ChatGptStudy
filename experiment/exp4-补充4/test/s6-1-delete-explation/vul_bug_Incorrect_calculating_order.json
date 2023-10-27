@@ -34,7 +34,7 @@
                 "Repair": ""
             }
         ]
-    }
+    },
     {
         "Code": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract EthLoan {\n    struct Loan {\n        uint256 amount;\n        uint256 startBlock;\n    }\n\n    uint256 public interestRatePerBlock = 1;  // 0.01% per block as an example\n    mapping(address => Loan) public loans;\n\n    event LoanTaken(address indexed user, uint256 amount);\n\n    function takeLoan(uint256 amount) external payable {\n        require(msg.value == amount, \"Amount mismatch!\");\n        \n       \n        if (loans[msg.sender].amount != 0) {\n            uint256 interest = (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n            loans[msg.sender].amount += interest;\n        }\n        \n        loans[msg.sender].amount += amount;\n        loans[msg.sender].startBlock = block.number;\n\n        emit LoanTaken(msg.sender, amount);\n    }\n\n    function repayLoan() external payable {\n        require(loans[msg.sender].amount > 0, \"No loan taken.\");\n        uint256 totalDue = loans[msg.sender].amount + (block.number - loans[msg.sender].startBlock) * interestRatePerBlock * loans[msg.sender].amount / 10000;\n        require(msg.value >= totalDue, \"Not enough to cover the loan and interest.\");\n\n        payable(msg.sender).transfer(msg.value - totalDue);  \n        delete loans[msg.sender]; \n    }\n}\n",
         "VulnerabilityDesc": [

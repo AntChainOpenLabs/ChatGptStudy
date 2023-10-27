@@ -1,0 +1,93 @@
+{
+    "0": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "1": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "2": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "3": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "4": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "5": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "6": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "7": [
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###",
+        "No.###\n###"
+    ],
+    "8": [
+        " Yes,{'type':'Incorrect calculating order','location':'require(balances[msg.sender] >= _amount, \"Insufficient balance!\");\n \n        (bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;\n        emit Withdrawn(msg.sender, _amount);'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'require(balances[msg.sender] >= _amount, \"Insufficient balance!\");\n \n        (bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;\n        emit Withdrawn(msg.sender, _amount);'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'(bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;\n        emit Withdrawn(msg.sender, _amount);'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'require(balances[msg.sender] >= _amount, \"Insufficient balance!\");\n \n        (bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'require(balances[msg.sender] >= _amount, \"Insufficient balance!\");\n \n        (bool success, ) = msg.sender.call{value: _amount}(\"\");\n        require(success, \"Transfer failed!\");\n\n        balances[msg.sender] -= _amount;\n        emit Withdrawn(msg.sender, _amount);'}###\n###"
+    ],
+    "9": [
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;\n        emit HighestBidIncreased(msg.sender, msg.value);'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;\n'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'if (highestBidder != address(0)) {\n            (bool success, ) = highestBidder.call{value: highestBid}(\"\");\n            require(success, \"Failed to send back the ether!\");\n        }\n\n        highestBidder = msg.sender;\n        highestBid = msg.value;\n        emit HighestBidIncreased(msg.sender, msg.value);'}###\n###"
+    ],
+    "10": [
+        " Yes,{'type':'Incorrect calculating order','location':'function deposit(uint256 amount) external {\n        // Update user balance\n        balances[msg.sender] += amount;\n\n        updateGlobalInterestRate();\n        \n        totalSupply += amount;\n    }'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += reward;\n  \n\n        updateGlobalInterestRate();'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'function deposit(uint256 amount) external {\n        // Update user balance\n        balances[msg.sender] += amount;\n\n        updateGlobalInterestRate();\n        \n        totalSupply += amount;\n    }'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'function deposit(uint256 amount) external {\n        // Update user balance\n        balances[msg.sender] += amount;\n\n        updateGlobalInterestRate();\n        \n        totalSupply += amount;\n    }'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += reward;\n \n        updateGlobalInterestRate();'}###\n###"
+    ],
+    "11": [
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount;\n        applyInterest(msg.sender);\n        \n        totalDeposits += amount;'}###\n###"
+    ],
+    "12": [
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount; \n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount; \n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount; \n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount; \n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###",
+        " Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender] += amount; \n        giveLoyaltyBonus(msg.sender);\n        totalDeposits += amount;'}###\n###"
+    ]
+}

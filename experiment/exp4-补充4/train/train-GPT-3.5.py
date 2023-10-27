@@ -2,10 +2,10 @@
 import openai
 
 
-s6_1_file = "file-BPm21guaW3YWcGxiuZiQURSL"
-s6_1_2_file = "file-X6jL3exM94zxpxzj3llMp5k1" # 删除解释性语言的
+# s6_1_file = "file-BPm21guaW3YWcGxiuZiQURSL"
+s6_1_2_file = "file-1FmfKfPbT3EXASuruS9QeSx9" # 删除解释性语言的
 
-s6_1_job = "ftjob-Z981z0up1HUYWICVWX9w8FVf"
+# s6_1_job = "ftjob-Z981z0up1HUYWICVWX9w8FVf"
 s6_1_2_job = "ftjob-Hf9vem4gpm4aPmXh0ffvY5P2"
 
 def uploadFile(filename):
@@ -31,7 +31,7 @@ def Retrieve(job):
     print("#####################################")
     print(
         # List up to 10 events from a fine-tuning job
-        openai.FineTuningJob.list_events(id=job, limit=10)
+        openai.FineTuningJob.list_events(id=job, limit=30)
     )
 
 if __name__ == "__main__":
@@ -39,10 +39,10 @@ if __name__ == "__main__":
 
     # Retrieve("") # s6-1
 
-    # trainGpt3_5(s6_1_2)
-    Retrieve(s6_1_2_job)
-
-
+    # uploadFile("gpt3.5/train_chat_Incorrect_calculating_order_delete_explation.jsonl")
+    # trainGpt3_5(s6_1_2_file)
+    #
+    Retrieve("ftjob-rgw3Ebl8qeaZDnagIRcxB54d")
 
 
 
