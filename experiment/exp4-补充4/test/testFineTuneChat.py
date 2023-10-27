@@ -10,11 +10,13 @@ import random
 FINE_TUNED_MODEL_supplement = "ft:gpt-3.5-turbo-0613:antchainopenlab::8BgMiDB9" # exp4-补充4-1
 
 
-vul_ben_Incorrect_calculating_order_file = "vul_ben_Incorrect_calculating_order.json"
-vul_bug_Incorrect_calculating_order_file = "vul_bug_Incorrect_calculating_order.json"
+vul_ben_Incorrect_calculating_order_file = "s6-1/vul_ben_Incorrect_calculating_order.json"
+vul_bug_Incorrect_calculating_order_file = "s6-1/vul_bug_Incorrect_calculating_order.json"
+vul_bug_Incorrect_calculating_order_add_explation_file = "s6-1/vul_bug_Incorrect_calculating_order_add_explation.json"
 
 vul_ben_Incorrect_calculating_order_result = "result/ben_Incorrect_calculating_order/vul_ben_Incorrect_calculating_order_result"
 vul_bug_Incorrect_calculating_order_result = "result/bug_Incorrect_calculating_order/vul_bug_Incorrect_calculating_order_result"
+vul_bug_Incorrect_calculating_order_add_explation_result =  "result/bug_Incorrect_calculating_order_add_explation/vul_bug_Incorrect_calculating_order_add_explation_result"
 
 
 def read_testFile(file):
@@ -76,9 +78,11 @@ if __name__ == "__main__":
     openai.api_key = "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"
 
 
-    run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_file ,vul_bug_Incorrect_calculating_order_result, 13)
+    # run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_file ,vul_bug_Incorrect_calculating_order_result, 13)
 
     # run(FINE_TUNED_MODEL_supplement, vul_ben_Incorrect_calculating_order_file, vul_ben_Incorrect_calculating_order_result, 10)
+
+    run(FINE_TUNED_MODEL_supplement, vul_bug_Incorrect_calculating_order_add_explation_file, vul_bug_Incorrect_calculating_order_add_explation_result, 3)
 
 
     

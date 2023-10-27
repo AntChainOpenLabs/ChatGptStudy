@@ -55,8 +55,8 @@ def clen_cash():
     datas = []
 
 
-process_bug_file("stand2/standard/Incorrect_calculating_order.json")
-process_ben_file("stand2/standard/ben_Incorrect_calculating_order.json")
+process_bug_file("stand2/standard/s6-1/Incorrect_calculating_order.json")
+process_ben_file("stand2/standard/s6-1/ben_Incorrect_calculating_order.json")
 write_file("stand2/prompt/train_prompt_Incorrect_calculating_order.jsonl")
 clen_cash()
 

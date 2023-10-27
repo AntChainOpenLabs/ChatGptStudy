@@ -53,13 +53,13 @@ def xls2json(xlsx_file, bug_type):
         json_data_benign.append(entry_ben)
 
     # 输出JSON数据
-    with open("blew_2000_token/"+bug_type.replace(" ","_")+".json",'w+') as f:
+    with open("blew_2000_token/s6-1-delete-explation/"+bug_type.replace(" ","_")+".json",'w+') as f:
         json.dump(json_data_bug,f, indent=4)
-    with open("blew_2000_token/"+"ben_"+bug_type.replace(" ","_")+".json",'w+') as f2:
+    with open("blew_2000_token/s6-1-delete-explation/"+"ben_"+bug_type.replace(" ","_")+".json",'w+') as f2:
         json.dump(json_data_benign,f2, indent=4)
 
 if __name__ == "__main__":
-    xlsx_file =  ['raw/s6-1.xlsx']
+    xlsx_file =  ['raw/s6-1-删除注释版.xlsx']
 
     xls2json(xlsx_file[0], "Incorrect calculating order")
 
