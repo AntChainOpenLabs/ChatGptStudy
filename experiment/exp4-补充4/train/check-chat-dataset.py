@@ -134,7 +134,7 @@ def data_waring_and_cost(data_path):
     print(f"By default, you'll be charged for ~{n_epochs * n_billing_tokens_in_dataset} tokens")
 
 if __name__ == "__main__":
-    data_path = "gpt3.5/train_chat_Incorrect_calculating_order_delete_explation.jsonl"
+    data_path = "gpt3.5/train_chat_Incorrect_calculating_order_delete_explation_2.jsonl"
     data_waring_and_cost(data_path)
 
 
