@@ -1,0 +1,93 @@
+{
+    "0": [
+        " No.",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'account",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'uint"
+    ],
+    "1": [
+        " Yes,{'type':'Incorrect calculating order','location':'if",
+        " Yes,{'type':'Incorrect calculating order','location':'if",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'if",
+        " No."
+    ],
+    "2": [
+        " No.",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'if",
+        " Yes,{'type':'Incorrect calculating order','location':'uint",
+        " Yes,{'type':'Incorrect calculating order','location':'uint"
+    ],
+    "3": [
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'pay",
+        " No.",
+        " No.",
+        " No."
+    ],
+    "4": [
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'require",
+        " Yes,{'type':'Incorrect calculating order','location':'token",
+        " Yes,{'type':'Incorrect calculating order','location':'token",
+        " No."
+    ],
+    "5": [
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'user",
+        " Yes,{'type':'Incorrect calculating order','location':'user",
+        " No.",
+        " No."
+    ],
+    "6": [
+        " Yes,{'type':'Incorrect calculating order','location':' user",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'user",
+        " Yes,{'type':'Incorrect calculating order','location':'user",
+        " No."
+    ],
+    "7": [
+        " Yes,{'type':'Incorrect calculating order','location':'events",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':' chosen",
+        " Yes,{'type':'Incorrect calculating order','location':'changed",
+        " Yes,{'type':'Incorrect calculating order','location':' chosen"
+    ],
+    "8": [
+        " Yes,{'type':'Incorrect calculating order','location':'(",
+        " Yes,{'type':'Incorrect calculating order','location':'(",
+        " Yes,{'type':'Incorrect calculating order','location':'(",
+        " Yes,{'type':'Incorrect calculating order','location':'(",
+        " No."
+    ],
+    "9": [
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'if",
+        " Yes,{'type':'Incorrect calculating order','location':' if",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'if"
+    ],
+    "10": [
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'bal"
+    ],
+    "11": [
+        " No.",
+        " No.",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " Yes,{'type':'Incorrect calculating order','location':'bal"
+    ],
+    "12": [
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'bal",
+        " No.",
+        " Yes,{'type':'Incorrect calculating order','location':'bal"
+    ]
+}

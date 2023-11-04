@@ -1,0 +1,72 @@
+{
+    "0": [
+        " Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender).",
+        "  ### Yes,{'type':'Incorrect calculating order','location':'payable(msg",
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender",
+        " Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender).",
+        " Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender)."
+    ],
+    "1": [
+        "    Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total",
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits",
+        "   No.",
+        "### No Yes Yes,{'type':'Incorrect calculating order','location':'totalDep"
+    ],
+    "2": [
+        "   Yes,{'type':'Incorrect calculating order','location':'require(reward <=",
+        "          Yes, Yes, Because:  Yes, Yes, Because:  Yes, Yes",
+        " ### No Yes ### Yes Yes ### Yes Yes ### Yes Yes",
+        "    Yes,{'type':'Incorrect calculating order','location':'function stake(uint256",
+        "   No."
+    ],
+    "3": [
+        "   No.",
+        "  ### No.",
+        "   No.",
+        "  Yes, Yes Internet. Yes, Yes: Yes Yes Yes Yes Yes Yes",
+        " ### No, because{'type': 'Incorrect calculating order', 'description':"
+    ],
+    "4": [
+        "     Yes,{'type':'Incorrect calculating order','location':'choosenEvent =",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'require(msg",
+        " Yes,{'type':'Incorrect calculating order','location':'require(chosenEvent.t",
+        "   Yes,{'type':'Incorrect calculating order','location':'processTransactionYesOrder",
+        " Yes,{'type':'Incorrect calculating order','location':'function buyTicket(uint256"
+    ],
+    "5": [
+        " Yes, Yes, Yes, [b]\"{'Type':'Incorrect calculating at Yes",
+        " Yes, Yes, Yes,{'type':'Incorrect calculating order','location':'function",
+        " ### Yes,{'type':'Incorrect calculating order','location':'function withdraw(uint",
+        " Yes, Yes,{'type':'Incorrect calculating order a2g4uv Yes",
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes "
+    ],
+    "6": [
+        "### Yes,{'type':'Incorrect calculating order','location':'if (previousHighest",
+        " Yes,{'type':'Incorrect calculating order','location':'highestBid = msg.value",
+        " Yes,{'type':'Incorrect calculating order','location':'address previousHighestBidder",
+        "### Yes,{'type':'Incorrect calculating order','location':'address previousHighestBid",
+        " Yes,{'type':'Incorrect calculating order','location':'address previousHighestBidder"
+    ],
+    "7": [
+        "   Yes, Yes, Yes,{'type':'Incorrect calculating order','location':'",
+        "   as blocks Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        "```  ### Yes  ### No  ### The Yes Yes Yes Yes Yes Yes",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        " Yes, Yes,{'type':'Incorrect calculating order','location':'uint256 reward"
+    ],
+    "8": [
+        "   No.",
+        "    Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        "; Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        "; ### Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        "       Yes,{'type':'Incorrect calculating order','location':'balances[user] ="
+    ],
+    "9": [
+        " # No Yes Yes, second Yes, third Yes, fourth ### Yes,",
+        " Yes, Yes, Yes,{'type':'Incorrect calculating order','location':'give",
+        "    Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        "  Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes",
+        " ### Yes,{'type':'Incorrect calculating order','location':'giveLoy"
+    ]
+}

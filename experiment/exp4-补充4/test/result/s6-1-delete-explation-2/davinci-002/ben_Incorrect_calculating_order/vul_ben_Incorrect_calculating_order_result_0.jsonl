@@ -1,0 +1,72 @@
+{
+    "0": [
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender",
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender",
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender",
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender",
+        "### Yes,{'type':'Incorrect calculating order','location':'payable(msg.sender"
+    ],
+    "1": [
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits",
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits",
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits",
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits",
+        "   Yes,{'type':'Incorrect calculating order','location':'totalDeposits"
+    ],
+    "2": [
+        " ### No Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " ### No Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " ### No Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " ### No Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " ### No Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes"
+    ],
+    "3": [
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed"
+    ],
+    "4": [
+        "   Yes,{'type':'Incorrect calculating order','location':'require(msg.value ==",
+        "   Yes,{'type':'Incorrect calculating order','location':'require(msg.value ==",
+        "   Yes,{'type':'Incorrect calculating order','location':'require(msg.value ==",
+        "   Yes,{'type':'Incorrect calculating order','location':'require(msg.value ==",
+        "   Yes,{'type':'Incorrect calculating order','location':'require(msg.value =="
+    ],
+    "5": [
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes"
+    ],
+    "6": [
+        " Yes,{'type':'Incorrect calculating order','location':'highestBidder = msg",
+        " Yes,{'type':'Incorrect calculating order','location':'highestBidder = msg",
+        " Yes,{'type':'Incorrect calculating order','location':'highestBidder = msg",
+        " Yes,{'type':'Incorrect calculating order','location':'highestBidder = msg",
+        " Yes,{'type':'Incorrect calculating order','location':'highestBidder = msg"
+    ],
+    "7": [
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg",
+        "   Yes, Yes,{'type':'Incorrect calculating order','location':'balances[msg"
+    ],
+    "8": [
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]"
+    ],
+    "9": [
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes",
+        " Yes, Yes, Yes, [ Yes, Yes, Yes, Yes, Yes"
+    ]
+}

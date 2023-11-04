@@ -1,0 +1,93 @@
+{
+    "0": [
+        " No.",
+        " No.",
+        " No.",
+        " No.",
+        " No."
+    ],
+    "1": [
+        " Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes",
+        " Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes Yes"
+    ],
+    "2": [
+        " Yes,{'type':'Incorrect calculating order','location':'if (user.amount >",
+        " Yes,{'type':'Incorrect calculating order','location':'if (user.amount >",
+        " Yes,{'type':'Incorrect calculating order','location':'if (user.amount >",
+        " Yes,{'type':'Incorrect calculating order','location':'if (user.amount >",
+        " Yes,{'type':'Incorrect calculating order','location':'if (user.amount >"
+    ],
+    "3": [
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg",
+        " Yes,{'type':'Incorrect calculating order','location':'if (loans[msg"
+    ],
+    "4": [
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total",
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total",
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total",
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total",
+        "   Yes,{'type':'Incorrect calculating order','location':'tokenPrice = total"
+    ],
+    "5": [
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed"
+    ],
+    "6": [
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed",
+        "   Yes,{'type':'Incorrect calculating order','location':'uint256 timeElapsed"
+    ],
+    "7": [
+        " Yes,{'type':'Incorrect calculating order','location':'require(msg.value == chosen",
+        " Yes,{'type':'Incorrect calculating order','location':'require(msg.value == chosen",
+        " Yes,{'type':'Incorrect calculating order','location':'require(msg.value == chosen",
+        " Yes,{'type':'Incorrect calculating order','location':'require(msg.value == chosen",
+        " Yes,{'type':'Incorrect calculating order','location':'require(msg.value == chosen"
+    ],
+    "8": [
+        "  ### Yes,{'type':'Incorrect calculating order','location':'(bool success",
+        "  ### Yes,{'type':'Incorrect calculating order','location':'(bool success",
+        "  ### Yes,{'type':'Incorrect calculating order','location':'(bool success",
+        "  ### Yes,{'type':'Incorrect calculating order','location':'(bool success",
+        "  ### Yes,{'type':'Incorrect calculating order','location':'(bool success"
+    ],
+    "9": [
+        "   Yes,{'type':'Incorrect calculating order','location':'if (highestBid",
+        "   Yes,{'type':'Incorrect calculating order','location':'if (highestBid",
+        "   Yes,{'type':'Incorrect calculating order','location':'if (highestBid",
+        "   Yes,{'type':'Incorrect calculating order','location':'if (highestBid",
+        "   Yes,{'type':'Incorrect calculating order','location':'if (highestBid"
+    ],
+    "10": [
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]"
+    ],
+    "11": [
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes,",
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes,",
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes,",
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes,",
+        " Yes, Yes, Yes, Yes, Yes, Yes, Yes, Yes,"
+    ],
+    "12": [
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]",
+        "   Yes,{'type':'Incorrect calculating order','location':'balances[msg.sender]"
+    ]
+}

@@ -1,0 +1,72 @@
+{
+    "0": [
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   No.",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location"
+    ],
+    "1": [
+        " Yes,{'type':'Incorrect calculating order','location':'",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ",
+        " ###   No.",
+        " Yes,{'type':'Incorrect calculating order','location':'"
+    ],
+    "2": [
+        " ###   No.",
+        " ###   No.",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location"
+    ],
+    "3": [
+        " ###   No.",
+        " ###   No.",
+        " ###   No.",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location"
+    ],
+    "4": [
+        " ###   No.",
+        " ###   No.",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   No."
+    ],
+    "5": [
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   No.",
+        " ###   Yes,{'type':'Incorrect calculating order','location"
+    ],
+    "6": [
+        " #include <etherwallet.sol>     contract Auction {",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        "   Yes, that's strange. I'll try to fix it.  ",
+        "   Yes, it's correct. No, it's not correct. "
+    ],
+    "7": [
+        " ### No.",
+        " This contract implements a basic deposit contract. The deposit function allows users to deposit",
+        " ###   No.",
+        " Contract code snippets taken from GitHub repository, specifically  The contract has a",
+        " Yes,{'type':'Incorrect calculating order','location':'"
+    ],
+    "8": [
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " The intent of the contract is: 1. When someone deposits ether into"
+    ],
+    "9": [
+        " ###   No.",
+        " https://etherscan.io/address/0x6e2c",
+        " ###   Yes,{'type':'Incorrect calculating order','location",
+        " ###   No.",
+        " ###   No."
+    ]
+}
