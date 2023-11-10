@@ -1,1 +1,37 @@
-{}
+{
+    "0": [
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':''}### ",
+        " Yes,{'type':'fake deposit','location':'function transfer("
+    ],
+    "1": [
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'function transfer(",
+        " Yes,{'type':'fake deposit','location':'if (bal"
+    ],
+    "2": [
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " No.",
+        " No.",
+        " No.",
+        " Yes,{'type':'fake deposit','location':'function tbr"
+    ],
+    "3": [
+        " No.",
+        " No.",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " No.",
+        " No."
+    ],
+    "4": [
+        " Yes,{'type':'fake deposit','location':'function withdraw(",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transferFrom",
+        " Yes,{'type':'fake deposit','location':'function transfer("
+    ]
+}
