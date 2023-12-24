@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV"
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh",
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh",
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh",
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh",
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in updateExecutor function.",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function.",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function.",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function.",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function."
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in _approve function.",
+        "yes,ID-related violations.The vulnerability is in _approve function.",
+        "yes,ID-related violations.The vulnerability is in _approve function.",
+        "yes,ID-related violations.The vulnerability is in _approve function.",
+        "yes,ID-related violations.The vulnerability is in _approve function."
+    ],
+    "4": [
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in pair.factory()"
+    ]
+}
