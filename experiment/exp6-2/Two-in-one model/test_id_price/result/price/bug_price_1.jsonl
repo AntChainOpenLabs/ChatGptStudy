@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in    if(",
+        "yes,Price oracle manipulation.The vulnerability is in swapTo function.AM",
+        "yes,ID-related violations.The vulnerability is in swapTo function.ID",
+        "yes,ID-related violations.The vulnerability is in SwapTo function.Sh",
+        "yes,ID-related violations.The vulnerability is in uint256 _actualInput"
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in function getLiquidityToken",
+        "yes,ID-related violations.The vulnerability is in function getLiquidityToken",
+        "yes,ID-related violations.The vulnerability is in getLiquidityTokenValue",
+        "yes,ID-related violations.The vulnerability is in  if (riskAdjust",
+        "yes,Price oracle manipulation.The vulnerability is in MarketParameters memory market;"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,ID-related violations.The vulnerability is in  (uint112 reserve",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price or ETH estimated.The vulnerability is in mintSynth function."
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,ID-related violations.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function."
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.ECD",
+        "yes,Price oracle manipulation.The vulnerability is in baseTokenReserves and",
+        "yes,Price oracle manipulation.The vulnerability is in  function addQuote(",
+        "yes,ID-related violations.The vulnerability is in pair.ADD function.",
+        "yes,ID-related violations.The vulnerability is in buyQuote function.ID"
+    ]
+}

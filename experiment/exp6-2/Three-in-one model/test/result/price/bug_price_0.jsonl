@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in mintSynth function.",
+        "yes,ID-related violations.The vulnerability is in mintSynth function.",
+        "yes,ID-related violations.The vulnerability is in mintSynth function.",
+        "yes,ID-related violations.The vulnerability is in mintSynth function.",
+        "yes,ID-related violations.The vulnerability is in mintSynth function."
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function."
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function."
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.Sand",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.Sand",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.Sand",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.Sand",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote function.Sand"
+    ]
+}

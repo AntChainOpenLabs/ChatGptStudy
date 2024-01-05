@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in uint256 public tokenAmount",
+        "yes,Price oracle manipulation.The vulnerability is in function mintSynth.",
+        "yes,Price oracle manipulation.The vulnerability is in uint256 public tokenAmount",
+        "yes,Price oracle manipulation.The vulnerability is in function swapTo. function",
+        "yes,Erroneous state updates.The vulnerability is in    "
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in     uint",
+        "yes,Price oracle manipulation.The vulnerability is in int256 pv =",
+        "yes,Erroneous state updates.The vulnerability is in function getLiquidity",
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in uint256 market.total"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth and burn",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function."
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in   function addLiquid",
+        "yes,Price oracle manipulation.The vulnerability is in function VaderRouterV",
+        "yes,Price oracle manipulation.The vulnerability is in   function addLiquid",
+        "yes,Price oracle manipulation.The vulnerability is in liquidity function.AMM"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote and sellQuote",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote and sellQuote",
+        "yes,Price oracle manipulation.The vulnerability is in add function,buyQuote",
+        "yes,Price oracle manipulation.The vulnerability is in function baseTokenReserves",
+        "yes,Price oracle manipulation.The vulnerability is in buyQuote and sellQuote"
+    ]
+}

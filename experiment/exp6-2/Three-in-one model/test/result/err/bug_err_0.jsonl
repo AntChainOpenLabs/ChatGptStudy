@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapValueIn",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapValueIn",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapOutput function",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapValueIn",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapOutput function"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint"
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32",
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32",
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32",
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32",
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function."
+    ]
+}

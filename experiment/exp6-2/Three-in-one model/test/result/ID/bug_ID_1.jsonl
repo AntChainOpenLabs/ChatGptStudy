@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Erroneous state updates.The vulnerability is in pair.addLiquid",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,ID-related violations.The vulnerability is in deriving ID from owner",
+        "yes,Price oracle manipulation.The vulnerability is in swapTokensForBNB",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function."
+    ],
+    "1": [
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address",
+        "yes,Erroneous state updates.The vulnerability is in function  function get",
+        "yes,ID-related violations.The vulnerability is in function distribute(address origin",
+        "yes,Price oracle manipulation.The vulnerability is in function runPhasedDist",
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in function tokensReceived.",
+        "yes,ID-related violations.The vulnerability is in function bytes _data ",
+        "yes,ID-related violations.The vulnerability is in function _updateExecutor",
+        "yes,ID-related violations.The vulnerability is in _updateExecutor function",
+        "yes,ID-related violations.The vulnerability is in   function stake("
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in  if(!take",
+        "yes,Erroneous state updates.The vulnerability is in uint256 tTransfer",
+        "yes,Erroneous state updates.The vulnerability is in if(!take",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidityETH function"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,PriceOrOffer manipulation.The vulnerability is in price =(res",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Erroneous state updates. locking funds.The vulnerability is in price",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve"
+    ]
+}

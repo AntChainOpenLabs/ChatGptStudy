@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in _approve(address",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in  //IUnis"
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in userInfo function.Sh",
+        "yes,ID-related violations.The vulnerability is in userInfo function.ID",
+        "yes,ID-related violations.The vulnerability is in runPhasedDistribution",
+        "yes,ID-related violations.The vulnerability is in userInfo function.Sh",
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in _updateExecutor().",
+        "yes,ID-related violations.The vulnerability is in uint amount = numSt",
+        "yes,ID-related violations.The vulnerability is in tokensReceived function.",
+        "yes,ID-related violations.The vulnerability is in tokensReceived function.",
+        "yes,ID-related violations.The vulnerability is in function tokensReceived("
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in _transfer function.Sh",
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in takeFee variable introduced",
+        "yes,ID-related violations.The vulnerabities are in _approve",
+        "yes,ID-related violations.The vulnerability is in uniswapV"
+    ],
+    "4": [
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in approveAction and revertAction",
+        "yes,ID-related violations.The vulnerability is in pair.factory()",
+        "yes,ID-related violations.The vulnerability is in pair.factory();",
+        "yes,ID-related violations.The vulnerability is in pair.factory();"
+    ]
+}

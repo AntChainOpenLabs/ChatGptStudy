@@ -1,0 +1,26 @@
+err+id
+(Ctrl-C will interrupt the stream, but not cancel the fine-tune)
+[2023-12-24 20:44:45] Created fine-tune: ft-HIC5OHBNrL9QJobZnvhEWFmc
+[2023-12-24 20:44:52] Fine-tune costs $24.25
+[2023-12-24 20:44:52] Fine-tune enqueued. Queue number: 0
+[2023-12-24 20:44:57] Fine-tune started
+
+davinci:ft-antchainopenlab-2023-12-24-12-58-23
+
+err+price
+(Ctrl-C will interrupt the stream, but not cancel the fine-tune)
+[2023-12-24 20:47:14] Created fine-tune: ft-N6kuR8SK8LlKjxM83VxFZSp0
+
+Stream interrupted (client disconnected).
+To resume the stream, run:
+
+  openai api fine_tunes.follow -i ft-N6kuR8SK8LlKjxM83VxFZSp0
+
+id+price
+(Ctrl-C will interrupt the stream, but not cancel the fine-tune)
+[2023-12-24 20:49:30] Created fine-tune: ft-BSFF1Xr31sD4gyM7hf7QuAse
+
+Stream interrupted (client disconnected).
+To resume the stream, run:
+
+  openai api fine_tunes.follow -i ft-BSFF1Xr31sD4gyM7hf7QuAse

@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in borrow() function.ID",
+        "yes,ID-related violations.The vulnerability is in uint256 loan = loan",
+        "yes,Erroneous state updates.The vulnerability is in  function borrow(",
+        "yes,ID-related violations.The vulnerability is in borrow function.ID can",
+        "yes,ID-related violations.The vulnerability is in addHolding function."
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in calcCoverage function.",
+        "yes,Erroneous state updates.The vulnerability is in function getCollateral",
+        "yes,ID-related violations.The vulnerability is in (iAddress) token",
+        "yes,ID-related violations.The vulnerability is in _year = 31536",
+        "yes,ID-related violations.The vulnerability is in state reset operation.ID"
+    ],
+    "2": [
+        " no",
+        "yes,ID-related violations.The vulnerability is in function withdrawNFTs",
+        "yes,ID-related violations.The vulnerability is in _mint(feeRe",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function getPseudo"
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in function peek(bytes32",
+        "yes,ID-related violations.The vulnerability is in peek function.ID can",
+        "yes,ID-related violations.The vulnerability is in _setSource or _",
+        "yes,ID-related violations.The vulnerability is in peeking function.ID",
+        "yes,ID-related violations.The vulnerability is in peek function.ID can"
+    ],
+    "4": [
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function.",
+        "yes,Erroneous state updates.The vulnerability is in fetchPricePoint function",
+        "yes,ID-related violations.The vulnerability is in ovlFeed = _",
+        "yes,ID-related violations.The vulnerability is in price_ = PricePoint",
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function."
+    ]
+}

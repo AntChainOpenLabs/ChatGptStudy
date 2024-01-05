@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function."
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in function userInfo(address",
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address",
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address",
+        "yes,ID-related violations.The vulnerability is in function userInfo(address",
+        "yes,Erroneous state updates.The vulnerability is in function distribute(address"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in function updateExecutor.",
+        "yes,ID-related violations.The vulnerability is in function tokensReceived.",
+        "yes,ID-related violations.The vulnerability is in function tokensReceived.",
+        "yes,ID-related violations.The vulnerability is in function tokensReceived.",
+        "yes,ID-related violations.The vulnerability is in function tokensReceived."
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in uint256 tTransferAmount",
+        "yes,ID-related violations.The vulnerability is in     function",
+        "yes,ID-related violations.The vulnerability is in uint256 tTransferAmount",
+        "yes,ID-related violations.The vulnerability is in uint256 tTransferAmount",
+        "yes,ID-related violations.The vulnerability is in uint256 tTransferAmount"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve"
+    ]
+}

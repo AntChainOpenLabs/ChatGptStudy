@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in emit Transfer(sender",
+        "yes,ID-related violations.The vulnerability is in .ID-related violations",
+        "yes,Price oracle manipulation.The vulnerability is in function addLiquidity(",
+        "yes,Price oracle manipulation.The vulnerability is in addLiquidity function.",
+        "yes,Price oracle manipulation.The vulnerability is in function addLiquidity("
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in  depositedWaTokens[",
+        "yes,ID-related violations.The vulnerability is in  if(_buffer.",
+        "yes,ID-related violations.The vulnerability is in  if(delta",
+        "yes,ID-related violations.The vulnerability is in uint256 _toDist",
+        "yes,ID- related violations.The vulnerability is in  if(delta"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in operatorSend.ID can",
+        "yes,ID-related violations.The vulnerability is in  uint64 _st",
+        "yes,ID-related violations.The vulnerability is in uint64 _totalSt",
+        "yes,ID-related violations.The vulnerability is in . tokensReceived(",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function."
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in _approve(address",
+        "yes,ID-related violations.The vulnerability is in uint256 tokens_to",
+        "yes,ID-related violations.The vulnerability is in uint256 tokens_to",
+        "yes,ID-related violations.The vulnerability is in uint256 tAmount =",
+        "yes,ID-related violations.The vulnerability is in balanceOf(address("
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in ( uint160 sqrt",
+        "yes,Price oracle manipulation.The vulnerability is in price =(reserve",
+        "yes,Price oracle manipulation.The vulnerability is in (uint160 sqrt"
+    ]
+}

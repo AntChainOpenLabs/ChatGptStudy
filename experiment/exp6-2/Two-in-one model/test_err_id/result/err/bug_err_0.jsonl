@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in addHolding function.",
+        "yes,ID-related violations.The vulnerability is in addHolding function.",
+        "yes,ID-related violations.The vulnerability is in addHolding function.",
+        "yes,ID-related violations.The vulnerability is in addHolding function.",
+        "yes,ID-related violations.The vulnerability is in addHolding function."
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in calcSwapValueIn",
+        "yes,ID-related violations.The vulnerability is in calcSwapValueIn",
+        "yes,ID-related violations.The vulnerability is in calcSwapValueIn",
+        "yes,ID-related violations.The vulnerability is in calcSwapValueIn",
+        "yes,ID-related violations.The vulnerability is in calcSwapValueIn"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint",
+        "yes,ID-related violations.The vulnerability is in function redeemTo(uint"
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in setSource function.ID",
+        "yes,ID-related violations.The vulnerability is in setSource function.ID",
+        "yes,ID-related violations.The vulnerability is in setSource function.ID",
+        "yes,ID-related violations.The vulnerability is in setSource function.ID",
+        "yes,ID-related violations.The vulnerability is in setSource function.ID"
+    ],
+    "4": [
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function.",
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function.",
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function.",
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function.",
+        "yes,ID-related violations.The vulnerability is in fetchPricePoint function."
+    ]
+}

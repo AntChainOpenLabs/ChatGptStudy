@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in borrowing function.Sandwich",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Erroneous state updates.The vulnerability is in   function below",
+        "yes,Price oracle manipulation.The vulnerability is in borrow function.AMM",
+        "yes,Price oracle manipulation.The vulnerability is in loanInPeg and"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in uint _redemptionValue",
+        "yes,Price oracle manipulation.The vulnerability is in   function calcSw",
+        "yes,Price oracle manipulation.The vulnerability is in     //",
+        "yes,Price oracle manipulation.The vulnerability is in   function calcSw",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapValueIn"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in     ",
+        "yes,Price oracle manipulation.The vulnerability is in     ",
+        "yes,Erroneous state updates.The vulnerability is in function Redeemed",
+        "yes,Erroneous state updates.The vulnerability is in function uint256[]",
+        "yes,Price oracle manipulation.The vulnerability is in uint256 public redemptionF"
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in setPath and setPath",
+        "yes,Price oracle manipulation.The vulnerability is in function setSources(bytes",
+        "yes,Price oracle manipulation.The vulnerability is in setSources and setPath",
+        "yes,Price oracle manipulation.The vulnerability is in setPath(bytes6",
+        "yes,Price oracle manipulation.The vulnerability is in setPath() function."
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in  address public immutable",
+        " no",
+        "yes,Price oracle manipulation.The vulnerability is in   address internal immutable",
+        "yes,Price oracle manipulation.The vulnerability is in  uint _market",
+        "yes,Price oracle manipulation.The vulnerability is in price feed manipulation.As"
+    ]
+}

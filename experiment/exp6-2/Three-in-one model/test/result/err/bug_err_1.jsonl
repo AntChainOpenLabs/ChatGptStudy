@@ -1,0 +1,37 @@
+{
+    "0": [
+        " no",
+        "yes,Price oracle manipulation.The vulnerability is in borrow().CrossMargin",
+        "yes,Price oracles manipulation.The vulnerability is in borrow function.AMM",
+        " no",
+        " no"
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in Utils.isBase",
+        "yes,ID-related violations.The vulnerability is in  inited = true",
+        "yes,Erwin Denijs.The vulnerability is in  if(is",
+        "yes,Price oracle manipulation.The vulnerability is in calcSwapValueIn",
+        "yes,ID-related violations.The vulnerability is in function calcSwapOutput"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in   function getRandom",
+        "yes,ID-related violations.The vulnerability is in function redeem(uint256",
+        "yes,ID-related violations.The vulnerability is in     _",
+        "yes,ID-related violations.The vulnerability is in uint256 randomIndex =",
+        "yes,ID-related violations.The vulnerability is in redeemTo function.ID"
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in function IOracle(source",
+        "yes,Erroneous state updates.The vulnerability is in function setSource(",
+        "yes,ID-related violations.The vulnerability is in function base_ = path",
+        "yes,ID-related violations.The vulnerability is in function setPath(bytes",
+        "yes,Price oracle manipulation.The vulnerability is in peek function.Shared"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in price_ = PricePoint",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in fetchPricePoint function.",
+        "yes,Price oracle manipulation.The vulnerability is in price_ = PricePoint"
+    ]
+}
