@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Erroneous state updates.The vulnerability is in  function borrow(",
+        " no",
+        " no",
+        "yes,Erroneous state updates.The vulnerability is in   function borrow",
+        " no"
+    ],
+    "1": [
+        "yes,Erroneous state updates.The vulnerability is in   function calc",
+        "yes,Erroneous state updates.The vulnerability is in calcSwapOutput",
+        "yes,Erroneous state updates.The vulnerability is in   function calc",
+        "yes,Erroneous state updates.The vulnerability is in function calcCoverage",
+        "yes,Erroneous state updates.The vulnerability is in  if(_red"
+    ],
+    "2": [
+        "yes,Erroneous state updates.The vulnerability is in   function get",
+        "yes,Erroneous state updates.The vulnerability is in   function get",
+        "yes,Erroneous state updates.The vulnerability is in   function withdraw",
+        "yes,Erroneous state updates.The vulnerability is in   function get",
+        "yes,Erroneous state updates.The vulnerability is in   function get"
+    ],
+    "3": [
+        "yes,Erroneous state updates.The vulnerability is in   function _",
+        "yes,Erroneous state updates.The vulnerability is in   function peek",
+        "yes,Erroneous state updates.The vulnerability is in  function _set",
+        "yes,Erroneous state updates.The vulnerability is in   function _",
+        "yes,Erroneous state updates.The vulnerability is in   function _"
+    ],
+    "4": [
+        "yes,Erroneous state updates.The vulnerability is in   uint256",
+        "yes,Erroneous state updates.The vulnerability is in  function fetch",
+        " no",
+        " no",
+        "yes,Erroneous state updates.The vulnerability is in  // emit"
+    ]
+}

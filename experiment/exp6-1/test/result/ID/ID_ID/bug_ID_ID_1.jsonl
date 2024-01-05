@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,ID-related violations.The vulnerability is in uniswapV",
+        "yes,ID-related violations.The vulnerability is in _approve(address",
+        "yes,ID-related violations.The vulnerability is in swapTokensForBNB",
+        "yes,ID-related violations.The vulnerability is in addLiquidity function.",
+        "yes,ID-related violations.The vulnerability is in _approve(address"
+    ],
+    "1": [
+        "yes,ID-related violations.The vulnerability is in updateAccount function.Sh",
+        "yes,ID-related violations.The vulnerable function is distribute.Shared resource",
+        "yes,ID-related violations.The vulnerability is in updateAccount() function.",
+        "yes,ID-related violations.The vulnerability is in address validation.ID can",
+        "yes,ID-related violations.The vulnerability is in buffer and userInfo function"
+    ],
+    "2": [
+        "yes,ID-related violations.The vulnerability is in updateExecutor function.",
+        "yes,ID-related violations.The vulnerability is in bool(ex.addr",
+        "yes,ID-related violations.The vulnerability is in _updateExecutor function",
+        "yes,ID-related violations.The vulnerability is in updateExecutor(); update",
+        "yes,ID-related violations.The vulnerability is in updateExecutor function."
+    ],
+    "3": [
+        "yes,ID-related violations.The vulnerability is in _approve() function",
+        "yes,ID-related violations.The vulnerability is in _tokenTransfer function.",
+        "yes,ID-related violations.The vulnerability is in function _tokenTransfer(",
+        "yes,ID-related violations.The vulnerability is in swapAndLiquify",
+        "yes,ID-related violations.The vulnerability is in function _transfer( "
+    ],
+    "4": [
+        "yes,ID-related violations.The vulnerability is in replace_prices ",
+        "yes,ID-related violations.The vulnerability is in initialization.ID can be",
+        "yes,ID-related violations.The vulnerability is in IBeToken.check",
+        "yes,ID-related violations.The vulnerability is in PoW estimation.ID",
+        "yes,ID-related violations.The vulnerability is in pair.factory()"
+    ]
+}
