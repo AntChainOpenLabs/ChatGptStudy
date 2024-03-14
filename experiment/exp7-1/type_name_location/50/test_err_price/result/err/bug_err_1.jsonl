@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Erroneous state updates. The reading is incorrect. Equity markets offer",
+        "yes,Erroneous state updates. The PriceAware.getCurrentPriceInPeg",
+        "yes,Erroneous state updates. The PriceAware.getCurrentPriceInPeg",
+        "yes,Erroneous state updates.The vulnerability is in function belowMaintenanceThreshold(C",
+        "yes,Erroneous state updates.The vulnerability is in     interface RoleAwareLayer"
+    ],
+    "1": [
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint",
+        "yes,Erroneous state updates.The vulnerability is in     //====================================CORE",
+        "yes,Erroneous state updates.The vulnerability is in    function calcCoverage(uint",
+        "yes,Erroneous state updates. The issue is in     function calcCoverage",
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint"
+    ],
+    "2": [
+        "yes,Erroneous state updates caused by internal function calls. exactCryptographic",
+        "yes,Erroneous state updates caused by function call in NFTXVault",
+        "yes,Erroneous state updates caused by internal function execution.Sol-Sb",
+        "yes,Erroneous state updates caused by internal function calculations. In fixing these",
+        "yes,Erroneous state updates during FixUnicron. Other contingencies"
+    ],
+    "3": [
+        "yes,Erroneous state updates.The vulnerability is in       (price, updateTime",
+        "yes,Price oracle manipulation.The vulnerability is in mapping(bytes6=>mapping(bytes6",
+        "yes,Erroneous state updates.The vulnerability is in the Set base in Composite",
+        "yes,Erroneous state updates.The vulnerability is in     function peek(bytes32",
+        "yes,Price oracle manipulation.The vulnerability is in the CompositeMultiOracle.set(sources"
+    ],
+    "4": [
+        "yes,Erroneous state updates.The vulnerability is in uint->mul->mul",
+        "yes,Erroneous state updates.The vulnerability is in   function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in uint256 public immutable o",
+        "yes,Erroneous state updates.The vulnerability is in     PricePoint(uint _",
+        "yes,Erroneous state updates.The vulnerability is in     PricePoint (_micro"
+    ]
+}

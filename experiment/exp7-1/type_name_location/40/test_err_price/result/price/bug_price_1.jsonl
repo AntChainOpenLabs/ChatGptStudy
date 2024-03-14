@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.In this function",
+        "yes,Price manipulation.The vulnerability is in``function mintSynth(address synthOut",
+        "yes,Price oracle manipulation.The vulnerability is in function mintSynth(address synthOut",
+        "yes,Price Manipulation.The vulnerability is in _swapTokenToBase function.",
+        "yes,Price manipulation.The vulnerability is in\ufffd\ufffd\ufffd. function swapTo(address token,"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in function getLiquidityTokenValue",
+        "yes,Price oracle manipulation.The vulnerability is in     function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in     function getRiskAdjustedPresentValue",
+        "yes,Price oracle manipulation.The vulnerability is in     function getGrowPerShareValue",
+        "yes,Price oracle manipulation.The vulnerability is in           uint256 assetCashClaim ="
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in function burnSynth. Each percentage",
+        "yes,Price oracle manipulation.The vulnerability is in    function price0CumulativeLast",
+        "yes,Price oracle manipulation.The vulnerability is inAMM price manipulation.The contract implementation",
+        "yes,Price oracle manipulation.The vulnerability is in function mintSynth.Issuer",
+        "yes,Price oracle manipulation.The vulnerability is in    function mintSynth(  I"
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in function         function swapExactETHFor",
+        "yes,Price oracle manipulation.The vulnerability is in function_like line 77.TheAM",
+        "yes,Price oracle manipulation.The vulnerability is inVaderRouterV2function swap",
+        "yes,Price oracle manipulation.The vulnerability is inVaderRouterV2.addL",
+        "yes,Price oracle manipulation.The vulnerability is in   function addLiquidity( "
+    ],
+    "4": [
+        "yes,Price manipulation.The vulnerability is in sellQuote function.Such a magnitude!",
+        "yes,Price manipulation.The vulnerability is in     function buyQuote(uint256 outputAmount",
+        "yes,Price oracle manipulation.The vulnerability is in.Flow controller does not properly check purchase",
+        "yes,Price oracle manipulation.The vulnerability is in sellQuote function.SellQuote Function",
+        "yes,Price oracle manipulation.The vulnerability is in removeQuote function.A nonzero price should"
+    ]
+}

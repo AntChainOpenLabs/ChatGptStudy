@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Erroneous state updates.The vulnerability is in     function belowMaintenanceThreshold",
+        "yes,Erroneous state updates.The vulnerability is in     function belowMaintenanceThreshold",
+        "yes,Erroneous state updates.The vulnerability is in     function belowMaintenanceThreshold",
+        "yes,Erroneous state updates.The vulnerability is in     function belowMaintenanceThreshold",
+        "yes,Erroneous state updates.The vulnerability is in     function belowMaintenanceThreshold"
+    ],
+    "1": [
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint",
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint",
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint",
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint",
+        "yes,Erroneous state updates.The vulnerability is in     function calcCoverage(uint"
+    ],
+    "2": [
+        "yes,Erroneous state updates caused by internal function execution.A function call that",
+        "yes,Erroneous state updates caused by internal function execution.A function call that",
+        "yes,Erroneous state updates caused by internal function execution.A function call that",
+        "yes,Erroneous state updates caused by internal function execution.A function call that",
+        "yes,Erroneous state updates caused by internal function execution.A function call that"
+    ],
+    "3": [
+        "yes,Erroneous state updates.The vulnerability is in uint256 price = ",
+        "yes,Erroneous state updates.The vulnerability is in uint256 price = ",
+        "yes,Erroneous state updates.The vulnerability is in uint256 price = ",
+        "yes,Erroneous state updates.The vulnerability is in uint256 price = ",
+        "yes,Erroneous state updates.The vulnerability is in uint256 price = "
+    ],
+    "4": [
+        "yes,Erroneous state updates.The vulnerability is in     function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in     function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in     function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in     function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in     function fetchPricePoint"
+    ]
+}

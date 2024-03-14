@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price manipulation.The vulnerability is in inverse of baseAddAmount returns wrong.",
+        "yes,Price Manipulation.The vulnerability is bloat the function sumUpFee. ",
+        "yes,Price manipulation vulnerability.The vulnerability is in function function swapTo(address token,",
+        "yes,Price manipulations.The vulnerability is in _mmint30PoolPrivate.",
+        "yes,Price manipulation.The vulnerability is in:[\"Minted tokens completely unaccount"
+    ],
+    "1": [
+        "yes,Erroneous state updates.An attacker can finance a transaction call per Asset",
+        "yes,Price oracle manipulation.The vulnerability is in Function:getLiquidityTokenValue",
+        "yes,Price oracle manipulation.The vulnerability is in time between when market oracle contract is",
+        "yes,Price oracle manipulation.The vulnerability is innt function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in if (index > 0 &&"
+    ],
+    "2": [
+        "yes,Price manipulation.The vulnerability is in    function getNextPrice(IERC20 foreign",
+        "yes,Price manipulation.The vulnerability is in V1.setPoolRampingFee.Cond",
+        "yes,Price oracle manipulation.The vulnerability is in  function mintSynth(  I",
+        "yes,Price oracle manipulation.The vulnerability is in:current price =Maths.swap",
+        "yes,Erroneous state updates.The vulnerability is in     function burnSynth"
+    ],
+    "3": [
+        "yes,Price manipulation.The vulnerability is in getAllliquidityReward function.The function getAll",
+        "yes,Price manipulation.The vulnerability is in recallMint function in Program.medi",
+        "yes,Price manipulative.The vulnerability is inVaderRouterV2.addL",
+        "yes,Price oracle manipulation.The vulnerability is in function function addLiquidity( ",
+        "yes,Price manipulation.The vulnerability is in smart contract. Complete The unfinished V2"
+    ],
+    "4": [
+        "yes,Price manipulative.The vulnerability is in  function sellQuote(uint256 input",
+        "yes,Price manipulation.The vulnerability is in: price manipulation  if (lpToken",
+        "yes,Price manipulation.The vulnerability is in    function buyQuote(uint256 outputAmount",
+        "yes,Price manipulations.The vulnerability is in function function sellQuote(uint256 input",
+        "yes,Price manipulations.The vulnerability is in price calculation.In buy,Sell,"
+    ]
+}

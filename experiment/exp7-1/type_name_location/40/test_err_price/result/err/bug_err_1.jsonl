@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in     function borrow(   CrossMargin",
+        "yes,Price oracle manipulation.The vulnerability is in     function yieldTokenInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in     function yieldTokenInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in function retrieveMarginals. Calpend",
+        "yes,Price oracle manipulation.The vulnerability is in uint256 loan = loanInP"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in function calcCoverage(uint B0,",
+        "yes,Price oracle manipulation.The vulnerability is in function calcTubeValueInToken(address",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase",
+        "yes,Price oracle manipulation.The vulnerability is in line 60 function calcSwapValue",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in function withdrawNFTsTo(uint",
+        "yes,Price manipulation.The vulnerability is in     function withdrawNFTsTo( ",
+        "yes,Price manipulation.The vulnerability is in function getRandomTokenIdFromFund() public",
+        "yes,Price oracle manipulation.The vulnerability is in getRandomTokenIdFromFund.The function",
+        "yes,Erroneous state updates.The vulnerability is in     function redeem(uint256"
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in get function.Sperophage can m",
+        "yes,Price oracle manipulation.The vulnerability is in function peek(bytes32 base,bytes",
+        "yes,Price oracle manipulation.The vulnerability is in price manipulation.The CompositeOracle.get function",
+        "yes,Price oracle manipulation.The vulnerability is in the function _peek(bytes6 base",
+        "yes,Price oracle manipulation.The vulnerability is in uint256 price = 1e"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in line 84 function fetchPricePoint",
+        "yes,Erroneous state updates.The vulnerability is in function computeDepth(uint _",
+        "yes,Price oracle manipulation.A vulnerability is present in OverlayV1Uniswap",
+        "yes,Price oracle manipulation.The vulnerability is incomputeDepth function..A malicious actor",
+        "yes,Price oracle manipulation.The vulnerability is inPrice manipualtion.On the oracle"
+    ]
+}

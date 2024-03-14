@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in     function sumTokensInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in     function sumTokensInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in     function sumTokensInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in     function sumTokensInPeg",
+        "yes,Price oracle manipulation.The vulnerability is in     function sumTokensInPeg"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase",
+        "yes,Price oracle manipulation.The vulnerability is in     function calcSwapValueInBase"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in function getRandomTokenIdFromFund().",
+        "yes,Price oracle manipulation.The vulnerability is in function getRandomTokenIdFromFund().",
+        "yes,Price oracle manipulation.The vulnerability is in function getRandomTokenIdFromFund().",
+        "yes,Price oracle manipulation.The vulnerability is in function getRandomTokenIdFromFund().",
+        "yes,Price oracle manipulation.The vulnerability is in function getRandomTokenIdFromFund()."
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in function _get(bytes6 base,",
+        "yes,Price oracle manipulation.The vulnerability is in function _get(bytes6 base,",
+        "yes,Price oracle manipulation.The vulnerability is in function _get(bytes6 base,",
+        "yes,Price oracle manipulation.The vulnerability is in function _get(bytes6 base,",
+        "yes,Price oracle manipulation.The vulnerability is in function _get(bytes6 base,"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in function computeDepth(uint _marketL",
+        "yes,Price oracle manipulation.The vulnerability is in function computeDepth(uint _marketL",
+        "yes,Price oracle manipulation.The vulnerability is in function computeDepth(uint _marketL",
+        "yes,Price oracle manipulation.The vulnerability is in function computeDepth(uint _marketL",
+        "yes,Price oracle manipulation.The vulnerability is in function computeDepth(uint _marketL"
+    ]
+}

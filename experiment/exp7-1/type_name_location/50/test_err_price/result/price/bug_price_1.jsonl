@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price oracle manipulation.The vulnerability is in uint256 public baseAmount; uint",
+        "yes,Price oracle manipulation.The vulnerability is in       function mintSynth(address synth",
+        "yes,Erroneous state updates.The vulnerability is in mintSynth function.A",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function.Braindead",
+        "yes,Price oracle manipulation.The vulnerability is in mintSynth function. A malicious"
+    ],
+    "1": [
+        "yes,Erroneous state updates.The vulnerability is in function getLiquidity",
+        "yes,Price oracle manipulation.The vulnerability is in       function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in getLiquidityTokenValue.Is",
+        "yes,Erroneous state updates.The vulnerability is in uint256 marketLength =",
+        "yes,AMLPredoVMError"
+    ],
+    "2": [
+        "yes,Price oracle manipulation.The vulnerability is in function mintSynth. Snyder's",
+        "yes,Price oracle manipulation.The vulnerability is in functionary mintSynth(flag __",
+        "yes,Price oracle manipulation.The vulnerability is in function mintSynth(address foreignAsset",
+        "yes,Price oracle manipulation.The vulnerability is in function burnSynth(burn to",
+        "yes,Price oracle manipulation.The vulnerability is in function burnSynth.! AM"
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in function getProductualDOMPrice(uint256",
+        "yes,Price oracle manipulation.The vulnerability is in function mint. We calculate the new",
+        "yes,Price oracle manipulation.The vulnerability is in function.swap.Ignis Protocol (",
+        "yes,Price oracle manipulation.The vulnerability is in /**u00a0u00",
+        "yes,Price oracle manipulation.The vulnerability is in getUniversalRewards function of Vader"
+    ],
+    "4": [
+        "yes,Price oracle manipulation.The vulnerability is in Buy function in Pair.sol. base",
+        "yes,Price oracle manipulation.The vulnerability is in sellQuote function.AMM price oracle",
+        "yes,Erroneous state updates.The vulnerability is in uint256 inputAmount =",
+        "yes,Price oracle manipulation.The vulnerability is in sellQuote function.SellQuote function",
+        "yes,Price oracle manipulation.The vulnerability is in Sell function."
+    ]
+}

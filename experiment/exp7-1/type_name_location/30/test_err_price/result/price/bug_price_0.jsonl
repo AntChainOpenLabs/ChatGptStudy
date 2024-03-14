@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Price manipulation.The vulnerability is in the function swapTo. The function swap",
+        "yes,Price manipulation.The vulnerability is in the function swapTo. The function swap",
+        "yes,Price manipulation.The vulnerability is in the function swapTo. The function swap",
+        "yes,Price manipulation.The vulnerability is in the function swapTo. The function swap",
+        "yes,Price manipulation.The vulnerability is in the function swapTo. The function swap"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in the function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in the function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in the function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in the function getLiquidityToken",
+        "yes,Price oracle manipulation.The vulnerability is in the function getLiquidityToken"
+    ],
+    "2": [
+        "yes,Price manipulation.The vulnerability is in the function function mintSynth(  ",
+        "yes,Price manipulation.The vulnerability is in the function function mintSynth(  ",
+        "yes,Price manipulation.The vulnerability is in the function function mintSynth(  ",
+        "yes,Price manipulation.The vulnerability is in the function function mintSynth(  ",
+        "yes,Price manipulation.The vulnerability is in the function function mintSynth(  "
+    ],
+    "3": [
+        "yes,Price manipulation.The vulnerability is in function function addLiquidity(  ",
+        "yes,Price manipulation.The vulnerability is in function function addLiquidity(  ",
+        "yes,Price manipulation.The vulnerability is in function function addLiquidity(  ",
+        "yes,Price manipulation.The vulnerability is in function function addLiquidity(  ",
+        "yes,Price manipulation.The vulnerability is in function function addLiquidity(  "
+    ],
+    "4": [
+        "yes,Price manipulation.The vulnerability is in uint256 buyQuote(uint256 outputAmount",
+        "yes,Price manipulation.The vulnerability is in uint256 buyQuote(uint256 outputAmount",
+        "yes,Price manipulation.The vulnerability is in uint256 buyQuote(uint256 outputAmount",
+        "yes,Price manipulation.The vulnerability is in uint256 buyQuote(uint256 outputAmount",
+        "yes,Price manipulation.The vulnerability is in uint256 buyQuote(uint256 outputAmount"
+    ]
+}

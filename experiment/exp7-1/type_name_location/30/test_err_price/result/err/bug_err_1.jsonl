@@ -1,0 +1,37 @@
+{
+    "0": [
+        "yes,Erroneous state updates.The vulnerability is in result = PriceAware.getCurrent",
+        "yes,Price oracle manipulation.The vulnerability is in function belowMaintenanceThreshold(CrossMargin",
+        "yes,Price oracle manipulation.The vulnerability is in belows function:function sumTokens",
+        "yes,Erroneous state updates.The vulnerability is in lending pricing calculation when am",
+        "yes,Price oracle manipulation.The vulnerability is in loanInPeg function in function"
+    ],
+    "1": [
+        "yes,Price oracle manipulation.The vulnerability is in###         function calcSwapOutput(uint",
+        "yes,Erroneous state updates.The vulnerability is in the function in CalcCoverage",
+        "yes,Erroneous state updates.The vulnerability is in no       Vesting();",
+        "yes,Price oracle manipulation.The vulnerability is in ListingUVABLYUSDC but",
+        "yes,Erroneous state updates.The vulnerability is in uint part1 = ("
+    ],
+    "2": [
+        "yes,Price manipulation.The vulnerability is in the function withdrawNFTsTo(uint",
+        "yes,Price oracle manipulation.The vulnerability is in the Marketplace/Purchase in contract Deploy",
+        "yes,Price oracle manipulation.The vulnerability is in:   \t\tMint fees directly to",
+        "yes,Price oracle manipulation.The vulnerability is in function function withdrawNFTsTo",
+        "yes,Price oracle manipulation.The vulnerability is in function VaultManager().AMM tokens"
+    ],
+    "3": [
+        "yes,Price oracle manipulation.The vulnerability is in the following function no trrug checkpoints",
+        "yes,Price oracle manipulation.The vulnerability is in pancake.money/seal.js,",
+        "yes,Price oracle manipulation.The vulnerability is in output of function get(bytes32 base",
+        "yes,Price oracle manipulation.The vulnerability is in p erhaps emulating a stack",
+        "yes,Price oracle manipulation.CoinShuffle vulnerability.The vulnerability is in the mapping"
+    ],
+    "4": [
+        "yes,Erroneous state updates.The runtime overheads are not accounted for when",
+        "yes,Price oracle inconsistency.The vulnerability is in uint _ovlPrice = Oracle",
+        "yes,Erroneous state updates.The vulnerability is in formatter contract.Note below:(",
+        "yes,Price oracle manipulation.The vulnerability is in price_.PricePoint( MicroTick",
+        "yes,Price oracle manipulation.The vulnerability is in oracle calculations. in function computeDepth"
+    ]
+}
