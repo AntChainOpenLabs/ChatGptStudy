@@ -1,0 +1,37 @@
+{
+    "0": [
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###"
+    ],
+    "1": [
+        "Erroneous state updates. ### ###",
+        "Erroneous state updates. ### ###",
+        "Erroneous state updates. ### ###",
+        "Erroneous state updates. ### ###",
+        "Erroneous state updates. ### ###"
+    ],
+    "2": [
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Vulnerability ### The `VaderPoolV2` contract is missing access control in important functions. The functions `mintSynth` and `burnSynth`, which handle the minting and burning of synth tokens respectively, are not properly restricted to only allow authorized users to interact with them. As a result, any user can call these functions and potentially manipulate the state of the contract in unintended ways.  Suggestions ### Implement access control mechanisms such as modifiers to restrict the usage of `mintSynth` and `burnSynth` functions to only authorized users. Consider using the `onlyOwner` modifier or creating a role-based access control system to ensure that these critical functions can only be called by trusted addresses.  Additionally, ensure that sensitive operations and state modifications are properly protected to prevent unauthorized access and manipulation of the contract's state."
+    ],
+    "3": [
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###"
+    ],
+    "4": [
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###",
+        "Price oracle manipulation. ### ###"
+    ]
+}
